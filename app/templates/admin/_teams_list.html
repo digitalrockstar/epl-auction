@@ -1,0 +1,11 @@
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<table class="teams-table">
+    <thead>
+        <tr><th>Team</th><th>Purse</th><th>Manager</th><th>Captain</th></tr>
+    </thead>
+    <tbody>
+        {% for team in teams %}
+            {% include "admin/_team_row.html" %}
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+{% block content %}
+<h1>Players</h1>
+{% if message %}<p class="msg">{{ message }}</p>{% endif %}
+
+<div class="import-row">
+    <form method="post" action="/admin/players/import-registrations" enctype="multipart/form-data" class="inline-form">
+        <label>Registrations CSV (forms.app export)</label>
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Import registrations</button>
+    </form>
+    <form method="post" action="/admin/players/import-stats" enctype="multipart/form-data" class="inline-form">
+        <label>CricHeroes stats CSV</label>
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Import stats</button>
+    </form>
+</div>
+
+<table class="teams-table">
+    <thead>
+        <tr><th>Name</th><th>Phone</th><th>Skill</th><th>Captain?</th><th>Team</th><th>Kit images</th></tr>
+    </thead>
+    <tbody>
+        {% for p in players %}
+        <tr>
+            <td>{{ p.user.name }}</td>
+            <td>{{ p.user.phone }}</td>
+            <td>{{ p.primary_skill or "-" }}</td>
+            <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
+            <td>{{ p.team.name if p.team else "-" }}</td>
+            <td>
+                <form method="post" action="/admin/players/{{ p.id }}/kit-image" class="inline-form">
+                    <select name="team_id">
+                        {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                    </select>
+                    <input type="text" name="image_url" placeholder="Image URL" required>
+                    <button type="submit">Save</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

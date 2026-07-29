@@ -1,0 +1,63 @@
+import os
+from fastapi import FastAPI, Request, Depends, Form
+from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.orm import Session
+
+from app.database import Base, engine, get_db
+from app.models import User, Role
+from app.auth import verify_password, get_current_user
+from app.routes.admin import router as admin_router
+from app.routes.players import router as players_router
+from app.routes.auction import router as auction_router
+
+app = FastAPI(title="EPL Auction - Community Cricket")
+
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET", "dev-secret-change-me"))
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
+
+# Creates tables on startup if they don't exist. Fine for this scale, swap for
+# alembic migrations later if the schema needs to evolve without data loss.
+Base.metadata.create_all(bind=engine)
+
+app.include_router(admin_router)
+app.include_router(players_router)
+app.include_router(auction_router)
+
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login")
+    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+
+
+@app.post("/login")
+def login_submit(
+    request: Request,
+    phone: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.phone == phone).first()
+    if not user or not verify_password(password, user.password_hash):
+        return templates.TemplateResponse(
+            "login.html", {"request": request, "error": "Wrong phone number or password"}
+        )
+    request.session["user_id"] = user.id
+    return RedirectResponse("/", status_code=303)
+
+
+@app.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login")

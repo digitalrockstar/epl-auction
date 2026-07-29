@@ -1,0 +1,30 @@
+{% if live %}
+<div class="tv-card">
+    <img src="{{ photo }}" class="tv-photo" onerror="this.style.display='none'">
+    <div class="tv-info">
+        <h1>{{ live.player.user.name }}</h1>
+        <p class="tv-tag">{{ live.player.primary_skill or "" }} | {{ live.player.batting_hand or "" }}
+           {% if live.player.bowling_style %} | {{ live.player.bowling_style }}{% endif %}</p>
+
+        <div class="tv-bid">
+            <span class="tv-bid-amount">{{ live.current_bid }}</span>
+            {% if live.current_team %}<span class="tv-bid-team">{{ live.current_team.name }}</span>{% endif %}
+        </div>
+
+        <div class="tv-stats">
+            <div><b>{{ live.player.bat_matches or 0 }}</b> Matches</div>
+            <div><b>{{ live.player.bat_runs or 0 }}</b> Runs</div>
+            <div><b>{{ live.player.bat_avg or 0 }}</b> Avg</div>
+            <div><b>{{ live.player.bat_sr or 0 }}</b> SR</div>
+            <div><b>{{ live.player.bowl_wickets or 0 }}</b> Wickets</div>
+            <div><b>{{ live.player.bowl_economy or 0 }}</b> Econ</div>
+            <div><b>{{ live.player.field_catches or 0 }}</b> Catches</div>
+            <div><b>{{ live.player.matches_won or 0 }}-{{ live.player.matches_lost or 0 }}</b> W-L</div>
+        </div>
+
+        {% if live.player.brief %}<p class="tv-brief">{{ live.player.brief }}</p>{% endif %}
+    </div>
+</div>
+{% else %}
+<div class="tv-empty"><h1>Auction not live right now</h1></div>
+{% endif %}

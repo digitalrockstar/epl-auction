@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.name }}</h1>
+<p>Role: {{ user.role.value }}</p>
+
+{% if user.role.value == "super_admin" %}
+<p><a href="/admin/teams">Manage teams and managers</a></p>
+{% endif %}
+{% if user.role.value in ("super_admin", "admin") %}
+<p><a href="/admin/players">Players (import / kit images)</a></p>
+<p><a href="/admin/auction">Auction console</a></p>
+{% endif %}
+<p><a href="/auction/live">Live auction (TV view)</a></p>
+
+{% endblock %}

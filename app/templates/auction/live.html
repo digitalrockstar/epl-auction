@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live Auction</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/tv.css">
+</head>
+<body class="tv-body" hx-get="/auction/live/fragment" hx-trigger="every 3s" hx-target="#tv-wrap" hx-swap="innerHTML">
+    <div id="tv-wrap">
+        {% include "auction/_live_fragment.html" %}
+    </div>
+</body>
+</html>
