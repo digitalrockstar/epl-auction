@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live Auction</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/tv.css">
+</head>
+<body class="tv-body" hx-get="{{ fragment_url }}" hx-trigger="every 1s" hx-target="#tv-wrap" hx-swap="innerHTML">
+    <div id="tv-wrap">
+        {% include "auction/_live_fragment.html" %}
+    </div>
+
+    <audio id="snd-bid" src="/static/sfx/bid.mp3" preload="auto"></audio>
+    <audio id="snd-sold" src="/static/sfx/sold.mp3" preload="auto"></audio>
+    <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
+
+    <script>
+    let lastBid = null, lastTeam = null, lastStatus = null;
+    document.body.addEventListener('htmx:afterSwap', () => {
+        const el = document.getElementById('tv-wrap');
+        const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
+        if (bid !== undefined && lastBid !== null && (bid !== lastBid || team !== lastTeam)) {
+            document.getElementById('snd-bid').play().catch(()=>{});
+        }
+        if (status === 'sold' && lastStatus !== 'sold') {
+            document.getElementById('snd-sold').play().catch(()=>{});
+        }
+        if (status === 'unsold' && lastStatus !== 'unsold') {
+            document.getElementById('snd-unsold').play().catch(()=>{});
+        }
+        lastBid = bid; lastTeam = team; lastStatus = status;
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% if not live %}
+<p>No auction is live right now.</p>
+{% else %}
+<div class="live-box">
+    <img src="{{ photo }}" class="live-thumb" onerror="this.style.display='none'">
+    <div>
+        <h2>{{ live.player.user.name }}</h2>
+        <p>Current bid: <strong>{{ live.current_bid }}</strong>
+           {% if live.current_team %} by {{ live.current_team.name }}{% endif %}</p>
+        <p>Your next bid: <strong>{{ next_amount }}</strong></p>
+
+        <form method="post" action="/bid-panel/bid">
+            <button type="submit" {% if disabled %}disabled{% endif %}>
+                {% if disabled %}{{ disabled_reason }}{% else %}Bid {{ next_amount }}{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}

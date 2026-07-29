@@ -1,0 +1,51 @@
+{% if live %}
+<div class="tv-card" data-bid="{{ live.current_bid }}" data-team="{{ live.current_team_id }}" data-status="{{ live.status.value }}"
+     style="border-color: {{ live.current_team.primary_color if live.current_team else '#3d6ef0' }}">
+    <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if live.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
+    <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
+
+    <img src="{{ photo }}" class="tv-photo" onerror="this.style.display='none'">
+    <div class="tv-info">
+        <h1>{{ live.player.user.name }}</h1>
+        <p class="tv-tag">{{ live.player.primary_skill or "" }} | {{ live.player.batting_hand or "" }}
+           {% if live.player.bowling_style %} | {{ live.player.bowling_style }}{% endif %}
+           {% if live.player.is_wicketkeeper %} | WK{% endif %}</p>
+
+        <div class="tv-bid" {% if live.current_team %}style="color:{{ live.current_team.primary_color }}"{% endif %}>
+            <span class="tv-bid-amount">{{ live.current_bid }}</span>
+            {% if live.current_team %}<span class="tv-bid-team">{{ live.current_team.name }}</span>{% endif %}
+        </div>
+
+        {% if live.player.bat_matches or live.player.bowl_matches %}
+        <div class="tv-stats">
+            <div><b>{{ live.player.bat_matches or 0 }}</b> Matches</div>
+            <div><b>{{ live.player.bat_runs or 0 }}</b> Runs</div>
+            <div><b>{{ live.player.bat_avg or 0 }}</b> Avg</div>
+            <div><b>{{ live.player.bat_sr or 0 }}</b> SR</div>
+            <div><b>{{ live.player.bowl_wickets or 0 }}</b> Wickets</div>
+            <div><b>{{ live.player.bowl_economy or 0 }}</b> Econ</div>
+            <div><b>{{ live.player.field_catches or 0 }}</b> Catches</div>
+            <div><b>{{ live.player.matches_won or 0 }}-{{ live.player.matches_lost or 0 }}</b> W-L</div>
+        </div>
+        {% else %}
+        <p class="tv-tag">No history</p>
+        {% endif %}
+
+        {% if live.player.brief %}<p class="tv-brief">{{ live.player.brief }}</p>{% endif %}
+    </div>
+</div>
+{% else %}
+<div class="tv-empty" data-status="none"><h1>Auction not live right now</h1></div>
+{% endif %}
+
+{% if teams %}
+<div class="purse-ticker">
+    {% for t in teams %}
+    <div class="purse-chip" style="border-color:{{ t.primary_color or '#3d6ef0' }}">
+        <span class="purse-team">{{ t.name }}</span>
+        <span class="purse-amt">{{ t.purse_remaining }}</span>
+        <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#3d6ef0' }}"></div></div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ player.user.name if player else "Player" }}{% endblock %}
+{% block content %}
+{% if not player %}
+<p>Player not found.</p>
+{% else %}
+<div class="live-box">
+    <img src="{{ player.profile_photo_url or '' }}" class="live-thumb" onerror="this.style.display='none'">
+    <div>
+        <h1>{{ player.user.name }}{% if player.is_captain %} (Captain){% endif %}</h1>
+        {% if show_phone %}<p>{{ player.user.phone }}</p>{% endif %}
+        <p>{{ player.primary_skill or "-" }} | {{ player.batting_hand or "-" }} | {{ player.bowling_style or "-" }}
+           {% if player.is_wicketkeeper %} | WK{% endif %}</p>
+        <p>Experience: {{ player.experience_level or "-" }}</p>
+        {% if player.team %}<p>Team: {{ player.team.name }} (sold for {{ player.sold_price }})</p>{% endif %}
+        {% if player.brief %}<p>{{ player.brief }}</p>{% endif %}
+
+        {% if player.bat_matches or player.bowl_matches %}
+        <h3>Stats</h3>
+        <ul>
+            <li>Batting: {{ player.bat_matches or 0 }} matches, {{ player.bat_runs or 0 }} runs,
+                avg {{ player.bat_avg or 0 }}, SR {{ player.bat_sr or 0 }}</li>
+            <li>Bowling: {{ player.bowl_matches or 0 }} matches, {{ player.bowl_wickets or 0 }} wickets,
+                econ {{ player.bowl_economy or 0 }}</li>
+            <li>Fielding: {{ player.field_catches or 0 }} catches, {{ player.field_runouts or 0 }} run outs</li>
+            <li>Record: {{ player.matches_won or 0 }}-{{ player.matches_lost or 0 }} (W-L)</li>
+        </ul>
+        {% else %}
+        <p>No history</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+<tr id="team-row-{{ team.id }}">
+    <td><span class="swatch" style="background:{{ team.primary_color or '#3d6ef0' }}"></span> {{ team.name }}</td>
+    <td>{{ team.purse_total }}</td>
+    <td>
+        {% if team.manager %}
+            {{ team.manager.name }} ({{ team.manager.phone }})
+        {% else %}
+            <button
+                hx-get="/admin/teams/{{ team.id }}/manager-form"
+                hx-target="#team-row-{{ team.id }}"
+                hx-swap="outerHTML">
+                Assign manager
+            </button>
+        {% endif %}
+    </td>
+    <td>{{ "Yes" if team.captain else "Not yet" }}</td>
+</tr>

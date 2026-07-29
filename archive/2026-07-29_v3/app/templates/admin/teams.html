@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block content %}
+<h1>Teams</h1>
+
+<form hx-post="/admin/teams" hx-target="#teams-wrap" hx-swap="innerHTML" class="add-team-form">
+    <input type="text" name="name" placeholder="Team name" required>
+    <input type="number" name="purse_total" placeholder="Purse (25,00,000)" value="2500000">
+    <input type="text" name="logo_url" placeholder="Logo URL (optional)">
+    <label>Primary <input type="color" name="primary_color" value="#3d6ef0"></label>
+    <label>Secondary <input type="color" name="secondary_color" value="#161a23"></label>
+    <button type="submit">Add team</button>
+</form>
+
+<div id="teams-wrap">
+    {% include "admin/_teams_list.html" %}
+</div>
+{% endblock %}

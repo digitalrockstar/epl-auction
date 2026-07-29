@@ -3,19 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EPL Auction{% endblock %}</title>
+    <title>{% block title %}Auction{% endblock %} · Season 3</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <header class="topbar">
-        <span class="brand">Community Cricket Auction</span>
+<div class="shell {{ '' if user else 'no-sidebar' }}">
+    {% if user %}
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="14" width="8" height="3" rx="1" transform="rotate(-35 3 14)" fill="var(--accent)"/>
+                <rect x="9" y="8" width="10" height="4" rx="1.2" transform="rotate(-35 9 8)" fill="var(--accent)"/>
+                <rect x="2" y="19.5" width="9" height="2" rx="1" fill="var(--text-muted)"/>
+            </svg>
+            <span>Season 3</span>
+        </div>
+        <nav class="nav">
+            <a href="/" class="{{ 'active' if request.url.path == '/' }}">Dashboard</a>
+
+            {% if user.role.value == "super_admin" %}
+            <div class="nav-group">Setup</div>
+            <a href="/admin/teams" class="{{ 'active' if '/admin/teams' in request.url.path }}">Teams &amp; managers</a>
+            {% endif %}
+
+            {% if user.role.value in ("super_admin", "admin") %}
+            <a href="/admin/players" class="{{ 'active' if '/admin/players' in request.url.path }}">Players</a>
+            <div class="nav-group">Auction</div>
+            <a href="/admin/auction" class="{{ 'active' if '/admin/auction' in request.url.path }}">Auction console</a>
+            <a href="/admin/matches" class="{{ 'active' if '/admin/matches' in request.url.path }}">Matches &amp; points</a>
+            <a href="/admin/audit" class="{{ 'active' if '/admin/audit' in request.url.path }}">Audit log</a>
+            {% endif %}
+
+            {% if user.role.value in ("manager", "captain") %}
+            <div class="nav-group">My team</div>
+            <a href="/my-team" class="{{ 'active' if request.url.path == '/my-team' }}">Roster &amp; purse</a>
+            <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">Live bid panel</a>
+            {% endif %}
+
+            <div class="nav-group">Watch</div>
+            <a href="/auction/live" target="_blank">TV view ↗</a>
+            <a href="/spectator/live" target="_blank">Spectator link ↗</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-role">{{ user.role.value.replace('_', ' ') }}</span>
+            </div>
+            <a href="/logout" class="logout-link">Log out</a>
+        </div>
+    </aside>
+    {% endif %}
+
+    <div class="main">
         {% if user %}
-        <span class="topbar-right">{{ user.name }} ({{ user.role.value }}) <a href="/logout">Logout</a></span>
+        <header class="topbar">
+            <button class="back-btn" onclick="history.back()" aria-label="Go back">&larr; Back</button>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+        </header>
         {% endif %}
-    </header>
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<script>
+document.getElementById('navToggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,51 @@
+.tv-body {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; margin: 0; background: #05060a; padding-bottom: 90px; box-sizing: border-box;
+}
+.tv-card { display: flex; gap: 60px; align-items: center; padding: 40px; }
+.tv-photo { width: 380px; height: 480px; object-fit: cover; border-radius: 16px; border: 4px solid #3d6ef0; }
+.tv-info h1 { font-size: 56px; margin: 0 0 10px; }
+.tv-tag { font-size: 22px; color: #a0a4ae; margin-bottom: 30px; }
+.tv-bid { display: flex; align-items: baseline; gap: 20px; margin-bottom: 30px; }
+.tv-bid-amount { font-size: 72px; font-weight: 800; color: #ffd35c; }
+.tv-bid-team { font-size: 28px; color: #6ea8ff; }
+.tv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 40px; font-size: 22px; }
+.tv-stats b { font-size: 30px; display: block; }
+.tv-brief { margin-top: 30px; font-size: 18px; color: #c4c7cf; max-width: 700px; }
+.tv-empty { text-align: center; font-size: 40px; color: #a0a4ae; }
+
+.tv-card {
+    position: relative;
+    border: 3px solid #3d6ef0;
+    border-radius: 20px;
+    animation: cardIn 0.4s ease-out;
+    box-shadow: 0 0 40px rgba(61,110,240,0.25);
+}
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.tv-mode-tag {
+    position: absolute; top: -18px; left: 40px;
+    background: #ffd35c; color: #1a1a1a; font-weight: 700;
+    padding: 4px 16px; border-radius: 20px; font-size: 14px; letter-spacing: 1px;
+}
+.tv-timer {
+    position: absolute; top: 20px; right: 30px;
+    font-size: 32px; font-weight: 800; color: #6ea8ff;
+}
+.tv-timer-low { color: #ff6b6b; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.tv-bid-amount { transition: all 0.2s ease; }
+
+.purse-ticker {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; gap: 16px; padding: 16px 30px;
+    background: #0a0c12; border-top: 1px solid #262b38;
+}
+.purse-chip { flex: 1; border-left: 4px solid #3d6ef0; padding: 6px 12px; }
+.purse-team { font-size: 14px; color: #a0a4ae; display: block; }
+.purse-amt { font-size: 20px; font-weight: 700; }
+.purse-bar { height: 4px; background: #262b38; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.purse-bar-fill { height: 100%; transition: width 0.5s ease; }
