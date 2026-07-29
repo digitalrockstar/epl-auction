@@ -7,10 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Player, User, Role, Team, PlayerTeamImage
-from app.auth import require_role, hash_password, normalize_phone, require_login
+from app.auth import require_role, hash_password, normalize_phone
 
 router = APIRouter(prefix="/admin/players")
-profile_router = APIRouter(prefix="/players")
 templates = Jinja2Templates(directory="app/templates")
 staff_only = require_role(Role.super_admin, Role.admin)
 
@@ -205,15 +204,4 @@ def set_kit_image(
     return templates.TemplateResponse(
         "admin/players.html",
         {"request": request, "user": user, "players": players, "teams": teams, "message": "Kit image saved."},
-    )
-
-
-@profile_router.get("/{player_id}", response_class=HTMLResponse)
-def player_profile(
-    player_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)
-):
-    player = db.query(Player).filter(Player.id == player_id).first()
-    show_phone = user.role in (Role.super_admin, Role.admin)
-    return templates.TemplateResponse(
-        "players/profile.html", {"request": request, "player": player, "show_phone": show_phone}
     )

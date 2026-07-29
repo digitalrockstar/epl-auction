@@ -57,9 +57,6 @@ class Team(Base):
     captain_id = Column(Integer, ForeignKey("players.id"), nullable=True)
     purse_total = Column(Integer, default=0)   # total budget for player auction
     purse_spent = Column(Integer, default=0)
-    logo_url = Column(String, nullable=True)
-    primary_color = Column(String, nullable=True)
-    secondary_color = Column(String, nullable=True)
 
     manager = relationship("User", back_populates="managed_team", foreign_keys=[manager_id])
     captain = relationship("Player", foreign_keys=[captain_id], post_update=True)
@@ -152,7 +149,6 @@ class Auction(Base):
     current_bid = Column(Integer, default=0)
     current_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
     started_at = Column(DateTime, nullable=True)
-    last_action_at = Column(DateTime, nullable=True)
     closed_at = Column(DateTime, nullable=True)
 
     player = relationship("Player")
@@ -173,7 +169,6 @@ class Bid(Base):
 
     auction = relationship("Auction", back_populates="bids")
     team = relationship("Team")
-    entered_by = relationship("User")
 
 
 class Match(Base):

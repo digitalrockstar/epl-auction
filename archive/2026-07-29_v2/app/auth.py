@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from fastapi import Request, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -7,28 +6,6 @@ from app.database import get_db
 from app.models import User, Role
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-_LOGIN_ATTEMPTS: dict[str, list] = {}  # phone -> [count, locked_until]
-MAX_ATTEMPTS = 5
-LOCKOUT_MINUTES = 5
-
-
-def check_rate_limit(phone: str) -> str | None:
-    entry = _LOGIN_ATTEMPTS.get(phone)
-    if entry and entry[1] and datetime.utcnow() < entry[1]:
-        return f"Too many attempts, try again in a few minutes"
-    return None
-
-
-def record_failed_login(phone: str):
-    entry = _LOGIN_ATTEMPTS.setdefault(phone, [0, None])
-    entry[0] += 1
-    if entry[0] >= MAX_ATTEMPTS:
-        entry[1] = datetime.utcnow() + timedelta(minutes=LOCKOUT_MINUTES)
-
-
-def clear_login_attempts(phone: str):
-    _LOGIN_ATTEMPTS.pop(phone, None)
 
 
 def normalize_phone(raw: str) -> str:

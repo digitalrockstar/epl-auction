@@ -10,13 +10,10 @@ from sqlalchemy import text
 
 from app.database import Base, engine, get_db
 from app.models import User, Role
-from app.auth import verify_password, get_current_user, normalize_phone, check_rate_limit, record_failed_login, clear_login_attempts
+from app.auth import verify_password, get_current_user, normalize_phone
 from app.routes.admin import router as admin_router
-from app.routes.players import router as players_router, profile_router as players_profile_router
+from app.routes.players import router as players_router
 from app.routes.auction import router as auction_router
-from app.routes.manager import router as manager_router
-from app.routes.matches import router as matches_router
-from app.routes.spectator import router as spectator_router
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -40,11 +37,7 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(admin_router)
 app.include_router(players_router)
-app.include_router(players_profile_router)
 app.include_router(auction_router)
-app.include_router(manager_router)
-app.include_router(matches_router)
-app.include_router(spectator_router)
 
 
 @app.get("/healthz")
@@ -76,18 +69,11 @@ def login_submit(
     password: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    norm = normalize_phone(phone)
-    locked = check_rate_limit(norm)
-    if locked:
-        return templates.TemplateResponse("login.html", {"request": request, "error": locked})
-
-    user = db.query(User).filter(User.phone == norm).first()
+    user = db.query(User).filter(User.phone == normalize_phone(phone)).first()
     if not user or not verify_password(password, user.password_hash):
-        record_failed_login(norm)
         return templates.TemplateResponse(
             "login.html", {"request": request, "error": "Wrong phone number or password"}
         )
-    clear_login_attempts(norm)
     request.session["user_id"] = user.id
     return RedirectResponse("/", status_code=303)
 

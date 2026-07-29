@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Team{% endblock %}
+{% block content %}
+{% if not team %}
+<p>No team is assigned to your login yet.</p>
+{% else %}
+<h1 style="color:{{ team.primary_color }}">{{ team.name }}</h1>
+<p>Purse remaining: <strong>{{ team.purse_remaining }}</strong> / {{ team.purse_total }}
+   | Players bought: {{ team.players|length }} | Avg price: {{ avg_price }}</p>
+
+<p><a href="/bid-panel">Open live bid panel</a></p>
+
+<h3>Skill summary</h3>
+<ul>{% for skill, count in skill_counts.items() %}<li>{{ skill }}: {{ count }}</li>{% endfor %}</ul>
+
+<h3>Roster</h3>
+<table class="teams-table">
+    <thead><tr><th>Name</th><th>Skill</th><th>Sold price</th></tr></thead>
+    <tbody>
+        {% for p in team.players %}
+        <tr>
+            <td><a href="/players/{{ p.id }}">{{ p.user.name }}</a>{% if p.is_captain %} (C){% endif %}</td>
+            <td>{{ p.primary_skill or "-" }}</td>
+            <td>{{ p.sold_price or "-" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

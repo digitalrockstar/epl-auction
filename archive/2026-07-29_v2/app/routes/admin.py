@@ -4,14 +4,13 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Team, User, Role, Bid
+from app.models import Team, User, Role
 from app.auth import require_role, hash_password, normalize_phone
 
 router = APIRouter(prefix="/admin")
 templates = Jinja2Templates(directory="app/templates")
 
 super_admin_only = require_role(Role.super_admin)
-staff_only = require_role(Role.super_admin, Role.admin)
 
 
 @router.get("/teams", response_class=HTMLResponse)
@@ -27,9 +26,6 @@ def create_team(
     request: Request,
     name: str = Form(...),
     purse_total: int = Form(0),
-    logo_url: str = Form(""),
-    primary_color: str = Form("#3d6ef0"),
-    secondary_color: str = Form("#161a23"),
     db: Session = Depends(get_db),
     user: User = Depends(super_admin_only),
 ):
@@ -40,10 +36,7 @@ def create_team(
             "admin/_teams_list.html",
             {"request": request, "teams": teams, "error": f"Team '{name}' already exists"},
         )
-    team = Team(
-        name=name, purse_total=purse_total, logo_url=logo_url or None,
-        primary_color=primary_color, secondary_color=secondary_color,
-    )
+    team = Team(name=name, purse_total=purse_total)
     db.add(team)
     db.commit()
     teams = db.query(Team).order_by(Team.id).all()
@@ -95,9 +88,3 @@ def assign_manager(
     db.refresh(team)
 
     return templates.TemplateResponse("admin/_team_row.html", {"request": request, "team": team})
-
-
-@router.get("/audit", response_class=HTMLResponse)
-def audit_log(request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
-    bids = db.query(Bid).order_by(Bid.created_at.desc()).limit(200).all()
-    return templates.TemplateResponse("admin/audit.html", {"request": request, "user": user, "bids": bids})

@@ -15,32 +15,18 @@
 <div class="live-box">
     <img src="{{ live_photo }}" class="live-thumb" onerror="this.style.display='none'">
     <div>
-        <h2><a href="/players/{{ live.player.id }}">{{ live.player.user.name }}</a></h2>
+        <h2>{{ live.player.user.name }}</h2>
         <p>Base: {{ live.base_price }} | Current bid: <strong>{{ live.current_bid }}</strong>
            {% if live.current_team %} by {{ live.current_team.name }}{% endif %}
-           | Next bid: <strong>{{ min_next_bid }}</strong>
-           | Timer: <strong id="timer">{{ seconds_left }}</strong>s</p>
-
-        <div class="quick-bids">
-            {% for t in teams %}
-            <form method="post" action="/admin/auction/{{ live.id }}/bid" class="inline-form">
-                <input type="hidden" name="auction_type" value="{{ auction_type }}">
-                <input type="hidden" name="team_id" value="{{ t.id }}">
-                <input type="hidden" name="amount" value="{{ min_next_bid }}">
-                <button type="submit" {% if live.current_team_id == t.id %}disabled{% endif %}>
-                    {{ t.name }} @ {{ min_next_bid }} (left: {{ t.purse_remaining }})
-                </button>
-            </form>
-            {% endfor %}
-        </div>
+           | Next bid must be at least <strong>{{ min_next_bid }}</strong></p>
 
         <form method="post" action="/admin/auction/{{ live.id }}/bid" class="inline-form">
             <input type="hidden" name="auction_type" value="{{ auction_type }}">
             <select name="team_id" required>
-                {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                {% for t in teams %}<option value="{{ t.id }}">{{ t.name }} (purse left: {{ t.purse_remaining }})</option>{% endfor %}
             </select>
-            <input type="number" name="amount" placeholder="Custom amount">
-            <button type="submit">Record custom bid</button>
+            <input type="number" name="amount" placeholder="Bid amount" required>
+            <button type="submit">Record bid</button>
         </form>
 
         <form method="post" action="/admin/auction/{{ live.id }}/sold" class="inline-form">
@@ -51,17 +37,8 @@
             <input type="hidden" name="auction_type" value="{{ auction_type }}">
             <button type="submit">Mark UNSOLD</button>
         </form>
-        {% if can_undo %}
-        <form method="post" action="/admin/auction/{{ live.id }}/undo" class="inline-form">
-            <input type="hidden" name="auction_type" value="{{ auction_type }}">
-            <button type="submit">Undo last bid</button>
-        </form>
-        {% endif %}
     </div>
 </div>
-<script>
-setTimeout(() => location.reload(), 5000);
-</script>
 {% else %}
 <p>No player currently live. Pick one below to start.</p>
 <table class="teams-table">
@@ -69,11 +46,12 @@ setTimeout(() => location.reload(), 5000);
     <tbody>
         {% for p in pool %}
         <tr>
-            <td><a href="/players/{{ p.id }}">{{ p.user.name }}</a></td>
+            <td>{{ p.user.name }}</td>
             <td>{{ p.primary_skill or "-" }}</td>
             <td>
                 <form method="post" action="/admin/auction/start/{{ p.id }}" class="inline-form">
                     <input type="hidden" name="auction_type" value="{{ auction_type }}">
+                    <input type="number" name="base_price" value="0" style="width:90px">
                     <button type="submit">Start auction</button>
                 </form>
             </td>

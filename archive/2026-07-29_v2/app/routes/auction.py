@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -7,9 +7,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
 from app.auth import require_role, require_login
-from app.config import TIMER_SECONDS
-from app.bidding import next_bid_amount, purse_check, base_price_for
-from app.notify import notify
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -25,12 +22,7 @@ def _player_photo(db: Session, player: Player, team_id):
         )
         if img:
             return img.image_url
-        return f"/static/kits/{player.user.phone}_{team_id}.png"
     return player.profile_photo_url or ""
-
-
-def _players_bought(db: Session, team_id: int) -> int:
-    return db.query(Player).filter(Player.team_id == team_id).count()
 
 
 def _redirect(auction_type: str, msg: str = None):
@@ -38,37 +30,6 @@ def _redirect(auction_type: str, msg: str = None):
     if msg:
         url += f"&msg={msg}"
     return RedirectResponse(url=url, status_code=303)
-
-
-def _finalize_expired(db: Session, auction: Auction):
-    """Called opportunistically on every poll. If the timer's run out, resolve
-    the auction automatically: sold to the leader, or unsold if no bids."""
-    if not auction or auction.status != AuctionStatus.live:
-        return
-    deadline = (auction.last_action_at or auction.started_at) + timedelta(seconds=TIMER_SECONDS)
-    if datetime.utcnow() < deadline:
-        return
-
-    if auction.current_team_id:
-        team = db.query(Team).filter(Team.id == auction.current_team_id).first()
-        auction.status = AuctionStatus.sold
-        auction.closed_at = datetime.utcnow()
-        player = auction.player
-        player.sold_price = auction.current_bid
-        if auction.auction_type == AuctionType.captain:
-            player.is_captain = True
-            player.team_id = team.id
-            team.captain_id = player.id
-        else:
-            player.team_id = team.id
-        team.purse_spent = (team.purse_spent or 0) + auction.current_bid
-        db.commit()
-        notify(f"SOLD: {player.user.name} to {team.name} for {auction.current_bid}")
-    else:
-        auction.status = AuctionStatus.unsold
-        auction.closed_at = datetime.utcnow()
-        db.commit()
-        notify(f"UNSOLD: {auction.player.user.name} (timer expired, no bids)")
 
 
 @router.get("/admin/auction", response_class=HTMLResponse)
@@ -79,12 +40,9 @@ def auction_console(
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
-    _finalize_expired(db, live)
-    if live and live.status != AuctionStatus.live:
-        live = None
-
     a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+
     sold_ids = [row[0] for row in db.query(Auction.player_id).filter(Auction.status == AuctionStatus.sold)]
     query = db.query(Player).join(Player.user).filter(Player.id.notin_(sold_ids))
     if a_type == AuctionType.captain:
@@ -94,20 +52,16 @@ def auction_console(
 
     teams = db.query(Team).order_by(Team.id).all()
     live_photo = _player_photo(db, live.player, live.current_team_id) if live else None
-    min_next_bid = next_bid_amount(live) if live else None
-    seconds_left = None
+    min_next_bid = None
     if live:
-        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=TIMER_SECONDS)
-        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
-    can_undo = bool(live and live.bids)
+        min_next_bid = live.current_bid + 1 if live.current_team_id else live.base_price
 
     return templates.TemplateResponse(
         "admin/auction_console.html",
         {
             "request": request, "user": user, "live": live, "live_photo": live_photo,
             "pool": pool, "teams": teams, "auction_type": auction_type,
-            "msg": msg, "min_next_bid": min_next_bid, "seconds_left": seconds_left,
-            "timer_total": TIMER_SECONDS, "can_undo": can_undo,
+            "msg": msg, "min_next_bid": min_next_bid,
         },
     )
 
@@ -116,6 +70,7 @@ def auction_console(
 def start_auction(
     player_id: int,
     auction_type: str = Form(...),
+    base_price: int = Form(0),
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
@@ -127,13 +82,13 @@ def start_auction(
         return _redirect(auction_type, "Player not found")
     if player.team_id:
         return _redirect(auction_type, "Player already belongs to a team")
+    if base_price < 0:
+        return _redirect(auction_type, "Base price cannot be negative")
 
     a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
-    base_price = base_price_for(a_type)
-    now = datetime.utcnow()
     auction = Auction(
         auction_type=a_type, player_id=player_id, status=AuctionStatus.live,
-        base_price=base_price, current_bid=base_price, started_at=now, last_action_at=now,
+        base_price=base_price, current_bid=base_price, started_at=datetime.utcnow(),
     )
     db.add(auction)
     db.commit()
@@ -144,8 +99,8 @@ def start_auction(
 def place_bid(
     auction_id: int,
     team_id: int = Form(...),
+    amount: int = Form(...),
     auction_type: str = Form("player"),
-    amount: int = Form(None),
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
@@ -157,53 +112,16 @@ def place_bid(
     if not team:
         return _redirect(auction_type, "Team not found")
 
-    required = next_bid_amount(auction)
-    bid_amount = amount if amount else required
-    if bid_amount < required:
-        return _redirect(auction_type, f"Bid must be at least {required}")
+    floor = auction.current_bid + 1 if auction.current_team_id else auction.base_price
+    if amount < floor:
+        return _redirect(auction_type, f"Bid must be at least {floor}")
 
-    bought = _players_bought(db, team_id)
-    err = purse_check(team, auction.auction_type, bid_amount, bought)
-    if err:
-        return _redirect(auction_type, err)
+    if auction.auction_type == AuctionType.player and amount > team.purse_remaining:
+        return _redirect(auction_type, f"{team.name} only has {team.purse_remaining} left in purse")
 
-    db.add(Bid(auction_id=auction.id, team_id=team_id, amount=bid_amount, entered_by_admin_id=user.id))
-    auction.current_bid = bid_amount
+    db.add(Bid(auction_id=auction.id, team_id=team_id, amount=amount, entered_by_admin_id=user.id))
+    auction.current_bid = amount
     auction.current_team_id = team_id
-    auction.last_action_at = datetime.utcnow()
-    db.commit()
-    return _redirect(auction_type)
-
-
-@router.post("/admin/auction/{auction_id}/undo", response_class=HTMLResponse)
-def undo_bid(
-    auction_id: int,
-    auction_type: str = Form("player"),
-    db: Session = Depends(get_db),
-    user: User = Depends(staff_only),
-):
-    auction = db.query(Auction).filter(Auction.id == auction_id, Auction.status == AuctionStatus.live).first()
-    if not auction:
-        return _redirect(auction_type, "Auction already closed")
-
-    last_bid = (
-        db.query(Bid).filter(Bid.auction_id == auction.id).order_by(Bid.created_at.desc()).first()
-    )
-    if not last_bid:
-        return _redirect(auction_type, "No bids to undo")
-
-    db.delete(last_bid)
-    db.flush()
-    prev = (
-        db.query(Bid).filter(Bid.auction_id == auction.id).order_by(Bid.created_at.desc()).first()
-    )
-    if prev:
-        auction.current_bid = prev.amount
-        auction.current_team_id = prev.team_id
-    else:
-        auction.current_bid = auction.base_price
-        auction.current_team_id = None
-    auction.last_action_at = datetime.utcnow()
     db.commit()
     return _redirect(auction_type)
 
@@ -222,7 +140,7 @@ def mark_sold(
         return _redirect(auction_type, "No bids placed yet, cannot mark sold")
 
     team = db.query(Team).filter(Team.id == auction.current_team_id).first()
-    if auction.current_bid > team.purse_remaining:
+    if auction.auction_type == AuctionType.player and auction.current_bid > team.purse_remaining:
         return _redirect(auction_type, "Bid exceeds team's remaining purse, cannot finalize")
 
     auction.status = AuctionStatus.sold
@@ -236,9 +154,8 @@ def mark_sold(
         team.captain_id = player.id
     else:
         player.team_id = team.id
-    team.purse_spent = (team.purse_spent or 0) + auction.current_bid
+        team.purse_spent = (team.purse_spent or 0) + auction.current_bid
     db.commit()
-    notify(f"SOLD: {player.user.name} to {team.name} for {auction.current_bid}")
     return _redirect(auction_type)
 
 
@@ -255,39 +172,22 @@ def mark_unsold(
     auction.status = AuctionStatus.unsold
     auction.closed_at = datetime.utcnow()
     db.commit()
-    notify(f"UNSOLD: {auction.player.user.name}")
     return _redirect(auction_type)
-
-
-def _live_context(db: Session):
-    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
-    _finalize_expired(db, live)
-    if live and live.status != AuctionStatus.live:
-        live = None
-    photo = _player_photo(db, live.player, live.current_team_id) if live else None
-    seconds_left = None
-    if live:
-        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=TIMER_SECONDS)
-        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
-    teams = db.query(Team).order_by(Team.id).all()
-    return live, photo, seconds_left, teams
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams = _live_context(db)
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    photo = _player_photo(db, live.player, live.current_team_id) if live else None
     return templates.TemplateResponse(
-        "auction/live.html",
-        {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams, "fragment_url": "/auction/live/fragment"},
+        "auction/live.html", {"request": request, "live": live, "photo": photo}
     )
 
 
 @router.get("/auction/live/fragment", response_class=HTMLResponse)
 def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams = _live_context(db)
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    photo = _player_photo(db, live.player, live.current_team_id) if live else None
     return templates.TemplateResponse(
-        "auction/_live_fragment.html",
-        {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams},
+        "auction/_live_fragment.html", {"request": request, "live": live, "photo": photo}
     )
