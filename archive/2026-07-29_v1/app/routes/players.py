@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Player, User, Role, Team, PlayerTeamImage
-from app.auth import require_role, hash_password, normalize_phone
+from app.auth import require_role, hash_password
 
 router = APIRouter(prefix="/admin/players")
 templates = Jinja2Templates(directory="app/templates")
@@ -61,24 +61,14 @@ def import_registrations(
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    try:
-        content = file.file.read().decode("utf-8-sig")
-        reader = csv.DictReader(io.StringIO(content))
-        rows = list(reader)
-    except Exception:
-        players = db.query(Player).order_by(Player.id).all()
-        teams = db.query(Team).order_by(Team.id).all()
-        return templates.TemplateResponse(
-            "admin/players.html",
-            {"request": request, "user": user, "players": players, "teams": teams,
-             "message": "Could not read that file, make sure it's a valid CSV export."},
-        )
-
+    content = file.file.read().decode("utf-8-sig")
+    reader = csv.DictReader(io.StringIO(content))
     created, skipped = 0, 0
-    for row in rows:
-        phone = normalize_phone(row.get(REG_HEADERS["phone"]))
+
+    for row in reader:
+        phone = (row.get(REG_HEADERS["phone"]) or "").strip()
         name = (row.get(REG_HEADERS["name"]) or "").strip()
-        if not phone or not name or len(phone) != 10:
+        if not phone or not name:
             skipped += 1
             continue
 
@@ -126,22 +116,12 @@ def import_stats(
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    try:
-        content = file.file.read().decode("utf-8-sig")
-        reader = csv.DictReader(io.StringIO(content))
-        rows = list(reader)
-    except Exception:
-        players = db.query(Player).order_by(Player.id).all()
-        teams = db.query(Team).order_by(Team.id).all()
-        return templates.TemplateResponse(
-            "admin/players.html",
-            {"request": request, "user": user, "players": players, "teams": teams,
-             "message": "Could not read that file, make sure it's a valid CSV export."},
-        )
-
+    content = file.file.read().decode("utf-8-sig")
+    reader = csv.DictReader(io.StringIO(content))
     updated, unmatched = 0, 0
-    for row in rows:
-        phone = normalize_phone(row.get("Whatsapp Number") or row.get("phone") or "")
+
+    for row in reader:
+        phone = (row.get("Whatsapp Number") or row.get("phone") or "").strip()
         if not phone:
             unmatched += 1
             continue

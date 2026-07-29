@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Team, User, Role
-from app.auth import require_role, hash_password, normalize_phone
+from app.auth import require_role, hash_password
 
 router = APIRouter(prefix="/admin")
 templates = Jinja2Templates(directory="app/templates")
@@ -66,12 +66,6 @@ def assign_manager(
     user: User = Depends(super_admin_only),
 ):
     team = db.query(Team).filter(Team.id == team_id).first()
-    phone = normalize_phone(phone)
-    if len(phone) != 10:
-        return templates.TemplateResponse(
-            "admin/_manager_form.html",
-            {"request": request, "team": team, "error": "Enter a valid 10 digit phone number"},
-        )
 
     existing_phone = db.query(User).filter(User.phone == phone).first()
     if existing_phone:

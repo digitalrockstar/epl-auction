@@ -9,16 +9,13 @@
     <a href="/auction/live" target="_blank">Open TV view</a>
 </div>
 
-{% if msg %}<p class="error">{{ msg }}</p>{% endif %}
-
 {% if live %}
 <div class="live-box">
     <img src="{{ live_photo }}" class="live-thumb" onerror="this.style.display='none'">
     <div>
         <h2>{{ live.player.user.name }}</h2>
         <p>Base: {{ live.base_price }} | Current bid: <strong>{{ live.current_bid }}</strong>
-           {% if live.current_team %} by {{ live.current_team.name }}{% endif %}
-           | Next bid must be at least <strong>{{ min_next_bid }}</strong></p>
+           {% if live.current_team %} by {{ live.current_team.name }}{% endif %}</p>
 
         <form method="post" action="/admin/auction/{{ live.id }}/bid" class="inline-form">
             <input type="hidden" name="auction_type" value="{{ auction_type }}">

@@ -1,33 +1,21 @@
 import os
-import logging
 from fastapi import FastAPI, Request, Depends, Form
-from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 
 from app.database import Base, engine, get_db
 from app.models import User, Role
-from app.auth import verify_password, get_current_user, normalize_phone
+from app.auth import verify_password, get_current_user
 from app.routes.admin import router as admin_router
 from app.routes.players import router as players_router
 from app.routes.auction import router as auction_router
 
-logger = logging.getLogger("uvicorn.error")
-
 app = FastAPI(title="EPL Auction - Community Cricket")
 
-SESSION_SECRET = os.getenv("SESSION_SECRET")
-if not SESSION_SECRET:
-    logger.warning(
-        "SESSION_SECRET is not set, using an insecure default. "
-        "Set it as an env var before going live, or logins won't survive a redeploy."
-    )
-    SESSION_SECRET = "dev-secret-change-me"
-
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET", "dev-secret-change-me"))
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
@@ -38,15 +26,6 @@ Base.metadata.create_all(bind=engine)
 app.include_router(admin_router)
 app.include_router(players_router)
 app.include_router(auction_router)
-
-
-@app.get("/healthz")
-def healthz(db: Session = Depends(get_db)):
-    try:
-        db.execute(text("SELECT 1"))
-        return JSONResponse({"status": "ok"})
-    except Exception as e:
-        return JSONResponse({"status": "error", "detail": str(e)}, status_code=503)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -69,7 +48,7 @@ def login_submit(
     password: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.phone == normalize_phone(phone)).first()
+    user = db.query(User).filter(User.phone == phone).first()
     if not user or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
             "login.html", {"request": request, "error": "Wrong phone number or password"}

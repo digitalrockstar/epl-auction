@@ -8,15 +8,6 @@ from app.models import User, Role
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def normalize_phone(raw: str) -> str:
-    """Strips spaces, dashes, +91 country code, so numbers pasted in different
-    formats from WhatsApp/forms.app still match the same stored user."""
-    digits = "".join(ch for ch in (raw or "") if ch.isdigit())
-    if len(digits) > 10 and digits.startswith("91"):
-        digits = digits[-10:]
-    return digits
-
-
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
