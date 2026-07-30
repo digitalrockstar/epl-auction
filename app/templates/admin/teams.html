@@ -1,16 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Teams{% endblock %}
 {% block content %}
-<h1>Teams</h1>
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Setup</div>
+        <h1>Teams &amp; Managers</h1>
+        <p class="sub">Create teams, assign managers and configure team details.</p>
+    </div>
+</div>
 
-<form hx-post="/admin/teams" hx-target="#teams-wrap" hx-swap="innerHTML" class="add-team-form">
-    <input type="text" name="name" placeholder="Team name" required>
-    <input type="number" name="purse_total" placeholder="Purse (25,00,000)" value="2500000">
-    <input type="text" name="logo_url" placeholder="Logo URL (optional)">
-    <label>Primary <input type="color" name="primary_color" value="#3d6ef0"></label>
-    <label>Secondary <input type="color" name="secondary_color" value="#161a23"></label>
-    <button type="submit">Add team</button>
-</form>
+<div class="stat-grid">
+    <div class="stat-tile gold"><span class="value">{{ teams|length }}</span><span class="label">Teams Created</span></div>
+    <div class="stat-tile blue"><span class="value">{{ teams|selectattr("manager")|list|length }}</span><span class="label">Managers Assigned</span></div>
+    <div class="stat-tile green"><span class="value">₹{{ "{:,}".format(teams|sum(attribute="purse_total") if teams else 0) }}</span><span class="label">Total Purse (All Teams)</span></div>
+</div>
+
+<div class="panel" style="margin-bottom:22px;">
+    <div class="panel-title-row"><h3>Add team</h3></div>
+    <form hx-post="/admin/teams" hx-target="#teams-wrap" hx-swap="innerHTML" class="add-team-form">
+        <input type="text" name="name" placeholder="Team name" required>
+        <input type="number" name="purse_total" placeholder="Purse (25,00,000)" value="2500000">
+        <input type="text" name="logo_url" placeholder="Logo URL (optional, defaults to placeholder)">
+        <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">Primary <input type="color" name="primary_color" value="#e8ab2f"></label>
+        <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">Secondary <input type="color" name="secondary_color" value="#161a23"></label>
+        <button type="submit">+ Create Team</button>
+    </form>
+</div>
 
 <div id="teams-wrap">
     {% include "admin/_teams_list.html" %}

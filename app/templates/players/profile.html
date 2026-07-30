@@ -2,31 +2,88 @@
 {% block title %}{{ player.user.name if player else "Player" }}{% endblock %}
 {% block content %}
 {% if not player %}
-<p>Player not found.</p>
+<div class="empty-state panel"><p>Player not found.</p></div>
 {% else %}
-<div class="live-box">
-    <img src="{{ player.profile_photo_url or '' }}" class="live-thumb" onerror="this.style.display='none'">
-    <div>
-        <h1>{{ player.user.name }}{% if player.is_captain %} (Captain){% endif %}</h1>
-        {% if show_phone %}<p>{{ player.user.phone }}</p>{% endif %}
-        <p>{{ player.primary_skill or "-" }} | {{ player.batting_hand or "-" }} | {{ player.bowling_style or "-" }}
-           {% if player.is_wicketkeeper %} | WK{% endif %}</p>
-        <p>Experience: {{ player.experience_level or "-" }}</p>
-        {% if player.team %}<p>Team: {{ player.team.name }} (sold for {{ player.sold_price }})</p>{% endif %}
-        {% if player.brief %}<p>{{ player.brief }}</p>{% endif %}
+<div class="page-head-row">
+    <a href="javascript:history.back()" class="btn btn-outline btn-sm">&larr; Back to Players</a>
+</div>
 
-        {% if player.bat_matches or player.bowl_matches %}
-        <h3>Stats</h3>
-        <ul>
-            <li>Batting: {{ player.bat_matches or 0 }} matches, {{ player.bat_runs or 0 }} runs,
-                avg {{ player.bat_avg or 0 }}, SR {{ player.bat_sr or 0 }}</li>
-            <li>Bowling: {{ player.bowl_matches or 0 }} matches, {{ player.bowl_wickets or 0 }} wickets,
-                econ {{ player.bowl_economy or 0 }}</li>
-            <li>Fielding: {{ player.field_catches or 0 }} catches, {{ player.field_runouts or 0 }} run outs</li>
-            <li>Record: {{ player.matches_won or 0 }}-{{ player.matches_lost or 0 }} (W-L)</li>
-        </ul>
-        {% else %}
-        <p>No history</p>
+<div class="live-box" style="align-items:flex-start;">
+    <div class="player-photo-frame">
+        <img src="{{ player.profile_photo_url or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+        <span class="jersey-tag">#{{ player.id }}</span>
+    </div>
+    <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h1>{{ player.user.name }}{% if player.is_captain %} (Captain){% endif %}</h1>
+            {% if player.team %}<span class="badge badge-sold">Sold</span>{% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
+        </div>
+        {% if show_phone %}<p style="color:var(--text-muted);margin-top:4px;">{{ player.user.phone }}</p>{% endif %}
+
+        <div class="stat-grid" style="margin-top:16px;">
+            <div class="stat-tile gold"><span class="value" style="font-size:15px;">{{ player.primary_skill or "-" }}</span><span class="label">Role</span></div>
+            <div class="stat-tile blue"><span class="value" style="font-size:15px;">{{ player.batting_hand or "-" }}</span><span class="label">Batting Hand</span></div>
+            <div class="stat-tile blue"><span class="value" style="font-size:15px;">{{ player.bowling_style or "-" }}</span><span class="label">Bowling Style</span></div>
+            <div class="stat-tile green"><span class="value" style="font-size:15px;">{{ "Yes" if player.is_wicketkeeper else "No" }}</span><span class="label">Wicketkeeper</span></div>
+        </div>
+
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Experience: {{ player.experience_level or "-" }}</p>
+
+        {% if player.team %}
+        <div class="panel" style="margin-top:14px;background:var(--surface-2);">
+            <div class="team-name-row">
+                <img class="team-logo" src="{{ player.team.logo_url or '/static/img/placeholder_team_logo.svg' }}" onerror="this.src='/static/img/placeholder_team_logo.svg'">
+                <div>
+                    <b>Sold to {{ player.team.name }}</b>
+                    <p style="color:var(--gold);font-weight:800;font-size:18px;">₹{{ "{:,}".format(player.sold_price) if player.sold_price else "-" }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if player.brief %}
+        <div class="panel" style="margin-top:14px;">
+            <h3 style="margin-bottom:8px;">Player Bio</h3>
+            <p style="color:var(--text);font-style:italic;">&ldquo;{{ player.brief }}&rdquo;</p>
+        </div>
+        {% endif %}
+
+        <div class="panel" style="margin-top:14px;">
+            <h3 style="margin-bottom:12px;">Career Stats</h3>
+            {% if player.bat_matches or player.bowl_matches %}
+            <div class="stat-grid" style="margin-bottom:0;">
+                <div class="stat-tile"><span class="value">{{ player.bat_matches or 0 }}</span><span class="label">Matches</span></div>
+                <div class="stat-tile"><span class="value">{{ player.bat_runs or 0 }}</span><span class="label">Runs</span></div>
+                <div class="stat-tile"><span class="value">{{ player.bat_avg or 0 }}</span><span class="label">Avg</span></div>
+                <div class="stat-tile"><span class="value">{{ player.bat_sr or 0 }}</span><span class="label">Strike Rate</span></div>
+                <div class="stat-tile"><span class="value">{{ player.bowl_wickets or 0 }}</span><span class="label">Wickets</span></div>
+                <div class="stat-tile"><span class="value">{{ player.bowl_economy or 0 }}</span><span class="label">Economy</span></div>
+                <div class="stat-tile"><span class="value">{{ player.field_catches or 0 }}</span><span class="label">Catches</span></div>
+                <div class="stat-tile"><span class="value">{{ player.matches_won or 0 }}-{{ player.matches_lost or 0 }}</span><span class="label">W-L Record</span></div>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding:20px;">
+                <p>{{ "New Player" if not player.bat_matches and player.experience_level in (None, "", "Beginner") else "No history found" }} — stats will sync from CricHeroes once available.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if player.wants_captaincy %}
+        <div class="panel" style="margin-top:14px;background:var(--gold-soft);border-color:var(--gold);">
+            <span class="badge badge-gold">Captaincy Interest</span>
+            <p style="margin-top:6px;font-size:13px;">Willing to take leadership responsibility.</p>
+        </div>
+        {% endif %}
+
+        {% if show_phone %}
+        <div class="panel" style="margin-top:14px;">
+            <h3 style="margin-bottom:10px;">Staff actions</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="/admin/players" class="btn btn-outline btn-sm">Edit Player</a>
+                <a href="/admin/players" class="btn btn-outline btn-sm">Upload Kit Image</a>
+                <a href="/admin/audit" class="btn btn-outline btn-sm">View Audit History</a>
+            </div>
+        </div>
         {% endif %}
     </div>
 </div>

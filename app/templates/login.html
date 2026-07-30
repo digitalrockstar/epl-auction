@@ -1,15 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="login-box">
-    <h1>Season 3 Auction</h1>
-    {% if error %}<p class="error">{{ error }}</p>{% endif %}
-    <form method="post" action="/login">
-        <label>Phone number</label>
-        <input type="text" name="phone" required autofocus>
-        <label>Password</label>
-        <input type="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
+<div class="login-shell">
+    <div class="login-hero">
+        <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest" class="crest">
+        <h1>Legacy isn't given,<span class="accent">it's earned.</span></h1>
+        <p class="tag">The community IPL-style auction experience for Emmanuel Premier League. Bid. Build. Conquer.</p>
+        <div class="login-stats">
+            <div>52<span>Players</span></div>
+            <div>4<span>Teams</span></div>
+            <div>8<span>Matches</span></div>
+            <div>1<span>Champion</span></div>
+        </div>
+    </div>
+    <div class="login-panel">
+        <div class="login-box">
+            <h2>Welcome back!</h2>
+            <p class="hint">Sign in to continue</p>
+            {% if error %}<span class="error">{{ error }}</span>{% endif %}
+            <form method="post" action="/login">
+                <label>Phone number</label>
+                <input type="text" name="phone" placeholder="+91 98765 43210" required autofocus>
+                <label>Password</label>
+                <input type="password" name="password" required>
+                <button type="submit" class="btn-gold">Login</button>
+            </form>
+            <div class="divider-or">OR</div>
+            <a href="/spectator/live" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;">Continue as Guest (Spectator)</a>
+            <div class="login-note">
+                <span>After 5 failed attempts, login will be locked for 5 minutes.</span>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

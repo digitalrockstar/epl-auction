@@ -2,29 +2,62 @@
 {% block title %}My Team{% endblock %}
 {% block content %}
 {% if not team %}
-<p>No team is assigned to your login yet.</p>
+<div class="empty-state panel"><p>No team is assigned to your login yet. Contact the Super Admin.</p></div>
 {% else %}
-<h1 style="color:{{ team.primary_color }}">{{ team.name }}</h1>
-<p>Purse remaining: <strong>{{ team.purse_remaining }}</strong> / {{ team.purse_total }}
-   | Players bought: {{ team.players|length }} | Avg price: {{ avg_price }}</p>
+<div class="page-head">
+    <div class="eyebrow">Manager Portal</div>
+    <h1>My Team</h1>
+    <p class="sub">Manage your squad, view stats and track your team's performance.</p>
+</div>
 
-<p><a href="/bid-panel">Open live bid panel</a></p>
+<div class="hero-banner" style="border-top:4px solid {{ team.primary_color or '#e8ab2f' }};">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <img class="team-logo" style="width:56px;height:56px;" src="{{ team.logo_url or '/static/img/placeholder_team_logo.svg' }}" onerror="this.src='/static/img/placeholder_team_logo.svg'">
+            <div>
+                <h2 style="color:{{ team.primary_color or 'var(--gold)' }};">{{ team.name }}</h2>
+                <p style="margin-top:2px;">Manager: {{ team.manager.name if team.manager else "-" }} · Captain: {{ team.captain.user.name if team.captain else "Not yet" }}</p>
+            </div>
+        </div>
+        <a href="/bid-panel" class="btn-gold" style="width:auto;margin-top:0;">Open Live Bid Panel</a>
+    </div>
+</div>
 
-<h3>Skill summary</h3>
-<ul>{% for skill, count in skill_counts.items() %}<li>{{ skill }}: {{ count }}</li>{% endfor %}</ul>
+<div class="stat-grid">
+    <div class="stat-tile gold"><span class="value">₹{{ "{:,}".format(team.purse_remaining) }}</span><span class="label">Purse Remaining</span></div>
+    <div class="stat-tile blue"><span class="value">{{ team.players|length }} / 13</span><span class="label">Squad Size</span></div>
+    <div class="stat-tile green"><span class="value">₹{{ "{:,}".format(avg_price) }}</span><span class="label">Average Purchase</span></div>
+    <div class="stat-tile gold"><span class="value">₹{{ "{:,}".format(team.purse_spent) }}</span><span class="label">Team Value</span></div>
+</div>
 
-<h3>Roster</h3>
-<table class="teams-table">
-    <thead><tr><th>Name</th><th>Skill</th><th>Sold price</th></tr></thead>
+<h3 style="margin-bottom:12px;">Skill composition</h3>
+<div class="tile-grid">
+    {% for skill, count in skill_counts.items() %}
+    <div class="quick-tile"><b>{{ count }}</b><span>{{ skill }}</span></div>
+    {% else %}
+    <p style="color:var(--text-muted);font-size:13px;">No players bought yet.</p>
+    {% endfor %}
+</div>
+
+<div class="panel-title-row"><h3>Squad ({{ team.players|length }} players)</h3></div>
+<div class="table-wrap">
+<table class="data-table">
+    <thead><tr><th>Player</th><th>Skill</th><th>Sold price</th></tr></thead>
     <tbody>
         {% for p in team.players %}
         <tr>
-            <td><a href="/players/{{ p.id }}">{{ p.user.name }}</a>{% if p.is_captain %} (C){% endif %}</td>
+            <td>
+                <img class="avatar-sm" src="{{ p.profile_photo_url or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+                <a href="/players/{{ p.id }}">{{ p.user.name }}</a>{% if p.is_captain %} <span class="badge badge-gold">C</span>{% endif %}
+            </td>
             <td>{{ p.primary_skill or "-" }}</td>
-            <td>{{ p.sold_price or "-" }}</td>
+            <td style="font-weight:700;color:var(--gold);">{{ "₹{:,}".format(p.sold_price) if p.sold_price else "-" }}</td>
         </tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;">No players bought yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endif %}
 {% endblock %}

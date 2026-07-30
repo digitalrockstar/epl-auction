@@ -1,16 +1,26 @@
-<tr id="team-row-{{ team.id }}">
-    <td colspan="4">
-        <form
-            hx-post="/admin/teams/{{ team.id }}/manager"
-            hx-target="#team-row-{{ team.id }}"
-            hx-swap="outerHTML"
-            class="inline-form">
-            <strong>{{ team.name }}</strong> manager:
-            <input type="text" name="name" placeholder="Full name" required>
-            <input type="text" name="phone" placeholder="Phone" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Save</button>
-            {% if error %}<span class="error">{{ error }}</span>{% endif %}
-        </form>
-    </td>
-</tr>
+<div class="team-card" id="team-row-{{ team.id }}">
+    <div class="team-name-row">
+        <img class="team-logo" src="{{ team.logo_url or '/static/img/placeholder_team_logo.svg' }}" alt="{{ team.name }} logo" onerror="this.src='/static/img/placeholder_team_logo.svg'">
+        <div class="team-name">{{ team.name }}</div>
+    </div>
+    <form
+        hx-post="/admin/teams/{{ team.id }}/manager"
+        hx-target="#team-row-{{ team.id }}"
+        hx-swap="outerHTML"
+        class="stack">
+        {% if error %}<span class="error">{{ error }}</span>{% endif %}
+        <div>
+            <span class="field-label">Manager name</span>
+            <input type="text" name="name" placeholder="Full name" required style="width:100%;">
+        </div>
+        <div>
+            <span class="field-label">Phone</span>
+            <input type="text" name="phone" placeholder="10-digit phone" required style="width:100%;">
+        </div>
+        <div>
+            <span class="field-label">Password</span>
+            <input type="password" name="password" placeholder="Login password" required style="width:100%;">
+        </div>
+        <button type="submit" class="btn-block">Save manager</button>
+    </form>
+</div>

@@ -1,72 +1,88 @@
 {% extends "base.html" %}
 {% block title %}Matches{% endblock %}
 {% block content %}
-<h1>Matches & Points Table</h1>
+<div class="page-head">
+    <div class="eyebrow">Auction</div>
+    <h1>Matches &amp; Points Table</h1>
+    <p class="sub">Not part of the v2 screens yet — kept functional, light styling only.</p>
+</div>
 
-<h3>Schedule a match</h3>
-<form method="post" action="/admin/matches" class="inline-form">
-    <input type="number" name="match_number" placeholder="Match #" required style="width:80px">
-    <select name="match_type">
-        <option value="league">League</option>
-        <option value="qualifier">Qualifier</option>
-        <option value="final">Final</option>
-    </select>
-    <select name="team_a_id" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
-    vs
-    <select name="team_b_id" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
-    <input type="datetime-local" name="match_date" required>
-    <input type="number" name="ground_fee" value="8500" style="width:100px">
-    <button type="submit">Schedule</button>
-</form>
+<div class="panel" style="margin-bottom:22px;">
+    <div class="panel-title-row"><h3>Schedule a match</h3></div>
+    <form method="post" action="/admin/matches" class="inline-form">
+        <input type="number" name="match_number" placeholder="Match #" required style="width:80px">
+        <select name="match_type">
+            <option value="league">League</option>
+            <option value="qualifier">Qualifier</option>
+            <option value="final">Final</option>
+        </select>
+        <select name="team_a_id" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
+        <span style="color:var(--text-muted);">vs</span>
+        <select name="team_b_id" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
+        <input type="datetime-local" name="match_date" required>
+        <input type="number" name="ground_fee" value="8500" style="width:110px">
+        <button type="submit">Schedule</button>
+    </form>
+</div>
 
-<h3>Matches</h3>
-<table class="teams-table">
+<div class="panel-title-row"><h3>Matches</h3></div>
+<div class="table-wrap" style="margin-bottom:22px;">
+<table class="data-table">
     <thead><tr><th>#</th><th>Type</th><th>Teams</th><th>Date</th><th>Result</th></tr></thead>
     <tbody>
         {% for m in matches %}
         <tr>
             <td>{{ m.match_number }}</td>
-            <td>{{ m.match_type }}</td>
+            <td><span class="badge badge-gold">{{ m.match_type }}</span></td>
             <td>{{ m.team_a.name }} vs {{ m.team_b.name }}</td>
-            <td>{{ m.match_date.strftime("%d %b, %H:%M") }}</td>
+            <td style="color:var(--text-muted);">{{ m.match_date.strftime("%d %b, %H:%M") }}</td>
             <td>
-                {% if m.winner %}{{ m.winner.name }} won
+                {% if m.winner %}<span class="badge badge-sold">{{ m.winner.name }} won</span>
                 {% else %}
-                <form method="post" action="/admin/matches/{{ m.id }}/result" class="inline-form">
+                <form method="post" action="/admin/matches/{{ m.id }}/result" class="inline-form" style="margin-bottom:6px;">
                     <select name="winner_team_id">
                         <option value="{{ m.team_a_id }}">{{ m.team_a.name }}</option>
                         <option value="{{ m.team_b_id }}">{{ m.team_b.name }}</option>
                     </select>
-                    <button type="submit">Record</button>
+                    <button type="submit" class="btn-sm">Record</button>
                 </form>
                 {% endif %}
-                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="inline-form">
+                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="inline-form" style="margin-bottom:0;">
                     <input type="text" name="player_ids" placeholder="Player IDs, comma separated (Playing XI)">
-                    <button type="submit">Save XI</button>
+                    <button type="submit" class="btn-sm btn-outline">Save XI</button>
                 </form>
             </td>
         </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No matches scheduled yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 
-<h3>Points Table</h3>
-<table class="teams-table">
+<div class="panel-title-row"><h3>Points Table</h3></div>
+<div class="table-wrap" style="margin-bottom:22px;">
+<table class="data-table">
     <thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Points</th></tr></thead>
     <tbody>
         {% for row in points_table %}
-        <tr><td>{{ row.team.name }}</td><td>{{ row.played }}</td><td>{{ row.won }}</td><td>{{ row.lost }}</td><td>{{ row.points }}</td></tr>
+        <tr><td>{{ row.team.name }}</td><td>{{ row.played }}</td><td>{{ row.won }}</td><td>{{ row.lost }}</td><td style="font-weight:700;color:var(--gold);">{{ row.points }}</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 
-<h3>Under minimum 2 games</h3>
-<table class="teams-table">
+<div class="panel-title-row"><h3>Under minimum 2 games</h3></div>
+<div class="table-wrap">
+<table class="data-table">
     <thead><tr><th>Player</th><th>Team</th><th>Games played</th></tr></thead>
     <tbody>
         {% for p in under_min %}
         <tr><td>{{ p.user.name }}</td><td>{{ p.team.name if p.team else "-" }}</td><td>{{ xi_counts.get(p.id, 0) }}</td></tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;">Everyone's met the minimum, or no players sold yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

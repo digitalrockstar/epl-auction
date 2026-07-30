@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Auction{% endblock %} · Season 3</title>
+    <title>{% block title %}Auction{% endblock %} · EPL Season 3</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -12,15 +12,17 @@
     {% if user %}
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="14" width="8" height="3" rx="1" transform="rotate(-35 3 14)" fill="var(--accent)"/>
-                <rect x="9" y="8" width="10" height="4" rx="1.2" transform="rotate(-35 9 8)" fill="var(--accent)"/>
-                <rect x="2" y="19.5" width="9" height="2" rx="1" fill="var(--text-muted)"/>
-            </svg>
-            <span>Season 3</span>
+            <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">
+            <div class="brand-text">
+                <div class="brand-title">EMMANUEL PREMIER LEAGUE</div>
+                <div class="brand-sub">Season 3 · {{ user.role.value.replace('_', ' ') }}</div>
+            </div>
         </div>
         <nav class="nav">
-            <a href="/" class="{{ 'active' if request.url.path == '/' }}">Dashboard</a>
+            <a href="/" class="{{ 'active' if request.url.path == '/' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+                Dashboard
+            </a>
 
             {% if user.role.value == "super_admin" %}
             <div class="nav-group">Setup</div>
@@ -47,8 +49,11 @@
         </nav>
         <div class="sidebar-footer">
             <div class="user-chip">
-                <span class="user-name">{{ user.name }}</span>
-                <span class="user-role">{{ user.role.value.replace('_', ' ') }}</span>
+                <div class="user-avatar">{{ user.name[:1]|upper }}</div>
+                <div>
+                    <span class="user-name">{{ user.name }}</span>
+                    <span class="user-role">{{ user.role.value.replace('_', ' ') }}</span>
+                </div>
             </div>
             <a href="/logout" class="logout-link">Log out</a>
         </div>
@@ -66,6 +71,43 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+
+    {% if user %}
+    <nav class="mobile-tabbar">
+        <a href="/" class="{{ 'active' if request.url.path == '/' }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+            Home
+        </a>
+        {% if user.role.value in ("super_admin", "admin") %}
+        <a href="/admin/players" class="{{ 'active' if '/admin/players' in request.url.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="18" cy="8" r="2"/></svg>
+            Players
+        </a>
+        <a href="/admin/auction" class="{{ 'active' if '/admin/auction' in request.url.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6M6 20l8-8M2 22l4-4"/><path d="M9 7l4-4 4 4-4 4z"/></svg>
+            Auction
+        </a>
+        <a href="/admin/teams" class="{{ 'active' if '/admin/teams' in request.url.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Teams
+        </a>
+        {% endif %}
+        {% if user.role.value in ("manager", "captain") %}
+        <a href="/my-team" class="{{ 'active' if request.url.path == '/my-team' }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            My Team
+        </a>
+        <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6M6 20l8-8M2 22l4-4"/><path d="M9 7l4-4 4 4-4 4z"/></svg>
+            Bid
+        </a>
+        {% endif %}
+        <a href="/logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            More
+        </a>
+    </nav>
+    {% endif %}
 </div>
 <script>
 document.getElementById('navToggle')?.addEventListener('click', () => {

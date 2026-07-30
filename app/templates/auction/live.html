@@ -2,12 +2,24 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Live Auction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auction · EPL Season 3</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/tv.css">
 </head>
 <body class="tv-body" hx-get="{{ fragment_url }}" hx-trigger="every 1s" hx-target="#tv-wrap" hx-swap="innerHTML">
+    <div class="tv-topbar">
+        <div class="tv-brand">
+            <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">
+            EMMANUEL PREMIER LEAGUE
+        </div>
+        <div class="tv-title">LIVE <span class="accent">AUCTION</span></div>
+        <div class="tv-meta">
+            <span><b>{{ teams|length }}</b> Teams</span>
+            <span class="badge badge-live">Live</span>
+        </div>
+    </div>
     <div id="tv-wrap">
         {% include "auction/_live_fragment.html" %}
     </div>

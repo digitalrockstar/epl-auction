@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.database import Base, engine, get_db
-from app.models import User, Role
+from app.models import User, Role, Team, Player, Bid, Auction, AuctionStatus
 from app.auth import verify_password, get_current_user, normalize_phone, check_rate_limit, record_failed_login, clear_login_attempts
 from app.routes.admin import router as admin_router
 from app.routes.players import router as players_router, profile_router as players_profile_router
@@ -61,7 +61,31 @@ def home(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     if not user:
         return RedirectResponse("/login")
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+
+    ctx = {"request": request, "user": user}
+
+    if user.role in (Role.super_admin, Role.admin):
+        total_players = db.query(Player).count()
+        sold = db.query(Player).filter(Player.team_id.isnot(None)).count()
+        teams = db.query(Team).order_by(Team.id).all()
+        total_purse = sum((t.purse_total or 0) for t in teams)
+        spent_purse = sum((t.purse_spent or 0) for t in teams)
+        recent_bids = db.query(Bid).order_by(Bid.created_at.desc()).limit(5).all()
+        live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+        ctx.update({
+            "total_players": total_players,
+            "sold": sold,
+            "unsold": max(total_players - sold, 0),
+            "teams": teams,
+            "total_teams": len(teams),
+            "total_purse": total_purse,
+            "spent_purse": spent_purse,
+            "remaining_purse": total_purse - spent_purse,
+            "recent_bids": recent_bids,
+            "live": live,
+        })
+
+    return templates.TemplateResponse("dashboard.html", ctx)
 
 
 @app.get("/login", response_class=HTMLResponse)

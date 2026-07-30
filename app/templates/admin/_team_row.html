@@ -1,17 +1,35 @@
-<tr id="team-row-{{ team.id }}">
-    <td><span class="swatch" style="background:{{ team.primary_color or '#3d6ef0' }}"></span> {{ team.name }}</td>
-    <td>{{ team.purse_total }}</td>
-    <td>
-        {% if team.manager %}
-            {{ team.manager.name }} ({{ team.manager.phone }})
+<div class="team-card" id="team-row-{{ team.id }}" style="border-top-color:{{ team.primary_color or '#e8ab2f' }};">
+    <div class="team-card-head">
+        <div class="team-name-row">
+            <img class="team-logo" src="{{ team.logo_url or '/static/img/placeholder_team_logo.svg' }}" alt="{{ team.name }} logo" onerror="this.src='/static/img/placeholder_team_logo.svg'">
+            <div>
+                <div class="team-name">{{ team.name }}</div>
+                <div class="team-meta">
+                    <span>Manager: {{ team.manager.name if team.manager else "Not assigned" }}</span>
+                    <span>Captain: {{ team.captain.user.name if team.captain else "Not yet" }}</span>
+                </div>
+            </div>
+        </div>
+        <span class="badge badge-active">Active</span>
+    </div>
+
+    <div class="team-stats">
+        <div><b>₹{{ "{:,}".format(team.purse_remaining) }}</b><span>Purse Left</span></div>
+        <div><b>{{ team.players|length }}</b><span>Players</span></div>
+        <div><b>{{ team.purse_remaining and "Open" or "Full" }}</b><span>Status</span></div>
+    </div>
+
+    <div class="team-actions">
+        {% if not team.manager %}
+        <button
+            class="btn btn-outline btn-sm"
+            hx-get="/admin/teams/{{ team.id }}/manager-form"
+            hx-target="#team-row-{{ team.id }}"
+            hx-swap="outerHTML">
+            Assign manager
+        </button>
         {% else %}
-            <button
-                hx-get="/admin/teams/{{ team.id }}/manager-form"
-                hx-target="#team-row-{{ team.id }}"
-                hx-swap="outerHTML">
-                Assign manager
-            </button>
+        <span class="badge badge-gold" style="padding:8px 12px;">{{ team.manager.phone }}</span>
         {% endif %}
-    </td>
-    <td>{{ "Yes" if team.captain else "Not yet" }}</td>
-</tr>
+    </div>
+</div>

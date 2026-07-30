@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8ab2f"/>
+      <stop offset="1" stop-color="#c98f1f"/>
+    </linearGradient>
+  </defs>
+  <path d="M50 4 L92 20 V50 C92 74 74 92 50 98 C26 92 8 74 8 50 V20 Z" fill="#14161d" stroke="url(#g)" stroke-width="3"/>
+  <text x="50" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="26" fill="url(#g)">EPL</text>
+  <text x="50" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" letter-spacing="1" fill="#8b90a0">SEASON 3</text>
+</svg>

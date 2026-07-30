@@ -1,19 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Audit Log{% endblock %}
 {% block content %}
-<h1>Audit Log</h1>
-<table class="teams-table">
+<div class="page-head">
+    <div class="eyebrow">Auction</div>
+    <h1>Audit Log</h1>
+    <p class="sub">Complete activity log of the auction, full transparency, nothing overwritten.</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-tile gold"><span class="value">{{ bids|length }}</span><span class="label">Bids Shown</span></div>
+    <div class="stat-tile green"><span class="value">{{ bids|map(attribute="auction_id")|unique|list|length }}</span><span class="label">Auctions Involved</span></div>
+    <div class="stat-tile blue"><span class="value">₹{{ "{:,}".format(bids|sum(attribute="amount") if bids else 0) }}</span><span class="label">Total Bid Value Shown</span></div>
+</div>
+
+<div class="table-wrap">
+<table class="data-table">
     <thead><tr><th>Time</th><th>Player</th><th>Team</th><th>Amount</th><th>Entered by</th></tr></thead>
     <tbody>
         {% for b in bids %}
         <tr>
-            <td>{{ b.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td style="color:var(--text-muted);">{{ b.created_at.strftime("%d %b, %I:%M %p") }}</td>
             <td>{{ b.auction.player.user.name if b.auction and b.auction.player else "-" }}</td>
-            <td>{{ b.team.name }}</td>
-            <td>{{ b.amount }}</td>
+            <td><span class="swatch" style="background:{{ b.team.primary_color or '#e8ab2f' }}"></span>{{ b.team.name }}</td>
+            <td style="font-weight:700;color:var(--gold);">₹{{ "{:,}".format(b.amount) }}</td>
             <td>{{ b.entered_by.name if b.entered_by else "-" }}</td>
         </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px;">No bids recorded yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

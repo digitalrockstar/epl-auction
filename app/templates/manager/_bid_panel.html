@@ -1,17 +1,39 @@
 {% if not live %}
-<p>No auction is live right now.</p>
+<div class="empty-state panel"><p>No auction is live right now. Check back once bidding starts.</p></div>
 {% else %}
-<div class="live-box">
-    <img src="{{ photo }}" class="live-thumb" onerror="this.style.display='none'">
-    <div>
-        <h2>{{ live.player.user.name }}</h2>
-        <p>Current bid: <strong>{{ live.current_bid }}</strong>
-           {% if live.current_team %} by {{ live.current_team.name }}{% endif %}</p>
-        <p>Your next bid: <strong>{{ next_amount }}</strong></p>
+<div class="hero-banner" style="border-top:4px solid {{ team.primary_color if team else '#e8ab2f' }};">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+        <div><h2>{{ team.name if team else "Spectator" }}</h2><p>{{ "You are bidding" if team else "" }}</p></div>
+        <div style="text-align:right;">
+            <span class="field-label">Purse Remaining</span>
+            <div style="font-size:20px;font-weight:800;color:var(--gold);">₹{{ "{:,}".format(team.purse_remaining) if team else "-" }}</div>
+        </div>
+    </div>
+</div>
 
-        <form method="post" action="/bid-panel/bid">
-            <button type="submit" {% if disabled %}disabled{% endif %}>
-                {% if disabled %}{{ disabled_reason }}{% else %}Bid {{ next_amount }}{% endif %}
+<div class="live-box">
+    <div class="player-photo-frame">
+        <img src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+        <span class="jersey-tag">#{{ live.player.id }}</span>
+    </div>
+    <div style="flex:1;">
+        <h2>{{ live.player.user.name }}</h2>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · Base ₹{{ "{:,}".format(live.base_price) }}</p>
+
+        <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
+            <div>
+                <span class="field-label">Current Bid</span>
+                <div style="font-size:22px;font-weight:800;color:var(--gold);">₹{{ "{:,}".format(live.current_bid) }}</div>
+            </div>
+            <div>
+                <span class="field-label">Highest Bidder</span>
+                <div style="font-size:15px;font-weight:700;">{{ live.current_team.name if live.current_team else "No bids yet" }}</div>
+            </div>
+        </div>
+
+        <form method="post" action="/bid-panel/bid" style="margin-top:20px;">
+            <button type="submit" class="btn-gold" {% if disabled %}disabled{% endif %}>
+                {% if disabled %}{{ disabled_reason }}{% else %}BID ₹{{ "{:,}".format(next_amount) }}{% endif %}
             </button>
         </form>
     </div>

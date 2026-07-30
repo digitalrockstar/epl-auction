@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Bid Panel{% endblock %}
 {% block content %}
-<h1>Live Bid Panel</h1>
+<div class="page-head">
+    <div class="eyebrow">Manager Portal</div>
+    <h1>Live Bid Panel</h1>
+</div>
 <div id="panel-wrap" hx-get="/bid-panel/fragment" hx-trigger="load, every 2s" hx-swap="innerHTML"></div>
 {% endblock %}

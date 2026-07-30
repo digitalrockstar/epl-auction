@@ -1,45 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Players{% endblock %}
 {% block content %}
-<h1>Players</h1>
-{% if message %}<p class="msg">{{ message }}</p>{% endif %}
-
-<div class="import-row">
-    <form method="post" action="/admin/players/import-registrations" enctype="multipart/form-data" class="inline-form">
-        <label>Registrations CSV (forms.app export)</label>
-        <input type="file" name="file" accept=".csv" required>
-        <button type="submit">Import registrations</button>
-    </form>
-    <form method="post" action="/admin/players/import-stats" enctype="multipart/form-data" class="inline-form">
-        <label>CricHeroes stats CSV</label>
-        <input type="file" name="file" accept=".csv" required>
-        <button type="submit">Import stats</button>
-    </form>
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Manage</div>
+        <h1>Players</h1>
+        <p class="sub">Manage all registered players and their auction details.</p>
+    </div>
 </div>
 
-<table class="teams-table">
+{% if message %}<span class="msg">{{ message }}</span>{% endif %}
+
+{% set sold_count = players|selectattr("team")|list|length %}
+<div class="stat-grid">
+    <div class="stat-tile gold"><span class="value">{{ players|length }}</span><span class="label">Total Players</span></div>
+    <div class="stat-tile green"><span class="value">{{ sold_count }}</span><span class="label">Sold</span></div>
+    <div class="stat-tile blue"><span class="value">{{ players|length - sold_count }}</span><span class="label">Unsold</span></div>
+    <div class="stat-tile gold"><span class="value">{{ players|selectattr("wants_captaincy")|list|length }}</span><span class="label">Captain Interest</span></div>
+</div>
+
+<div class="panel" style="margin-bottom:22px;">
+    <div class="import-row">
+        <form method="post" action="/admin/players/import-registrations" enctype="multipart/form-data" class="inline-form" style="margin-bottom:0;">
+            <span class="field-label" style="margin:0;">Registrations CSV</span>
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit" class="btn-outline btn-sm">Import Registrations</button>
+        </form>
+        <form method="post" action="/admin/players/import-stats" enctype="multipart/form-data" class="inline-form" style="margin-bottom:0;">
+            <span class="field-label" style="margin:0;">CricHeroes Stats CSV</span>
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit" class="btn-outline btn-sm">Import Stats</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-wrap">
+<table class="data-table">
     <thead>
-        <tr><th>Name</th><th>Phone</th><th>Skill</th><th>Captain?</th><th>Team</th><th>Kit images</th></tr>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>Kit image</th></tr>
     </thead>
     <tbody>
         {% for p in players %}
         <tr>
-            <td>{{ p.user.name }}</td>
-            <td>{{ p.user.phone }}</td>
+            <td>
+                <img class="avatar-sm" src="{{ p.profile_photo_url or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+                <a href="/players/{{ p.id }}">{{ p.user.name }}</a>
+            </td>
             <td>{{ p.primary_skill or "-" }}</td>
+            <td style="color:var(--text-muted);font-size:12.5px;">{{ p.batting_hand or "-" }} / {{ p.bowling_style or "-" }}</td>
             <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
             <td>{{ p.team.name if p.team else "-" }}</td>
             <td>
-                <form method="post" action="/admin/players/{{ p.id }}/kit-image" class="inline-form">
+                {% if p.team %}<span class="badge badge-sold">Sold</span>
+                {% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
+            </td>
+            <td>
+                <form method="post" action="/admin/players/{{ p.id }}/kit-image" class="inline-form" style="margin-bottom:0;">
                     <select name="team_id">
                         {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
                     </select>
-                    <input type="text" name="image_url" placeholder="Image URL" required>
-                    <button type="submit">Save</button>
+                    <input type="text" name="image_url" placeholder="placeholder_kit_image path" required style="width:150px;">
+                    <button type="submit" class="btn-sm">Save</button>
                 </form>
             </td>
         </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet. Import a registrations CSV above.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

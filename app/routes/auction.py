@@ -266,28 +266,32 @@ def _live_context(db: Session):
         live = None
     photo = _player_photo(db, live.player, live.current_team_id) if live else None
     seconds_left = None
+    recent_bids = []
     if live:
         deadline = (live.last_action_at or live.started_at) + timedelta(seconds=TIMER_SECONDS)
         seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
+        recent_bids = (
+            db.query(Bid).filter(Bid.auction_id == live.id).order_by(Bid.created_at.desc()).limit(6).all()
+        )
     teams = db.query(Team).order_by(Team.id).all()
-    return live, photo, seconds_left, teams
+    return live, photo, seconds_left, teams, recent_bids
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids = _live_context(db)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams, "fragment_url": "/auction/live/fragment"},
+         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids, "fragment_url": "/auction/live/fragment"},
     )
 
 
 @router.get("/auction/live/fragment", response_class=HTMLResponse)
 def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids = _live_context(db)
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams},
+         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids},
     )
