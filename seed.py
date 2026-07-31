@@ -51,6 +51,32 @@ if db.query(Team).count() == 0:
 else:
     print("Teams already exist, skipping sample teams.")
 
+# ---- Sample managers, one per team (placeholder phones - swap for real numbers before going live) ----
+MANAGERS = [
+    ("Spartans", "Adarsh S", "9800011111", "111"),
+    ("Titans", "Pavan T", "9800022222", "222"),
+    ("Warriors", "Hitesh P", "9800033333", "333"),
+    ("Yoddhas", "Manish KS", "9800044444", "444"),
+]
+for team_name, mgr_name, phone, password in MANAGERS:
+    team = db.query(Team).filter(Team.name == team_name).first()
+    if not team:
+        print(f"Skipped {mgr_name}: team '{team_name}' doesn't exist yet.")
+        continue
+    if team.manager_id:
+        print(f"Skipped {mgr_name}: {team_name} already has a manager.")
+        continue
+    if db.query(User).filter(User.phone == phone).first():
+        print(f"Skipped {mgr_name}: phone {phone} is already registered to someone else.")
+        continue
+
+    mgr = User(name=mgr_name, phone=phone, password_hash=hash_password(password), role=Role.manager)
+    db.add(mgr)
+    db.flush()  # need mgr.id before we can point team.manager_id at it
+    team.manager_id = mgr.id
+    print(f"Created manager for {team_name}. Phone: {phone}  Password: {password}")
+db.commit()
+
 # ---- Sample players (mix of stats-available and brand-new / blank) ----
 SAMPLE_PLAYERS = [
     dict(name="Rohan Sharma", phone="9800000001", primary_skill="BAT - Batsman", batting_hand="Right Hand",
