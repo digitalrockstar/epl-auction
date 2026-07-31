@@ -32,7 +32,7 @@ if not SESSION_SECRET:
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 
 # Creates tables on startup if they don't exist. Fine for this scale, swap for
 # alembic migrations later if the schema needs to evolve without data loss.

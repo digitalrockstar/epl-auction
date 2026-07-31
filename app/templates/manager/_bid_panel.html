@@ -13,7 +13,8 @@
 
 <div class="live-box">
     <div class="player-photo-frame">
-        <img src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+        <img id="bid-photo-{{ live.player_id }}-{{ live.current_team_id or 0 }}" hx-preserve="true"
+             src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
         <span class="jersey-tag">#{{ live.player.id }}</span>
     </div>
     <div style="flex:1;">

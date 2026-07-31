@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from datetime import datetime
 from collections import defaultdict
@@ -10,7 +9,7 @@ from app.models import Match, PlayingXI, Team, Player, User, Role
 from app.auth import require_role
 
 router = APIRouter(prefix="/admin/matches")
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 staff_only = require_role(Role.super_admin, Role.admin)
 
 

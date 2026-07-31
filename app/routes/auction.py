@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,21 +11,16 @@ from app.bidding import next_bid_amount, purse_check, base_price_for
 from app.notify import notify
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 staff_only = require_role(Role.super_admin, Role.admin)
 
 
+from app.images import resolve_player_photo
+
+
 def _player_photo(db: Session, player: Player, team_id):
-    if team_id:
-        img = (
-            db.query(PlayerTeamImage)
-            .filter(PlayerTeamImage.player_id == player.id, PlayerTeamImage.team_id == team_id)
-            .first()
-        )
-        if img:
-            return img.image_url
-        return f"/static/kits/{player.user.phone}_{team_id}.png"
-    return player.profile_photo_url or ""
+    team = db.query(Team).filter(Team.id == team_id).first() if team_id else None
+    return resolve_player_photo(player, team)
 
 
 def _players_bought(db: Session, team_id: int) -> int:

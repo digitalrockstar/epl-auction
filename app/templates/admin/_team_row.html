@@ -1,7 +1,7 @@
 <div class="team-card" id="team-row-{{ team.id }}" style="border-top-color:{{ team.primary_color or '#e8ab2f' }};">
     <div class="team-card-head">
         <div class="team-name-row">
-            <img class="team-logo" src="{{ team.logo_url or '/static/img/placeholder_team_logo.svg' }}" alt="{{ team.name }} logo" onerror="this.src='/static/img/placeholder_team_logo.svg'">
+            <img class="team-logo" src="{{ team_logo(team) }}" alt="{{ team.name }} logo" onerror="this.src='/static/img/placeholder_team_logo.svg'">
             <div>
                 <div class="team-name">{{ team.name }}</div>
                 <div class="team-meta">
@@ -32,4 +32,12 @@
         <span class="badge badge-gold" style="padding:8px 12px;">{{ team.manager.phone }}</span>
         {% endif %}
     </div>
+
+    <form hx-post="/admin/teams/{{ team.id }}/logo" hx-target="#teams-wrap" hx-swap="innerHTML"
+          hx-encoding="multipart/form-data" hx-trigger="change from:find(input)" class="inline-form" style="margin:0;">
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;flex:1;justify-content:center;">
+            Upload logo
+            <input type="file" name="logo_file" accept="image/png,image/jpeg" style="display:none;">
+        </label>
+    </form>
 </div>

@@ -17,15 +17,18 @@
 
 <div class="panel" style="margin-bottom:22px;">
     <div class="panel-title-row"><h3>Add team</h3></div>
-    <form hx-post="/admin/teams" hx-target="#teams-wrap" hx-swap="innerHTML" class="add-team-form">
+    <form hx-post="/admin/teams" hx-target="#teams-wrap" hx-swap="innerHTML" hx-encoding="multipart/form-data" class="add-team-form">
         <input type="text" name="name" placeholder="Team name" required>
         <input type="number" name="purse_total" placeholder="Purse (25,00,000)" value="2500000">
-        <input type="text" name="logo_url" placeholder="Logo URL (optional, defaults to placeholder)">
+        <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">Logo <input type="file" name="logo_file" accept="image/png,image/jpeg"></label>
         <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">Primary <input type="color" name="primary_color" value="#e8ab2f"></label>
         <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">Secondary <input type="color" name="secondary_color" value="#161a23"></label>
         <button type="submit">+ Create Team</button>
     </form>
 </div>
+<p style="color:var(--text-muted);font-size:12px;margin:-14px 0 22px;">
+    Skip the upload entirely by dropping a file at <code>app/static/images/teams/&lt;team-name-lowercase-no-spaces&gt;.png</code> - it'll be picked up automatically, no per-team upload needed.
+</p>
 
 <div id="teams-wrap">
     {% include "admin/_teams_list.html" %}

@@ -21,8 +21,8 @@ Visit http://localhost:8000/login and use the phone/password seed.py prints.
 ## What's built
 - Team and manager setup, team branding (logo, primary/secondary color)
 - Player registration import from forms.app CSV export
-- CricHeroes stats import, matched by WhatsApp number (shows "No history" if blank)
-- Per-team kit image assignment, with `/static/kits/{phone}_{team_id}.png` fallback path
+- CricHeroes stats import, matched by WhatsApp number (shows "New Player"/"No history found" if blank, never zeros)
+- Player photos and team logos resolved automatically from a folder convention (see "Images" below), with an in-app upload button for one-off corrections
 - Captain's auction (base 2L) and Player's auction (base 50k), same purse pool
 - Slab-based bid increments (10k/20k/40k/50k), configurable in `app/config.py`
 - Purse reserve rule: blocks bids that would leave a team unable to afford its minimum squad
@@ -38,14 +38,34 @@ Visit http://localhost:8000/login and use the phone/password seed.py prints.
 - Login rate limiting (5 attempts, 5 min lockout)
 - `/healthz` for uptime checks
 
-## Config (env vars, all optional with sane defaults)
+## Images (player photos, kit photos, team logos)
+No need to upload anything one at a time, or paste URLs (Google Drive share links don't work here -
+they don't serve raw image bytes, that's why pasted Drive links showed nothing). Just drop files into
+these folders, named by phone number or team name, and the app finds them on its own:
+
+```
+app/static/images/players/main/<phone>.png          -> player's default photo
+app/static/images/players/<team-slug>/<phone>.png   -> photo in that team's kit, shown once sold
+app/static/images/teams/<team-slug>.png              -> team logo
+```
+
+- `<phone>` = the player's registered phone number, digits only, no `+91`, no spaces or dashes
+  (e.g. `9876543210.png`).
+- `<team-slug>` = team name, lowercased, spaces stripped (e.g. "Spartans" -> `spartans`,
+  "Warriors XI" -> `warriorsxi`). If you rename a team, rename its folder/file to match.
+- `.png` is checked first, `.jpg`/`.jpeg` also work.
+- Folders for the 4 sample teams already exist: `spartans/`, `titans/`, `warriors/`, `yoddhas/`.
+  Add more as you add teams.
+- If a file isn't found, it falls back to the built-in placeholder silhouette/shield, never a broken image.
+- The in-app "Photo" / "Kit" / "Upload logo" buttons on the Players and Teams pages do the exact same
+  thing, they save straight into these folders. Use them for one-off corrections; use the folder drop
+  for loading everyone at once.
 - `CAPTAIN_BASE_PRICE` (200000), `PLAYER_BASE_PRICE` (50000)
 - `MIN_SQUAD_SIZE` (13), `MAX_PURSE` (2500000), `TIMER_SECONDS` (180)
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (optional)
 
 ## Not yet built
 - Sound files aren't included, drop `bid.mp3`/`sold.mp3`/`unsold.mp3` into `app/static/sfx/`
-- Kit images aren't included, drop into `app/static/kits/` or set URLs via admin
 
 ## Deploying free
 1. Push this to GitHub (already done if you're reading this on the repo).

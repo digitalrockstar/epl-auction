@@ -33,17 +33,22 @@
         </form>
     </div>
 </div>
+<p style="color:var(--text-muted);font-size:12px;margin:-14px 0 22px;">
+    Uploading one by one is fine for corrections, but for bulk loading, drop files straight into
+    <code>app/static/images/players/main/&lt;phone&gt;.png</code> (or the relevant team folder for kit photos)
+    named after each player's registered phone number - the app finds them automatically. Details in README.md.
+</p>
 
 <div class="table-wrap">
 <table class="data-table">
     <thead>
-        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>Kit image</th></tr>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>Upload</th></tr>
     </thead>
     <tbody>
         {% for p in players %}
         <tr>
             <td>
-                <img class="avatar-sm" src="{{ p.profile_photo_url or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+                <img class="avatar-sm" src="{{ player_photo(p, p.team) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
                 <a href="/players/{{ p.id }}">{{ p.user.name }}</a>
             </td>
             <td>{{ p.primary_skill or "-" }}</td>
@@ -55,13 +60,23 @@
                 {% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
             </td>
             <td>
-                <form method="post" action="/admin/players/{{ p.id }}/kit-image" class="inline-form" style="margin-bottom:0;">
-                    <select name="team_id">
-                        {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
-                    </select>
-                    <input type="text" name="image_url" placeholder="placeholder_kit_image path" required style="width:150px;">
-                    <button type="submit" class="btn-sm">Save</button>
-                </form>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <form method="post" action="/admin/players/{{ p.id }}/photo" enctype="multipart/form-data" style="margin-bottom:0;">
+                        <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                            Photo
+                            <input type="file" name="file" accept="image/png,image/jpeg" required style="display:none;" onchange="this.form.requestSubmit()">
+                        </label>
+                    </form>
+                    <form method="post" action="/admin/players/{{ p.id }}/kit-image" enctype="multipart/form-data" class="inline-form" style="margin-bottom:0;">
+                        <select name="team_id" style="width:90px;">
+                            {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                        </select>
+                        <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                            Kit
+                            <input type="file" name="file" accept="image/png,image/jpeg" required style="display:none;" onchange="this.form.requestSubmit()">
+                        </label>
+                    </form>
+                </div>
             </td>
         </tr>
         {% else %}

@@ -5,7 +5,9 @@
     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if live.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
     <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
 
-    <img src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+    <img id="tv-photo-{{ live.player_id }}-{{ live.current_team_id or 0 }}" hx-preserve="true"
+         src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo"
+         onerror="this.src='/static/img/placeholder_player_photo.svg'">
     <div class="tv-info">
         <h1>{{ live.player.user.name }}</h1>
         <p class="tv-tag">{{ live.player.primary_skill or "" }} | {{ live.player.batting_hand or "" }}

@@ -2,7 +2,6 @@ from datetime import datetime
 from collections import Counter
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,7 +11,7 @@ from app.bidding import next_bid_amount, purse_check
 from app.routes.auction import _player_photo, _players_bought
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 manager_only = require_role(Role.manager, Role.captain)
 
 

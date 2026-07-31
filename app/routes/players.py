@@ -2,16 +2,16 @@ import csv
 import io
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Player, User, Role, Team, PlayerTeamImage
 from app.auth import require_role, hash_password, normalize_phone, require_login
+from app.images import save_uploaded_image, slugify, IMAGES_DIR
 
 router = APIRouter(prefix="/admin/players")
 profile_router = APIRouter(prefix="/players")
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 staff_only = require_role(Role.super_admin, Role.admin)
 
 REG_HEADERS = {
@@ -180,31 +180,59 @@ def import_stats(
     )
 
 
-@router.post("/{player_id}/kit-image", response_class=HTMLResponse)
-def set_kit_image(
+@router.post("/{player_id}/photo", response_class=HTMLResponse)
+def upload_main_photo(
     player_id: int,
     request: Request,
-    team_id: int = Form(...),
-    image_url: str = Form(...),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    existing = (
-        db.query(PlayerTeamImage)
-        .filter(PlayerTeamImage.player_id == player_id, PlayerTeamImage.team_id == team_id)
-        .first()
-    )
-    if existing:
-        existing.image_url = image_url
+    player = db.query(Player).filter(Player.id == player_id).first()
+    message = "Photo saved."
+    if player:
+        phone = "".join(ch for ch in (player.user.phone or "") if ch.isdigit())
+        try:
+            save_uploaded_image(file, IMAGES_DIR / "players" / "main", phone)
+        except ValueError as e:
+            message = str(e)
     else:
-        db.add(PlayerTeamImage(player_id=player_id, team_id=team_id, image_url=image_url))
-    db.commit()
+        message = "Player not found."
 
     players = db.query(Player).order_by(Player.id).all()
     teams = db.query(Team).order_by(Team.id).all()
     return templates.TemplateResponse(
         "admin/players.html",
-        {"request": request, "user": user, "players": players, "teams": teams, "message": "Kit image saved."},
+        {"request": request, "user": user, "players": players, "teams": teams, "message": message},
+    )
+
+
+@router.post("/{player_id}/kit-image", response_class=HTMLResponse)
+def set_kit_image(
+    player_id: int,
+    request: Request,
+    team_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    player = db.query(Player).filter(Player.id == player_id).first()
+    team = db.query(Team).filter(Team.id == team_id).first()
+    message = "Kit photo saved."
+    if player and team:
+        phone = "".join(ch for ch in (player.user.phone or "") if ch.isdigit())
+        try:
+            save_uploaded_image(file, IMAGES_DIR / "players" / slugify(team.name), phone)
+        except ValueError as e:
+            message = str(e)
+    else:
+        message = "Player or team not found."
+
+    players = db.query(Player).order_by(Player.id).all()
+    teams = db.query(Team).order_by(Team.id).all()
+    return templates.TemplateResponse(
+        "admin/players.html",
+        {"request": request, "user": user, "players": players, "teams": teams, "message": message},
     )
 
 

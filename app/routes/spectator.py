@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -8,7 +7,7 @@ from app.config import TIMER_SECONDS
 from app.routes.auction import _live_context
 
 router = APIRouter(prefix="/spectator")
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 
 
 @router.get("/live", response_class=HTMLResponse)

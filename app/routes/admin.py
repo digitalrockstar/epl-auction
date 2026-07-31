@@ -1,14 +1,14 @@
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Team, User, Role, Bid
 from app.auth import require_role, hash_password, normalize_phone
+from app.images import save_uploaded_image, slugify, IMAGES_DIR
 
 router = APIRouter(prefix="/admin")
-templates = Jinja2Templates(directory="app/templates")
+from app.templating import templates
 
 super_admin_only = require_role(Role.super_admin)
 staff_only = require_role(Role.super_admin, Role.admin)
@@ -27,7 +27,7 @@ def create_team(
     request: Request,
     name: str = Form(...),
     purse_total: int = Form(0),
-    logo_url: str = Form(""),
+    logo_file: UploadFile = File(None),
     primary_color: str = Form("#3d6ef0"),
     secondary_color: str = Form("#161a23"),
     db: Session = Depends(get_db),
@@ -41,14 +41,42 @@ def create_team(
             {"request": request, "teams": teams, "error": f"Team '{name}' already exists"},
         )
     team = Team(
-        name=name, purse_total=purse_total, logo_url=logo_url or None,
+        name=name, purse_total=purse_total, logo_url=None,
         primary_color=primary_color, secondary_color=secondary_color,
     )
     db.add(team)
     db.commit()
+
+    if logo_file is not None and logo_file.filename:
+        try:
+            save_uploaded_image(logo_file, IMAGES_DIR / "teams", slugify(team.name))
+        except ValueError:
+            pass  # unsupported file type, team still saved - logo falls back to placeholder
+
     teams = db.query(Team).order_by(Team.id).all()
     return templates.TemplateResponse(
         "admin/_teams_list.html", {"request": request, "teams": teams, "error": None}
+    )
+
+
+@router.post("/teams/{team_id}/logo", response_class=HTMLResponse)
+def upload_team_logo(
+    team_id: int,
+    request: Request,
+    logo_file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    team = db.query(Team).filter(Team.id == team_id).first()
+    error = None
+    if team:
+        try:
+            save_uploaded_image(logo_file, IMAGES_DIR / "teams", slugify(team.name))
+        except ValueError as e:
+            error = str(e)
+    teams = db.query(Team).order_by(Team.id).all()
+    return templates.TemplateResponse(
+        "admin/_teams_list.html", {"request": request, "teams": teams, "error": error}
     )
 
 
