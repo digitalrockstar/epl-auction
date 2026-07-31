@@ -37,10 +37,10 @@ else:
 
 # ---- Sample teams (replace with real team names/colors before going live) ----
 SAMPLE_TEAMS = [
-    {"name": "Spartans", "primary_color": "#c0392b", "secondary_color": "#f4c430"},
-    {"name": "Titans", "primary_color": "#2e6da4", "secondary_color": "#8ea9c1"},
-    {"name": "Warriors", "primary_color": "#4c7a3d", "secondary_color": "#a3c586"},
-    {"name": "Yoddhas", "primary_color": "#6e3fa3", "secondary_color": "#b48ee0"},
+    {"name": "Spartans", "primary_color": "#7e5726", "secondary_color": "#95341b"},
+    {"name": "Titans", "primary_color": "#a6b9bb", "secondary_color": "#0c1f2c"},
+    {"name": "Warriors", "primary_color": "#8e1f1a", "secondary_color": "#c4932e"},
+    {"name": "Yoddhas", "primary_color": "#bd7622", "secondary_color": "#0d486c"},
 ]
 if db.query(Team).count() == 0:
     for t in SAMPLE_TEAMS:
