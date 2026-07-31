@@ -18,6 +18,16 @@ uvicorn app.main:app --reload
 
 Visit http://localhost:8000/login and use the phone/password seed.py prints.
 
+## Resetting player/auction data (keeps teams, managers, admins)
+```
+python reset_data.py
+```
+Wipes players, their login accounts, bids, auctions, kit-image records, matches, and playing-XI
+records. Leaves teams, managers, and admin/super-admin accounts untouched (purse_spent resets to 0
+and any captain assignment clears, since the captain was a player). Safe to re-run. Use this to clear
+out sample/test data before loading real registrations. Doesn't touch uploaded image files on disk,
+delete those manually if needed.
+
 ## What's built
 - Team and manager setup, team branding (logo, primary/secondary color)
 - Player registration import from forms.app CSV export
