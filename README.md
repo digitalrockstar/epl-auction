@@ -72,6 +72,10 @@ app/static/images/teams/<team-slug>.png              -> team logo
 2. Create a free Postgres DB on Neon.tech, copy the connection string.
 3. Create a free web service on Render.com, point it at the repo.
 4. Set env vars on Render: `DATABASE_URL` (from Neon), `SESSION_SECRET` (any random string, see `.env.example`).
+   - Also set `PYTHON_VERSION=3.12.3` if `.python-version` in this repo ever gets out of sync - Render stopped
+     reading `runtime.txt` at some point, only `PYTHON_VERSION` (env var, highest priority) or `.python-version`
+     (repo file) work now. Without one of these, Render silently uses whatever its current default is, which can
+     be newer than the `psycopg2-binary` wheel supports, causing an `undefined symbol` ImportError on startup.
 5. Start command is already in `Procfile`: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 6. Free tier sleeps after inactivity, first load after idle takes ~30s. Open the TV screen a minute before you need it.
 7. After first deploy, run `python seed.py` once via Render's shell tab to create the super admin.
