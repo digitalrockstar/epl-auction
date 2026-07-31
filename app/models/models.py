@@ -90,7 +90,7 @@ class Player(Base):
     batting_hand = Column(String, nullable=True)
     bowling_style = Column(String, nullable=True)
     bowling_hand = Column(String, nullable=True)
-    is_wicketkeeper = Column(Boolean, default=False)
+    is_wicketkeeper = Column(String, nullable=True)
     experience_level = Column(String, nullable=True)
     brief = Column(Text, nullable=True)
     profile_photo_url = Column(String, nullable=True)
