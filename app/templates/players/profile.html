@@ -24,7 +24,7 @@
             <div class="stat-tile gold"><span class="value" style="font-size:15px;">{{ player.primary_skill or "-" }}</span><span class="label">Role</span></div>
             <div class="stat-tile blue"><span class="value" style="font-size:15px;">{{ player.batting_hand or "-" }}</span><span class="label">Batting Hand</span></div>
             <div class="stat-tile blue"><span class="value" style="font-size:15px;">{{ player.bowling_style or "-" }}</span><span class="label">Bowling Style</span></div>
-            <div class="stat-tile green"><span class="value" style="font-size:15px;">{{ "Yes" if player.is_wicketkeeper else "No" }}</span><span class="label">Wicketkeeper</span></div>
+            <div class="stat-tile green"><span class="value" style="font-size:15px;">{{ player.is_wicketkeeper }}</span><span class="label">Wicketkeeper</span></div>
         </div>
 
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Experience: {{ player.experience_level or "-" }}</p>
