@@ -125,6 +125,21 @@ def assign_manager(
     return templates.TemplateResponse("admin/_team_row.html", {"request": request, "team": team})
 
 
+@router.get("/teams/{team_id}/roster", response_class=HTMLResponse)
+def team_roster(
+    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(super_admin_only)
+):
+    from app.routes.manager import roster_context
+
+    team = db.query(Team).filter(Team.id == team_id).first()
+    all_teams = db.query(Team).order_by(Team.id).all()
+    ctx = roster_context(team)
+    return templates.TemplateResponse(
+        "manager/my_team.html",
+        {"request": request, "user": user, "team": team, "admin_view": True, "all_teams": all_teams, **ctx},
+    )
+
+
 @router.get("/audit", response_class=HTMLResponse)
 def audit_log(request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
     bids = db.query(Bid).order_by(Bid.created_at.desc()).limit(200).all()

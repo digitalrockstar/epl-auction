@@ -17,6 +17,9 @@
         <div class="tv-title">LIVE <span class="accent">AUCTION</span></div>
         <div class="tv-meta">
             <span><b>{{ teams|length }}</b> Teams</span>
+            <div id="tv-timer-slot">
+                {% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>{% endif %}
+            </div>
             <span class="badge badge-live">Live</span>
         </div>
     </div>

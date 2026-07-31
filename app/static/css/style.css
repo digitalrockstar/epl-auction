@@ -168,7 +168,12 @@ img { max-width: 100%; display: block; }
     background: transparent; color: var(--text); font-weight: 600; cursor: pointer; font-size: 14px;
 }
 .login-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 18px; font-size: 12px; color: var(--text-faint); }
-.error { color: var(--red); font-size: 13px; margin-bottom: 10px; display: block; }
+.error {
+    display: flex; align-items: flex-start; gap: 8px;
+    color: #ffb4af; background: var(--red-soft); border: 1px solid var(--red);
+    padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 10px;
+}
+.error::before { content: "⚠"; flex-shrink: 0; }
 .msg { color: var(--green); font-size: 14px; margin-bottom: 14px; display: block; }
 
 /* ---- Buttons ---- */

@@ -1,9 +1,13 @@
+{% if is_fragment %}
+<div id="tv-timer-slot" hx-swap-oob="true">
+    {% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>{% endif %}
+</div>
+{% endif %}
 <div class="tv-wrap-outer">
 <div class="tv-main">
 {% if live %}
 <div class="tv-card" data-bid="{{ live.current_bid }}" data-team="{{ live.current_team_id }}" data-status="{{ live.status.value }}">
     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if live.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
-    <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
 
     <img id="tv-photo-{{ live.player_id }}-{{ live.current_team_id or 0 }}" hx-preserve="true"
          src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo"

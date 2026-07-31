@@ -26,5 +26,5 @@ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids},
+         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids, "is_fragment": True},
     )

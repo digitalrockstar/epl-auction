@@ -19,9 +19,7 @@ def _my_team(db: Session, user: User):
     return db.query(Team).filter(Team.manager_id == user.id).first()
 
 
-@router.get("/my-team", response_class=HTMLResponse)
-def my_team(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
-    team = _my_team(db, user)
+def roster_context(team: Team):
     skill_counts = Counter()
     avg_price = 0
     if team:
@@ -29,10 +27,16 @@ def my_team(request: Request, db: Session = Depends(get_db), user: User = Depend
             skill_counts[p.primary_skill or "Unspecified"] += 1
         priced = [p.sold_price for p in team.players if p.sold_price]
         avg_price = round(sum(priced) / len(priced)) if priced else 0
+    return {"skill_counts": dict(skill_counts), "avg_price": avg_price}
 
+
+@router.get("/my-team", response_class=HTMLResponse)
+def my_team(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
+    team = _my_team(db, user)
+    ctx = roster_context(team)
     return templates.TemplateResponse(
         "manager/my_team.html",
-        {"request": request, "user": user, "team": team, "skill_counts": dict(skill_counts), "avg_price": avg_price},
+        {"request": request, "user": user, "team": team, **ctx},
     )
 
 
