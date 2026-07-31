@@ -43,23 +43,26 @@
     background: #14161d;
     border: 2px solid #262a37;
     border-radius: 20px;
-    animation: cardIn 0.4s ease-out;
     box-shadow: 0 0 40px rgba(232,171,47,0.08);
-}
-@keyframes cardIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .tv-mode-tag {
     position: absolute; top: -16px; left: 34px;
     background: #e8ab2f; color: #1a1305; font-weight: 800;
     padding: 4px 16px; border-radius: 20px; font-size: 12px; letter-spacing: 1px;
 }
+
+/* Timer lives in its own fixed box, top-right of the viewport, outside
+   the player card. Repolling the card every second no longer touches
+   this box's neighbours, so nothing else flashes/blinks. */
 .tv-timer {
-    position: absolute; top: 20px; right: 30px;
-    font-size: 28px; font-weight: 800; color: #4f8ef7;
+    position: fixed; top: 78px; right: 30px; z-index: 8;
+    background: #14161d; border: 2px solid #262a37; border-radius: 14px;
+    padding: 12px 24px; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    font-size: 30px; font-weight: 800; color: #4f8ef7;
+    min-width: 70px;
 }
-.tv-timer-low { color: #e5534b; animation: pulse 1s infinite; }
+.tv-timer-low { color: #e5534b; border-color: #e5534b; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .tv-bid-amount { transition: all 0.2s ease; }
@@ -88,6 +91,7 @@
     .tv-stats { grid-template-columns: repeat(2, 1fr); text-align: left; }
     .tv-topbar { padding: 10px 14px; flex-wrap: wrap; gap: 6px; }
     .tv-topbar .tv-meta { gap: 10px; font-size: 11px; }
+    .tv-timer { top: auto; bottom: 100px; right: 16px; font-size: 20px; padding: 8px 14px; min-width: 50px; }
     .purse-ticker { flex-wrap: wrap; padding: 10px 14px; }
     .purse-chip { flex: 1 1 45%; }
 }
