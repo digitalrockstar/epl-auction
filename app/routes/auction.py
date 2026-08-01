@@ -312,7 +312,7 @@ def _live_context(db: Session):
     teams = db.query(Team).order_by(Team.id).all()
     sold_auctions = (
         db.query(Auction).filter(Auction.status == AuctionStatus.sold)
-        .order_by(Auction.closed_at.desc()).all()
+        .order_by(Auction.closed_at.asc()).all()
     )
     return live, photo, seconds_left, teams, recent_bids, sold_auctions
 
