@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/static/css/tv.css">
 </head>
 <body class="tv-body">
-    <div id="tv-ticker-slot" hx-get="{{ ticker_fragment_url }}" hx-trigger="every 8s" hx-swap="innerHTML">
+    <div id="tv-ticker-slot" hx-get="{{ ticker_fragment_url }}" hx-trigger="every 90s" hx-swap="innerHTML">
         {% include "auction/_ticker_fragment.html" %}
     </div>
     <div class="tv-topbar">
