@@ -1,0 +1,12 @@
+{% if sold_auctions and sold_auctions|length > 4 %}
+<div class="tv-ticker">
+    <div class="tv-ticker-track">
+        {% for a in sold_auctions %}
+        <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+        {% endfor %}
+        {% for a in sold_auctions %}
+        <span class="tv-ticker-item" aria-hidden="true">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

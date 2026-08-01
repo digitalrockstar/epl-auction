@@ -28,45 +28,13 @@
                 <h2><a href="/players/{{ live.player.id }}">{{ live.player.user.name }}</a></h2>
                 <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · {{ live.player.batting_hand or "-" }} · Base ₹{{ (live.base_price|inr) }}</p>
             </div>
-            <div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
-                <span id="timer">{{ seconds_left }}s</span>
+            <div id="admin-timer-slot" hx-get="/admin/auction/timer?auction_type={{ auction_type }}" hx-trigger="every 1s" hx-swap="innerHTML">
+                {% include "admin/_timer_fragment.html" %}
             </div>
         </div>
 
-        <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
-            <div>
-                <span class="field-label" style="margin-bottom:2px;">Current Bid</span>
-                <div style="font-size:24px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
-            </div>
-            <div>
-                <span class="field-label" style="margin-bottom:2px;">Highest Bidder</span>
-                <div style="font-size:16px;font-weight:700;">{{ live.current_team.name if live.current_team else "No bids yet" }}</div>
-            </div>
-            <div>
-                <span class="field-label" style="margin-bottom:2px;">Next Bid</span>
-                <div style="font-size:16px;font-weight:700;">₹{{ (min_next_bid|inr) }}</div>
-            </div>
-        </div>
-
-        <div class="bid-col-grid">
-            {% for t in teams %}
-            <div class="bid-col" style="border-top-color:{{ t.primary_color or '#e8ab2f' }};">
-                <div class="bc-head">
-                    <span class="bc-team">{{ t.name }}</span>
-                    {% if live.current_team_id == t.id %}<span class="badge badge-gold">Leading</span>{% endif %}
-                </div>
-                <span class="bc-purse">₹{{ (t.purse_remaining|inr) }}</span>
-                <div class="bc-mini"><span>Players {{ t.players|length }}/13</span></div>
-                <form method="post" action="/admin/auction/{{ live.id }}/bid">
-                    <input type="hidden" name="auction_type" value="{{ auction_type }}">
-                    <input type="hidden" name="team_id" value="{{ t.id }}">
-                    <input type="hidden" name="amount" value="{{ min_next_bid }}">
-                    <button type="submit" class="btn-block" {% if live.current_team_id == t.id %}disabled{% endif %}>
-                        Bid ₹{{ (min_next_bid|inr) }}
-                    </button>
-                </form>
-            </div>
-            {% endfor %}
+        <div id="admin-live-state" hx-get="/admin/auction/state?auction_type={{ auction_type }}" hx-trigger="every 4s" hx-swap="innerHTML">
+            {% include "admin/_live_state_fragment.html" %}
         </div>
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;">
@@ -79,26 +47,8 @@
                 <button type="submit" class="btn-outline">Record custom bid</button>
             </form>
         </div>
-
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-            <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">
-                <input type="hidden" name="auction_type" value="{{ auction_type }}">
-                <button type="submit" class="btn-green">Mark SOLD</button>
-            </form>
-            <form method="post" action="/admin/auction/{{ live.id }}/unsold" style="margin-bottom:0;">
-                <input type="hidden" name="auction_type" value="{{ auction_type }}">
-                <button type="submit" class="btn-danger">Mark UNSOLD</button>
-            </form>
-            {% if can_undo %}
-            <form method="post" action="/admin/auction/{{ live.id }}/undo" style="margin-bottom:0;">
-                <input type="hidden" name="auction_type" value="{{ auction_type }}">
-                <button type="submit" class="btn-outline">Undo last bid</button>
-            </form>
-            {% endif %}
-        </div>
     </div>
 </div>
-<script>setTimeout(() => location.reload(), 5000);</script>
 {% else %}
 <div class="panel">
     <h3 style="margin-bottom:10px;">Up next</h3>

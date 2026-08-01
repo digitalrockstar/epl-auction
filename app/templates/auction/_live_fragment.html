@@ -1,22 +1,3 @@
-{% if is_fragment %}
-<div id="tv-timer-slot" hx-swap-oob="true">
-    {% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>{% endif %}
-</div>
-<div id="tv-ticker-slot" hx-swap-oob="true">
-    {% if sold_auctions and sold_auctions|length > 4 %}
-    <div class="tv-ticker">
-        <div class="tv-ticker-track">
-            {% for a in sold_auctions %}
-            <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
-            {% endfor %}
-            {% for a in sold_auctions %}
-            <span class="tv-ticker-item" aria-hidden="true">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
 <div class="tv-wrap-outer">
 <div class="tv-main">
 {% if live %}

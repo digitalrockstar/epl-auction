@@ -134,6 +134,48 @@ def start_auction(
     return _redirect(auction_type)
 
 
+@router.get("/admin/auction/timer", response_class=HTMLResponse)
+def admin_timer(
+    request: Request,
+    auction_type: str = "player",
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_expired(db, live)
+    if live and live.status != AuctionStatus.live:
+        live = None
+    seconds_left = None
+    if live:
+        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=TIMER_SECONDS)
+        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
+    return templates.TemplateResponse(
+        "admin/_timer_fragment.html",
+        {"request": request, "live": live, "seconds_left": seconds_left, "timer_total": TIMER_SECONDS},
+    )
+
+
+@router.get("/admin/auction/state", response_class=HTMLResponse)
+def admin_state(
+    request: Request,
+    auction_type: str = "player",
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_expired(db, live)
+    if live and live.status != AuctionStatus.live:
+        live = None
+    teams = db.query(Team).order_by(Team.id).all()
+    min_next_bid = next_bid_amount(live) if live else None
+    can_undo = bool(live and live.bids)
+    return templates.TemplateResponse(
+        "admin/_live_state_fragment.html",
+        {"request": request, "live": live, "teams": teams, "auction_type": auction_type,
+         "min_next_bid": min_next_bid, "can_undo": can_undo},
+    )
+
+
 @router.post("/admin/auction/{auction_id}/bid", response_class=HTMLResponse)
 def place_bid(
     auction_id: int,
@@ -282,7 +324,8 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
-         "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment"},
+         "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment",
+         "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker"},
     )
 
 
@@ -293,5 +336,23 @@ def live_fragment(request: Request, db: Session = Depends(get_db), user: User = 
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
-         "sold_auctions": sold_auctions, "is_fragment": True},
+         "sold_auctions": sold_auctions},
+    )
+
+
+@router.get("/auction/live/timer", response_class=HTMLResponse)
+def live_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    return templates.TemplateResponse(
+        "auction/_timer_fragment.html",
+        {"request": request, "live": live, "seconds_left": seconds_left},
+    )
+
+
+@router.get("/auction/live/ticker", response_class=HTMLResponse)
+def live_ticker(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    return templates.TemplateResponse(
+        "auction/_ticker_fragment.html",
+        {"request": request, "sold_auctions": sold_auctions},
     )

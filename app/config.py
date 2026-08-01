@@ -4,7 +4,7 @@ CAPTAIN_BASE_PRICE = int(os.getenv("CAPTAIN_BASE_PRICE", 200000))
 PLAYER_BASE_PRICE = int(os.getenv("PLAYER_BASE_PRICE", 50000))
 MIN_SQUAD_SIZE = int(os.getenv("MIN_SQUAD_SIZE", 13))
 MAX_PURSE = int(os.getenv("MAX_PURSE", 2500000))
-TIMER_SECONDS = int(os.getenv("TIMER_SECONDS", 180))
+TIMER_SECONDS = int(os.getenv("TIMER_SECONDS", 90))
 
 # (ceiling, increment) - applies while current_bid < ceiling
 INCREMENT_SLABS = [

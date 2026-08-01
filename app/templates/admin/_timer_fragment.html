@@ -1,0 +1,5 @@
+{% if live %}
+<div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
+    <span id="timer">{{ seconds_left }}s</span>
+</div>
+{% endif %}

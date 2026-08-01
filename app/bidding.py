@@ -24,6 +24,9 @@ def purse_check(team, auction_type, bid_amount: int, players_bought: int) -> str
     """Returns an error string if the bid would break the purse rule, else None.
     Rule: after buying this player, team must still be able to afford the
     minimum remaining squad at base price."""
+    if players_bought >= MIN_SQUAD_SIZE:
+        return f"{team.name} already has a full squad of {MIN_SQUAD_SIZE}, cannot bid further"
+
     if auction_type == AuctionType.captain and team.captain_id:
         return f"{team.name} already has a captain, cannot bid for another"
 

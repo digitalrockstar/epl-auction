@@ -1,0 +1,60 @@
+{% if live %}
+<div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
+    <div>
+        <span class="field-label" style="margin-bottom:2px;">Current Bid</span>
+        <div style="font-size:24px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
+    </div>
+    <div>
+        <span class="field-label" style="margin-bottom:2px;">Highest Bidder</span>
+        <div style="font-size:16px;font-weight:700;">
+            {% if live.current_team %}{{ live.current_team.name }} ({{ live.current_team.players|length }}/13){% else %}No bids yet{% endif %}
+        </div>
+    </div>
+    <div>
+        <span class="field-label" style="margin-bottom:2px;">Next Bid</span>
+        <div style="font-size:16px;font-weight:700;">₹{{ (min_next_bid|inr) }}</div>
+    </div>
+</div>
+
+<div class="bid-col-grid">
+    {% for t in teams %}
+    {% set squad_full = t.players|length >= 13 %}
+    {% set captain_taken = live.auction_type.value == "captain" and t.captain_id %}
+    <div class="bid-col" style="border-top-color:{{ t.primary_color or '#e8ab2f' }};">
+        <div class="bc-head">
+            <span class="bc-team">{{ t.name }}</span>
+            {% if live.current_team_id == t.id %}<span class="badge badge-gold">Leading</span>{% endif %}
+        </div>
+        <span class="bc-purse">₹{{ (t.purse_remaining|inr) }}</span>
+        <div class="bc-mini"><span>Players {{ t.players|length }}/13</span></div>
+        <form method="post" action="/admin/auction/{{ live.id }}/bid">
+            <input type="hidden" name="auction_type" value="{{ auction_type }}">
+            <input type="hidden" name="team_id" value="{{ t.id }}">
+            <input type="hidden" name="amount" value="{{ min_next_bid }}">
+            <button type="submit" class="btn-block" {% if live.current_team_id == t.id or squad_full or captain_taken %}disabled{% endif %}>
+                {% if squad_full %}Squad full{% elif captain_taken %}Has captain{% else %}Bid ₹{{ (min_next_bid|inr) }}{% endif %}
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+    <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">
+        <input type="hidden" name="auction_type" value="{{ auction_type }}">
+        <button type="submit" class="btn-green">Mark SOLD</button>
+    </form>
+    <form method="post" action="/admin/auction/{{ live.id }}/unsold" style="margin-bottom:0;">
+        <input type="hidden" name="auction_type" value="{{ auction_type }}">
+        <button type="submit" class="btn-danger">Mark UNSOLD</button>
+    </form>
+    {% if can_undo %}
+    <form method="post" action="/admin/auction/{{ live.id }}/undo" style="margin-bottom:0;">
+        <input type="hidden" name="auction_type" value="{{ auction_type }}">
+        <button type="submit" class="btn-outline">Undo last bid</button>
+    </form>
+    {% endif %}
+</div>
+{% else %}
+<p class="error" style="margin-top:16px;">This auction has ended. <a href="/admin/auction?auction_type={{ auction_type }}">Reload to pick the next player</a>.</p>
+{% endif %}

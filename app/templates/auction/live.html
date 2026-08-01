@@ -8,20 +8,9 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/tv.css">
 </head>
-<body class="tv-body" hx-get="{{ fragment_url }}" hx-trigger="every 1s" hx-target="#tv-wrap" hx-swap="innerHTML">
-    <div id="tv-ticker-slot">
-        {% if sold_auctions and sold_auctions|length > 4 %}
-        <div class="tv-ticker">
-            <div class="tv-ticker-track">
-                {% for a in sold_auctions %}
-                <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
-                {% endfor %}
-                {% for a in sold_auctions %}
-                <span class="tv-ticker-item" aria-hidden="true">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
+<body class="tv-body">
+    <div id="tv-ticker-slot" hx-get="{{ ticker_fragment_url }}" hx-trigger="every 8s" hx-swap="innerHTML">
+        {% include "auction/_ticker_fragment.html" %}
     </div>
     <div class="tv-topbar">
         <div class="tv-brand">
@@ -31,13 +20,13 @@
         <div class="tv-title">LIVE <span class="accent">AUCTION</span></div>
         <div class="tv-meta">
             <span><b>{{ teams|length }}</b> Teams</span>
-            <div id="tv-timer-slot">
-                {% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>{% endif %}
+            <div id="tv-timer-slot" hx-get="{{ timer_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">
+                {% include "auction/_timer_fragment.html" %}
             </div>
             <span class="badge badge-live">Live</span>
         </div>
     </div>
-    <div id="tv-wrap">
+    <div id="tv-wrap" hx-get="{{ fragment_url }}" hx-trigger="every 3s" hx-swap="innerHTML">
         {% include "auction/_live_fragment.html" %}
     </div>
 
