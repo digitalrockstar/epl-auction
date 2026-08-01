@@ -237,10 +237,31 @@ def set_kit_image(
 
 
 @profile_router.get("", response_class=HTMLResponse)
-def players_list_view_only(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    players = db.query(Player).order_by(Player.id).all()
+def players_list_view_only(
+    tab: str = "players",
+    request: Request = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_login),
+):
+    my_team = None
+    if user.role == Role.manager:
+        my_team = user.managed_team
+    elif user.role == Role.captain and user.player_profile:
+        my_team = user.player_profile.team
+    show_captain_tab = not (my_team and my_team.captain_id)
+
+    tab = tab if tab in ("players", "captains") else "players"
+    if tab == "captains" and not show_captain_tab:
+        tab = "players"
+
+    query = db.query(Player).order_by(Player.id)
+    if tab == "captains":
+        query = query.filter(Player.wants_captaincy.is_(True))
+    players = query.all()
+
     return templates.TemplateResponse(
-        "players/list.html", {"request": request, "user": user, "players": players}
+        "players/list.html",
+        {"request": request, "user": user, "players": players, "tab": tab, "show_captain_tab": show_captain_tab},
     )
 
 

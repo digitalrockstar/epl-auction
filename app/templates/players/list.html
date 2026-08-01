@@ -9,6 +9,13 @@
     </div>
 </div>
 
+<div class="tabs" style="display:flex;gap:8px;margin-bottom:18px;">
+    <a href="/players?tab=players" class="btn {{ 'btn-gold' if tab == 'players' else 'btn-outline' }} btn-sm">All Players</a>
+    {% if show_captain_tab %}
+    <a href="/players?tab=captains" class="btn {{ 'btn-gold' if tab == 'captains' else 'btn-outline' }} btn-sm">Captain Nominations</a>
+    {% endif %}
+</div>
+
 {% set sold_count = players|selectattr("team")|list|length %}
 <div class="stat-grid">
     <div class="stat-tile gold"><span class="value">{{ players|length }}</span><span class="label">Total Players</span></div>
