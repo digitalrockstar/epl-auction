@@ -8,7 +8,7 @@ from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, U
 from app.auth import require_role, require_login
 from app.config import TIMER_SECONDS
 from app.bidding import next_bid_amount, purse_check, base_price_for
-from app.notify import notify
+from app.notify import notify, notify_sold
 
 router = APIRouter()
 from app.templating import templates
@@ -57,7 +57,7 @@ def _finalize_expired(db: Session, auction: Auction):
             player.team_id = team.id
         team.purse_spent = (team.purse_spent or 0) + auction.current_bid
         db.commit()
-        notify(f"SOLD: {player.user.name} to {team.name} for {auction.current_bid}")
+        notify_sold(player.user.name, team.name, auction.current_bid)
     else:
         auction.status = AuctionStatus.unsold
         auction.closed_at = datetime.utcnow()
@@ -232,7 +232,7 @@ def mark_sold(
         player.team_id = team.id
     team.purse_spent = (team.purse_spent or 0) + auction.current_bid
     db.commit()
-    notify(f"SOLD: {player.user.name} to {team.name} for {auction.current_bid}")
+    notify_sold(player.user.name, team.name, auction.current_bid)
     return _redirect(auction_type)
 
 

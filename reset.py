@@ -8,7 +8,7 @@ without demo player clutter.
 Safe to re-run, only creates data that doesnt already exist.
 """
 from app.database import SessionLocal, Base, engine
-from app.models import User, Role, Team, Player
+from app.models import User, Role, Team
 from app.auth import hash_password
 from app.config import MAX_PURSE
 

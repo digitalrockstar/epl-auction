@@ -1,5 +1,21 @@
+import random
 import requests
 from app.config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+TIER1 = ["🎉", "🥳", "🎊", "🙌", "👏"]
+TIER2 = ["✨", "🎇", "🎆", "💥", "🌟", "🧨", "💫"]
+TIER3 = ["🔥", "🚀", "💰", "🤑"]
+
+
+def celebration_emojis(amount: int) -> str:
+    if amount >= 400000:
+        pool = TIER3
+    elif amount >= 100000:
+        pool = TIER2
+    else:
+        pool = TIER1
+    count = random.randint(2, 4)
+    return " ".join(random.choice(pool) for _ in range(count))
 
 
 def notify(text: str):
@@ -13,3 +29,7 @@ def notify(text: str):
         )
     except Exception:
         pass  # never let a notification failure break the auction
+
+
+def notify_sold(player_name: str, team_name: str, amount: int):
+    notify(f"{player_name} sold to {team_name} for ₹{amount:,} {celebration_emojis(amount)}")
