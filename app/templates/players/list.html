@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+{% block content %}
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Browse</div>
+        <h1>Players</h1>
+        <p class="sub">All registered players. Click a name for the full stats card.</p>
+    </div>
+</div>
+
+{% set sold_count = players|selectattr("team")|list|length %}
+<div class="stat-grid">
+    <div class="stat-tile gold"><span class="value">{{ players|length }}</span><span class="label">Total Players</span></div>
+    <div class="stat-tile green"><span class="value">{{ sold_count }}</span><span class="label">Sold</span></div>
+    <div class="stat-tile blue"><span class="value">{{ players|length - sold_count }}</span><span class="label">Unsold</span></div>
+    <div class="stat-tile gold"><span class="value">{{ players|selectattr("wants_captaincy")|list|length }}</span><span class="label">Captain Interest</span></div>
+</div>
+
+<div class="table-wrap">
+<table class="data-table">
+    <thead>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Matches</th><th>Runs</th><th>Wickets</th><th>Captain?</th><th>Team</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        {% for p in players %}
+        <tr>
+            <td>
+                <img class="avatar-sm" src="{{ player_photo(p, p.team) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+                <a href="/players/{{ p.id }}">{{ p.user.name }}</a>
+            </td>
+            <td>{{ p.primary_skill or "-" }}</td>
+            <td style="color:var(--text-muted);font-size:12.5px;">{{ p.batting_hand or "-" }} / {{ p.bowling_style or "-" }}</td>
+            <td>{{ (p.bat_matches or p.bowl_matches) if (p.bat_matches or p.bowl_matches) else "New Player" }}</td>
+            <td>{{ p.bat_runs if p.bat_runs is not none else "-" }}</td>
+            <td>{{ p.bowl_wickets if p.bowl_wickets is not none else "-" }}</td>
+            <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
+            <td>{{ p.team.name if p.team else "-" }}</td>
+            <td>
+                {% if p.team %}<span class="badge badge-sold">Sold</span>
+                {% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

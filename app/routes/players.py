@@ -236,6 +236,14 @@ def set_kit_image(
     )
 
 
+@profile_router.get("", response_class=HTMLResponse)
+def players_list_view_only(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    players = db.query(Player).order_by(Player.id).all()
+    return templates.TemplateResponse(
+        "players/list.html", {"request": request, "user": user, "players": players}
+    )
+
+
 @profile_router.get("/{player_id}", response_class=HTMLResponse)
 def player_profile(
     player_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)

@@ -41,6 +41,7 @@
             <div class="nav-group">My team</div>
             <a href="/my-team" class="{{ 'active' if request.url.path == '/my-team' }}">Roster &amp; purse</a>
             <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">Live bid panel</a>
+            <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
             {% endif %}
 
             <div class="nav-group">Watch</div>
