@@ -36,10 +36,10 @@
 </div>
 
 <div class="stat-grid">
-    <div class="stat-tile gold"><span class="value">₹{{ "{:,}".format(team.purse_remaining) }}</span><span class="label">Purse Remaining</span></div>
+    <div class="stat-tile gold"><span class="value">₹{{ (team.purse_remaining|inr) }}</span><span class="label">Purse Remaining</span></div>
     <div class="stat-tile blue"><span class="value">{{ team.players|length }} / 13</span><span class="label">Squad Size</span></div>
-    <div class="stat-tile green"><span class="value">₹{{ "{:,}".format(avg_price) }}</span><span class="label">Average Purchase</span></div>
-    <div class="stat-tile gold"><span class="value">₹{{ "{:,}".format(team.purse_spent) }}</span><span class="label">Team Value</span></div>
+    <div class="stat-tile green"><span class="value">₹{{ (avg_price|inr) }}</span><span class="label">Average Purchase</span></div>
+    <div class="stat-tile gold"><span class="value">₹{{ (team.purse_spent|inr) }}</span><span class="label">Team Value</span></div>
 </div>
 
 <h3 style="margin-bottom:12px;">Skill composition</h3>
@@ -63,7 +63,7 @@
                 <a href="/players/{{ p.id }}">{{ p.user.name }}</a>{% if p.is_captain %} <span class="badge badge-gold">C</span>{% endif %}
             </td>
             <td>{{ p.primary_skill or "-" }}</td>
-            <td style="font-weight:700;color:var(--gold);">{{ "₹{:,}".format(p.sold_price) if p.sold_price else "-" }}</td>
+            <td style="font-weight:700;color:var(--gold);">{{ "₹" ~ (p.sold_price|inr) if p.sold_price else "-" }}</td>
         </tr>
         {% else %}
         <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;">No players bought yet.</td></tr>

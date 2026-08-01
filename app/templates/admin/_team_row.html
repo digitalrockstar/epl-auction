@@ -14,7 +14,7 @@
     </div>
 
     <div class="team-stats">
-        <div><b>₹{{ "{:,}".format(team.purse_remaining) }}</b><span>Purse Left</span></div>
+        <div><b>₹{{ (team.purse_remaining|inr) }}</b><span>Purse Left</span></div>
         <div><b>{{ team.players|length }}</b><span>Players</span></div>
         <div><b>{{ team.purse_remaining and "Open" or "Full" }}</b><span>Status</span></div>
     </div>

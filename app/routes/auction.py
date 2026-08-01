@@ -268,24 +268,30 @@ def _live_context(db: Session):
             db.query(Bid).filter(Bid.auction_id == live.id).order_by(Bid.created_at.desc()).limit(6).all()
         )
     teams = db.query(Team).order_by(Team.id).all()
-    return live, photo, seconds_left, teams, recent_bids
+    sold_auctions = (
+        db.query(Auction).filter(Auction.status == AuctionStatus.sold)
+        .order_by(Auction.closed_at.desc()).all()
+    )
+    return live, photo, seconds_left, teams, recent_bids, sold_auctions
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids, "fragment_url": "/auction/live/fragment"},
+         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
+         "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment"},
     )
 
 
 @router.get("/auction/live/fragment", response_class=HTMLResponse)
 def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids, "is_fragment": True},
+         "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
+         "sold_auctions": sold_auctions, "is_fragment": True},
     )

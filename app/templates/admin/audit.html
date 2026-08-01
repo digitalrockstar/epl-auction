@@ -10,7 +10,7 @@
 <div class="stat-grid">
     <div class="stat-tile gold"><span class="value">{{ bids|length }}</span><span class="label">Bids Shown</span></div>
     <div class="stat-tile green"><span class="value">{{ bids|map(attribute="auction_id")|unique|list|length }}</span><span class="label">Auctions Involved</span></div>
-    <div class="stat-tile blue"><span class="value">₹{{ "{:,}".format(bids|sum(attribute="amount") if bids else 0) }}</span><span class="label">Total Bid Value Shown</span></div>
+    <div class="stat-tile blue"><span class="value">₹{{ (bids|sum(attribute="amount") if bids else 0)|inr }}</span><span class="label">Total Bid Value Shown</span></div>
 </div>
 
 <div class="table-wrap">
@@ -22,7 +22,7 @@
             <td style="color:var(--text-muted);">{{ b.created_at.strftime("%d %b, %I:%M %p") }}</td>
             <td>{{ b.auction.player.user.name if b.auction and b.auction.player else "-" }}</td>
             <td><span class="swatch" style="background:{{ b.team.primary_color or '#e8ab2f' }}"></span>{{ b.team.name }}</td>
-            <td style="font-weight:700;color:var(--gold);">₹{{ "{:,}".format(b.amount) }}</td>
+            <td style="font-weight:700;color:var(--gold);">₹{{ (b.amount|inr) }}</td>
             <td>{{ b.entered_by.name if b.entered_by else "-" }}</td>
         </tr>
         {% else %}

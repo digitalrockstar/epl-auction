@@ -6,7 +6,7 @@
         <div><h2>{{ team.name if team else "Spectator" }}</h2><p>{{ "You are bidding" if team else "" }}</p></div>
         <div style="text-align:right;">
             <span class="field-label">Purse Remaining</span>
-            <div style="font-size:20px;font-weight:800;color:var(--gold);">₹{{ "{:,}".format(team.purse_remaining) if team else "-" }}</div>
+            <div style="font-size:20px;font-weight:800;color:var(--gold);">₹{{ (team.purse_remaining|inr) if team else "-" }}</div>
         </div>
     </div>
 </div>
@@ -19,12 +19,12 @@
     </div>
     <div style="flex:1;">
         <h2>{{ live.player.user.name }}</h2>
-        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · Base ₹{{ "{:,}".format(live.base_price) }}</p>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · Base ₹{{ (live.base_price|inr) }}</p>
 
         <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
             <div>
                 <span class="field-label">Current Bid</span>
-                <div style="font-size:22px;font-weight:800;color:var(--gold);">₹{{ "{:,}".format(live.current_bid) }}</div>
+                <div style="font-size:22px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
             </div>
             <div>
                 <span class="field-label">Highest Bidder</span>
@@ -34,7 +34,7 @@
 
         <form method="post" action="/bid-panel/bid" style="margin-top:20px;">
             <button type="submit" class="btn-gold" {% if disabled %}disabled{% endif %}>
-                {% if disabled %}{{ disabled_reason }}{% else %}BID ₹{{ "{:,}".format(next_amount) }}{% endif %}
+                {% if disabled %}{{ disabled_reason }}{% else %}BID ₹{{ (next_amount|inr) }}{% endif %}
             </button>
         </form>
     </div>

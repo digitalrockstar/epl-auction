@@ -12,7 +12,7 @@
 <div class="stat-grid">
     <div class="stat-tile gold"><span class="value">{{ teams|length }}</span><span class="label">Teams Created</span></div>
     <div class="stat-tile blue"><span class="value">{{ teams|selectattr("manager")|list|length }}</span><span class="label">Managers Assigned</span></div>
-    <div class="stat-tile green"><span class="value">₹{{ "{:,}".format(teams|sum(attribute="purse_total") if teams else 0) }}</span><span class="label">Total Purse (All Teams)</span></div>
+    <div class="stat-tile green"><span class="value">₹{{ (teams|sum(attribute="purse_total") if teams else 0)|inr }}</span><span class="label">Total Purse (All Teams)</span></div>
 </div>
 
 <div class="panel" style="margin-bottom:22px;">

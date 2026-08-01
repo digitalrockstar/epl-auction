@@ -35,7 +35,7 @@
                 <img class="team-logo" src="{{ team_logo(player.team) }}" onerror="this.src='/static/img/placeholder_team_logo.svg'">
                 <div>
                     <b>Sold to {{ player.team.name }}</b>
-                    <p style="color:var(--gold);font-weight:800;font-size:18px;">₹{{ "{:,}".format(player.sold_price) if player.sold_price else "-" }}</p>
+                    <p style="color:var(--gold);font-weight:800;font-size:18px;">₹{{ (player.sold_price|inr) if player.sold_price else "-" }}</p>
                 </div>
             </div>
         </div>

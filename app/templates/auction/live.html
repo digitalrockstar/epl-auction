@@ -9,6 +9,20 @@
     <link rel="stylesheet" href="/static/css/tv.css">
 </head>
 <body class="tv-body" hx-get="{{ fragment_url }}" hx-trigger="every 1s" hx-target="#tv-wrap" hx-swap="innerHTML">
+    <div id="tv-ticker-slot">
+        {% if sold_auctions and sold_auctions|length > 4 %}
+        <div class="tv-ticker">
+            <div class="tv-ticker-track">
+                {% for a in sold_auctions %}
+                <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+                {% endfor %}
+                {% for a in sold_auctions %}
+                <span class="tv-ticker-item" aria-hidden="true">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
     <div class="tv-topbar">
         <div class="tv-brand">
             <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">

@@ -64,7 +64,7 @@
     </div>
     <div class="stat-tile gold">
         <div class="icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
-        <span class="value">₹{{ "{:,}".format(remaining_purse) }}</span><span class="label">Purse Remaining</span>
+        <span class="value">₹{{ (remaining_purse|inr) }}</span><span class="label">Purse Remaining</span>
     </div>
 </div>
 
@@ -75,7 +75,7 @@
             {% for b in recent_bids %}
             <div class="feed-item">
                 <div class="feed-dot gold"></div>
-                <div class="fi-main">{{ b.team.name }} bid ₹{{ "{:,}".format(b.amount) }} for {{ b.auction.player.user.name if b.auction and b.auction.player else "player" }}</div>
+                <div class="fi-main">{{ b.team.name }} bid ₹{{ (b.amount|inr) }} for {{ b.auction.player.user.name if b.auction and b.auction.player else "player" }}</div>
                 <div class="fi-time">{{ b.created_at.strftime("%I:%M %p") }}</div>
             </div>
             {% else %}

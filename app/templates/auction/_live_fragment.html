@@ -2,6 +2,20 @@
 <div id="tv-timer-slot" hx-swap-oob="true">
     {% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>{% endif %}
 </div>
+<div id="tv-ticker-slot" hx-swap-oob="true">
+    {% if sold_auctions and sold_auctions|length > 4 %}
+    <div class="tv-ticker">
+        <div class="tv-ticker-track">
+            {% for a in sold_auctions %}
+            <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+            {% endfor %}
+            {% for a in sold_auctions %}
+            <span class="tv-ticker-item" aria-hidden="true">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endif %}
 <div class="tv-wrap-outer">
 <div class="tv-main">
@@ -19,7 +33,7 @@
            {% if live.player.is_wicketkeeper %} | WK{% endif %}</p>
 
         <div class="tv-bid">
-            <span class="tv-bid-amount">₹{{ "{:,}".format(live.current_bid) }}</span>
+            <span class="tv-bid-amount">₹{{ (live.current_bid|inr) }}</span>
             {% if live.current_team %}<span class="tv-bid-team">{{ live.current_team.name }}</span>{% endif %}
         </div>
 
@@ -52,7 +66,7 @@
         {% for b in recent_bids %}
         <div class="tv-feed-item">
             <span class="fi-team">{{ b.team.name }}</span>
-            <span class="fi-amt">₹{{ "{:,}".format(b.amount) }}</span>
+            <span class="fi-amt">₹{{ (b.amount|inr) }}</span>
             <span class="fi-time">{{ b.created_at.strftime("%I:%M:%S") }}</span>
         </div>
         {% else %}
@@ -66,7 +80,7 @@
             {% for t in teams %}
             <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
                 <span class="purse-team">{{ t.name }} · {{ t.players|length }}/13</span>
-                <span class="purse-amt">₹{{ "{:,}".format(t.purse_remaining) }}</span>
+                <span class="purse-amt">₹{{ (t.purse_remaining|inr) }}</span>
                 <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#e8ab2f' }}"></div></div>
             </div>
             {% endfor %}

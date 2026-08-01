@@ -26,7 +26,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;">
             <div>
                 <h2><a href="/players/{{ live.player.id }}">{{ live.player.user.name }}</a></h2>
-                <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · {{ live.player.batting_hand or "-" }} · Base ₹{{ "{:,}".format(live.base_price) }}</p>
+                <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · {{ live.player.batting_hand or "-" }} · Base ₹{{ (live.base_price|inr) }}</p>
             </div>
             <div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
                 <span id="timer">{{ seconds_left }}s</span>
@@ -36,7 +36,7 @@
         <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
             <div>
                 <span class="field-label" style="margin-bottom:2px;">Current Bid</span>
-                <div style="font-size:24px;font-weight:800;color:var(--gold);">₹{{ "{:,}".format(live.current_bid) }}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
             </div>
             <div>
                 <span class="field-label" style="margin-bottom:2px;">Highest Bidder</span>
@@ -44,7 +44,7 @@
             </div>
             <div>
                 <span class="field-label" style="margin-bottom:2px;">Next Bid</span>
-                <div style="font-size:16px;font-weight:700;">₹{{ "{:,}".format(min_next_bid) }}</div>
+                <div style="font-size:16px;font-weight:700;">₹{{ (min_next_bid|inr) }}</div>
             </div>
         </div>
 
@@ -55,14 +55,14 @@
                     <span class="bc-team">{{ t.name }}</span>
                     {% if live.current_team_id == t.id %}<span class="badge badge-gold">Leading</span>{% endif %}
                 </div>
-                <span class="bc-purse">₹{{ "{:,}".format(t.purse_remaining) }}</span>
+                <span class="bc-purse">₹{{ (t.purse_remaining|inr) }}</span>
                 <div class="bc-mini"><span>Players {{ t.players|length }}/13</span></div>
                 <form method="post" action="/admin/auction/{{ live.id }}/bid">
                     <input type="hidden" name="auction_type" value="{{ auction_type }}">
                     <input type="hidden" name="team_id" value="{{ t.id }}">
                     <input type="hidden" name="amount" value="{{ min_next_bid }}">
                     <button type="submit" class="btn-block" {% if live.current_team_id == t.id %}disabled{% endif %}>
-                        Bid ₹{{ "{:,}".format(min_next_bid) }}
+                        Bid ₹{{ (min_next_bid|inr) }}
                     </button>
                 </form>
             </div>
