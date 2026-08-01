@@ -7,7 +7,7 @@ html, body { overflow-x: hidden; }
 .tv-ticker {
     width: 100%; overflow: hidden; background: #e8ab2f; border-bottom: 1px solid #0d0e12;
 }
-.tv-ticker-track { display: flex; width: max-content; animation: tv-ticker-scroll 36s linear infinite; }
+.tv-ticker-track { display: flex; width: max-content; animation: tv-ticker-scroll 45s linear infinite; }
 .tv-ticker-item { flex-shrink: 0; padding: 6px 40px; font-weight: 700; font-size: 13px; color: #14151a; white-space: nowrap; }
 @keyframes tv-ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
