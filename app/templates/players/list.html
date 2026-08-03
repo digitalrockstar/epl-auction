@@ -41,7 +41,7 @@
             <td>{{ (p.bat_matches or p.bowl_matches) if (p.bat_matches or p.bowl_matches) else "New Player" }}</td>
             <td>{{ p.bat_runs if p.bat_runs is not none else "-" }}</td>
             <td>{{ p.bowl_wickets if p.bowl_wickets is not none else "-" }}</td>
-            <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
+            <td>{{ "Interested" if p.wants_captaincy else "Not Interested" }}</td>
             <td>{{ p.team.name if p.team else "-" }}</td>
             <td>
                 {% if p.team %}<span class="badge badge-sold">Sold</span>

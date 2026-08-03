@@ -17,6 +17,7 @@ from app.routes.auction import router as auction_router
 from app.routes.manager import router as manager_router
 from app.routes.matches import router as matches_router
 from app.routes.spectator import router as spectator_router
+from app.routes.roll import router as roll_router
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -45,6 +46,7 @@ app.include_router(auction_router)
 app.include_router(manager_router)
 app.include_router(matches_router)
 app.include_router(spectator_router)
+app.include_router(roll_router)
 
 
 @app.get("/healthz")

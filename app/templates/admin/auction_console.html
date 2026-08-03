@@ -49,6 +49,14 @@
         </div>
     </div>
 </div>
+{% elif pending %}
+<div class="panel">
+    <h3 style="margin-bottom:10px;">Revealing next player&hellip;</h3>
+    <p style="color:var(--text-muted);font-size:13px;">
+        Rolling for <b>{{ pending.player.user.name }}</b> ({{ pending.player.primary_skill }}). Bidding opens shortly.
+    </p>
+    <a href="/admin/roll/reveal?auction_type={{ auction_type }}" class="btn-outline" style="width:auto;margin-top:14px;">Go to reveal</a>
+</div>
 {% else %}
 <div class="panel">
     <h3 style="margin-bottom:10px;">Up next</h3>

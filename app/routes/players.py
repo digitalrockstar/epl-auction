@@ -42,7 +42,7 @@ STATS_HEADER_MAP = {f: f for f in STATS_INT_FIELDS + STATS_FLOAT_FIELDS}
 
 
 def _truthy(val: str) -> bool:
-    return (val or "").strip().lower() in ("yes", "y", "true", "1")
+    return (val or "").strip().lower() in ("yes", "y", "true", "1", "interested")
 
 
 @router.get("", response_class=HTMLResponse)

@@ -53,7 +53,7 @@
             </td>
             <td>{{ p.primary_skill or "-" }}</td>
             <td style="color:var(--text-muted);font-size:12.5px;">{{ p.batting_hand or "-" }} / {{ p.bowling_style or "-" }}</td>
-            <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
+            <td>{{ "Interested" if p.wants_captaincy else "Not Interested" }}</td>
             <td>{{ p.team.name if p.team else "-" }}</td>
             <td>
                 {% if p.team %}<span class="badge badge-sold">Sold</span>

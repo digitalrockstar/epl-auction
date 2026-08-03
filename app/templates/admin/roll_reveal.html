@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Revealing{% endblock %}
+{% block content %}
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Auction · Roll</div>
+        <h1>Next up: {{ pending.player.primary_skill }}</h1>
+        <p class="sub">This is only shown to you. The TV/spectator screen keeps shuffling until bidding opens - introduce the player now.</p>
+    </div>
+</div>
+
+<div class="hero-banner" style="border-top:4px solid var(--gold);">
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+        <img src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'" style="width:90px;height:90px;border-radius:12px;object-fit:cover;">
+        <div>
+            <h2><a href="/players/{{ pending.player.id }}">{{ pending.player.user.name }}</a></h2>
+            <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ pending.player.primary_skill }} · {{ pending.player.batting_hand or "-" }} · Base ₹{{ (pending.base_price|inr) }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="text-align:center;">
+    <span class="field-label">Bidding opens in</span>
+    <div id="roll-countdown" style="font-size:48px;font-weight:800;color:var(--gold);margin-top:6px;"
+         hx-get="/admin/roll/status?auction_type={{ auction_type }}" hx-trigger="every 1s" hx-swap="innerHTML">
+        {{ reveal_seconds_left }}s
+    </div>
+</div>
+{% endblock %}
