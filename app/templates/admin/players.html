@@ -42,7 +42,7 @@
 <div class="table-wrap">
 <table class="data-table">
     <thead>
-        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>Upload</th></tr>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>CricHeroes</th><th>Upload</th></tr>
     </thead>
     <tbody>
         {% for p in players %}
@@ -59,6 +59,7 @@
                 {% if p.team %}<span class="badge badge-sold">Sold</span>
                 {% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
             </td>
+            <td>{% if p.cricheroes_url %}<a href="{{ p.cricheroes_url }}" target="_blank" rel="noopener">View ↗</a>{% else %}-{% endif %}</td>
             <td>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <form method="post" action="/admin/players/{{ p.id }}/photo" enctype="multipart/form-data" style="margin-bottom:0;">
@@ -80,7 +81,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet. Import a registrations CSV above.</td></tr>
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet. Import a registrations CSV above.</td></tr>
         {% endfor %}
     </tbody>
 </table>

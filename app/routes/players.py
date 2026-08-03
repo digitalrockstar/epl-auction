@@ -27,6 +27,7 @@ REG_HEADERS = {
     "experience_level": "Experience Level",
     "brief": "Short brief about your cricketing skills",
     "photo": "Clear Front View Profile Photo",
+    "cricheroes_url": "CricHeroes Profile Link",
 }
 
 STATS_INT_FIELDS = [
@@ -75,7 +76,7 @@ def import_registrations(
              "message": "Could not read that file, make sure it's a valid CSV export."},
         )
 
-    created, skipped = 0, 0
+    created, skipped, backfilled = 0, 0, 0
     for row in rows:
         phone = normalize_phone(row.get(REG_HEADERS["phone"]))
         name = (row.get(REG_HEADERS["name"]) or "").strip()
@@ -86,6 +87,10 @@ def import_registrations(
         existing_user = db.query(User).filter(User.phone == phone).first()
         if existing_user:
             skipped += 1
+            link = (row.get(REG_HEADERS["cricheroes_url"]) or "").strip()
+            if link and existing_user.player_profile and not existing_user.player_profile.cricheroes_url:
+                existing_user.player_profile.cricheroes_url = link
+                backfilled += 1
             continue
 
         u = User(name=name, phone=phone, password_hash=hash_password(phone[-6:]), role=Role.player)
@@ -104,6 +109,7 @@ def import_registrations(
             experience_level=row.get(REG_HEADERS["experience_level"]),
             brief=row.get(REG_HEADERS["brief"]),
             profile_photo_url=row.get(REG_HEADERS["photo"]),
+            cricheroes_url=row.get(REG_HEADERS["cricheroes_url"]),
         )
         db.add(p)
         created += 1
@@ -115,7 +121,10 @@ def import_registrations(
         "admin/players.html",
         {
             "request": request, "user": user, "players": players, "teams": teams,
-            "message": f"Imported {created} players, skipped {skipped} (duplicate phone or missing data).",
+            "message": (
+                f"Imported {created} players, skipped {skipped} (duplicate phone or missing data), "
+                f"backfilled CricHeroes link for {backfilled} existing player(s)."
+            ),
         },
     )
 

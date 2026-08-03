@@ -19,6 +19,7 @@
             {% if player.team %}<span class="badge badge-sold">Sold</span>{% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
         </div>
         {% if show_phone %}<p style="color:var(--text-muted);margin-top:4px;">{{ player.user.phone }}</p>{% endif %}
+        {% if player.cricheroes_url %}<p style="margin-top:4px;"><a href="{{ player.cricheroes_url }}" target="_blank" rel="noopener">View on CricHeroes ↗</a></p>{% endif %}
 
         <div class="stat-grid" style="margin-top:16px;">
             <div class="stat-tile gold"><span class="value" style="font-size:15px;">{{ player.primary_skill or "-" }}</span><span class="label">Role</span></div>
