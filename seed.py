@@ -56,7 +56,7 @@ MANAGERS = [
     ("Spartans", "Adarsh S", "9800011111", "111"),
     ("Titans", "Pavan T", "9800022222", "222"),
     ("Warriors", "Hitesh P", "9800033333", "333"),
-    ("Yoddhas", "Manish KS", "9800044444", "444"),
+    ("Yoddhas", "Himanshu R", "9800044444", "444"),
 ]
 for team_name, mgr_name, phone, password in MANAGERS:
     team = db.query(Team).filter(Team.name == team_name).first()
