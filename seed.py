@@ -17,8 +17,8 @@ from app.config import MAX_PURSE
 Base.metadata.create_all(bind=engine)
 db = SessionLocal()
 
-PHONE = "9999999999"
-PASSWORD = "changeme123"
+PHONE = "9191919191"
+PASSWORD = "zxqcgq"
 
 existing = db.query(User).filter(User.phone == PHONE).first()
 if existing:
@@ -53,10 +53,10 @@ else:
 
 # ---- Sample managers, one per team (placeholder phones - swap for real numbers before going live) ----
 MANAGERS = [
-    ("Spartans", "Adarsh S", "9800011111", "111"),
-    ("Titans", "Pavan T", "9800022222", "222"),
-    ("Warriors", "Hitesh P", "9800033333", "333"),
-    ("Yoddhas", "Himanshu R", "9800044444", "444"),
+    ("Spartans", "Adarsh S", "9800011111", "OTZED"),
+    ("Titans", "Himanshu R", "9800022222", "VHXDH"),
+    ("Warriors", "Pavan T", "9800033333", "VJKNR"),
+    ("Yoddhas", "Hitesh P", "9800044444", "SSMQA"),
 ]
 for team_name, mgr_name, phone, password in MANAGERS:
     team = db.query(Team).filter(Team.name == team_name).first()
@@ -76,7 +76,7 @@ for team_name, mgr_name, phone, password in MANAGERS:
     team.manager_id = mgr.id
     print(f"Created manager for {team_name}. Phone: {phone}  Password: {password}")
 db.commit()
-
+'''
 # ---- Sample players (mix of stats-available and brand-new / blank) ----
 SAMPLE_PLAYERS = [
     dict(name="Rohan Sharma", phone="9800000001", primary_skill="BAT - Batsman", batting_hand="Right Hand",
@@ -118,5 +118,5 @@ if db.query(Player).count() == 0:
     print(f"Created {len(SAMPLE_PLAYERS)} sample players (fee ₹1700 each, some blank stats for 'New Player' state).")
 else:
     print("Players already exist, skipping sample players.")
-
+'''
 db.close()
