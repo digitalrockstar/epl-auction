@@ -33,10 +33,27 @@ def roster_context(team: Team):
 @router.get("/my-team", response_class=HTMLResponse)
 def my_team(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
     team = _my_team(db, user)
+    all_teams = db.query(Team).order_by(Team.id).all()
     ctx = roster_context(team)
     return templates.TemplateResponse(
         "manager/my_team.html",
-        {"request": request, "user": user, "team": team, **ctx},
+        {"request": request, "user": user, "team": team, "is_own": True,
+         "all_teams": all_teams, "switch_prefix": "/team", "switch_suffix": "", **ctx},
+    )
+
+
+@router.get("/team/{team_id}", response_class=HTMLResponse)
+def view_team_roster(
+    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)
+):
+    team = db.query(Team).filter(Team.id == team_id).first()
+    all_teams = db.query(Team).order_by(Team.id).all()
+    is_own = bool(team and team.manager_id == user.id)
+    ctx = roster_context(team)
+    return templates.TemplateResponse(
+        "manager/my_team.html",
+        {"request": request, "user": user, "team": team, "is_own": is_own,
+         "all_teams": all_teams, "switch_prefix": "/team", "switch_suffix": "", **ctx},
     )
 
 

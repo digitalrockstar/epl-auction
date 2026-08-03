@@ -1,21 +1,25 @@
 {% extends "base.html" %}
-{% block title %}{{ "Team Roster" if admin_view else "My Team" }}{% endblock %}
+{% block title %}{{ "My Team" if is_own else "Team Roster" }}{% endblock %}
 {% block content %}
 {% if not team %}
 <div class="empty-state panel">
-    <p>{{ "Team not found." if admin_view else "No team is assigned to your login yet. Contact the Super Admin." }}</p>
+    <p>{{ "No team is assigned to your login yet. Contact the Super Admin." if is_own else "Team not found." }}</p>
 </div>
 {% else %}
 <div class="page-head-row">
     <div class="page-head">
-        <div class="eyebrow">{{ "Super Admin · Team Roster" if admin_view else "Manager Portal" }}</div>
-        <h1>{{ "Team Roster" if admin_view else "My Team" }}</h1>
-        <p class="sub">{{ "Read-only view into any team's squad, purse and stats." if admin_view else "Manage your squad, view stats and track your team's performance." }}</p>
+        <div class="eyebrow">
+            {% if is_own %}Manager Portal
+            {% elif user.role.value in ("super_admin", "admin") %}Super Admin · Team Roster
+            {% else %}Manager Portal · Viewing another team{% endif %}
+        </div>
+        <h1>{{ "My Team" if is_own else "Team Roster" }}</h1>
+        <p class="sub">{{ "Manage your squad, view stats and track your team's performance." if is_own else "Read-only view into another team's squad, purse and stats." }}</p>
     </div>
-    {% if admin_view %}
+    {% if all_teams %}
     <div>
         <span class="field-label">Switch team</span>
-        <select onchange="location.href='/admin/teams/' + this.value + '/roster'" style="min-width:160px;">
+        <select onchange="location.href='{{ switch_prefix }}/' + this.value + '{{ switch_suffix }}'" style="min-width:160px;">
             {% for t in all_teams %}<option value="{{ t.id }}" {% if t.id == team.id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
         </select>
     </div>
@@ -31,7 +35,7 @@
                 <p style="margin-top:2px;">Manager: {{ team.manager.name if team.manager else "-" }} · Captain: {{ team.captain.user.name if team.captain else "Not yet" }}</p>
             </div>
         </div>
-        {% if not admin_view %}<a href="/bid-panel" class="btn-gold" style="width:auto;margin-top:0;">Open Live Bid Panel</a>{% endif %}
+        {% if is_own %}<a href="/bid-panel" class="btn-gold" style="width:auto;margin-top:0;">Open Live Bid Panel</a>{% endif %}
     </div>
 </div>
 
