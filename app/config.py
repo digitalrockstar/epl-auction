@@ -5,6 +5,9 @@ PLAYER_BASE_PRICE = int(os.getenv("PLAYER_BASE_PRICE", 50000))
 MIN_SQUAD_SIZE = int(os.getenv("MIN_SQUAD_SIZE", 13))
 MAX_PURSE = int(os.getenv("MAX_PURSE", 2500000))
 TIMER_SECONDS = int(os.getenv("TIMER_SECONDS", 90))
+REVEAL_SECONDS = int(os.getenv("REVEAL_SECONDS", 12))
+
+SKILL_CATEGORIES = ["Batting", "Bowling", "All-Rounder [Batting]", "All-Rounder [Bowling]"]
 
 # (ceiling, increment) - applies while current_bid < ceiling
 INCREMENT_SLABS = [

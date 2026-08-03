@@ -94,6 +94,7 @@ class Player(Base):
     experience_level = Column(String, nullable=True)
     brief = Column(Text, nullable=True)
     profile_photo_url = Column(String, nullable=True)
+    cricheroes_url = Column(String, nullable=True)
 
     # CricHeroes stats
     matches_won = Column(Integer, nullable=True)

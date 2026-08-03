@@ -27,7 +27,7 @@
 <div class="table-wrap">
 <table class="data-table">
     <thead>
-        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Matches</th><th>Runs</th><th>Wickets</th><th>Captain?</th><th>Team</th><th>Status</th></tr>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Matches</th><th>Runs</th><th>Avg</th><th>SR</th><th>Wickets</th><th>Economy</th><th>Captain?</th><th>Team</th><th>Status</th><th>CricHeroes</th></tr>
     </thead>
     <tbody>
         {% for p in players %}
@@ -40,16 +40,20 @@
             <td style="color:var(--text-muted);font-size:12.5px;">{{ p.batting_hand or "-" }} / {{ p.bowling_style or "-" }}</td>
             <td>{{ (p.bat_matches or p.bowl_matches) if (p.bat_matches or p.bowl_matches) else "New Player" }}</td>
             <td>{{ p.bat_runs if p.bat_runs is not none else "-" }}</td>
+            <td>{{ p.bat_avg if p.bat_avg is not none else "-" }}</td>
+            <td>{{ p.bat_sr if p.bat_sr is not none else "-" }}</td>
             <td>{{ p.bowl_wickets if p.bowl_wickets is not none else "-" }}</td>
-            <td>{{ "Yes" if p.wants_captaincy else "No" }}</td>
+            <td>{{ p.bowl_economy if p.bowl_economy is not none else "-" }}</td>
+            <td>{{ "Interested" if p.wants_captaincy else "Not Interested" }}</td>
             <td>{{ p.team.name if p.team else "-" }}</td>
             <td>
                 {% if p.team %}<span class="badge badge-sold">Sold</span>
                 {% else %}<span class="badge badge-unsold">Unsold</span>{% endif %}
             </td>
+            <td>{% if p.cricheroes_url %}<a href="{{ p.cricheroes_url }}" target="_blank" rel="noopener">CricHeroes</a>{% else %}-{% endif %}</td>
         </tr>
         {% else %}
-        <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet.</td></tr>
+        <tr><td colspan="13" style="text-align:center;color:var(--text-muted);padding:30px;">No players yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>

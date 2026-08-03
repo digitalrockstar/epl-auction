@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
 from app.auth import require_role, require_login
-from app.config import TIMER_SECONDS
+from app.config import TIMER_SECONDS, REVEAL_SECONDS
 from app.bidding import next_bid_amount, purse_check, base_price_for
 from app.notify import notify, notify_sold
 
@@ -25,6 +25,28 @@ def _player_photo(db: Session, player: Player, team_id):
 
 def _players_bought(db: Session, team_id: int) -> int:
     return db.query(Player).filter(Player.team_id == team_id).count()
+
+
+def _eligible_pool(db: Session, a_type: AuctionType, category: str):
+    """Unsold players in a fixed skill category, eligible for this auction type."""
+    q = db.query(Player).join(Player.user).filter(Player.team_id.is_(None), Player.primary_skill == category)
+    if a_type == AuctionType.captain:
+        q = q.filter(Player.wants_captaincy.is_(True))
+    return q.all()
+
+
+def _padded_photos(db: Session, players, minimum: int = 6):
+    """Pads a short candidate list by repeating it, so the reveal shuffle
+    always has enough frames to look like a proper spin."""
+    photos = [_player_photo(db, p, None) for p in players]
+    if not photos:
+        return []
+    out = list(photos)
+    i = 0
+    while len(out) < minimum:
+        out.append(photos[i % len(photos)])
+        i += 1
+    return out
 
 
 def _redirect(auction_type: str, msg: str = None):
@@ -65,6 +87,39 @@ def _finalize_expired(db: Session, auction: Auction):
         notify(f"UNSOLD: {auction.player.user.name} (timer expired, no bids)")
 
 
+def _promote_pending(db: Session, auction: Auction):
+    """A 'pending' auction is a Roll reveal in progress. Once the reveal
+    countdown has elapsed, flip it to live and start the real bidding
+    timer fresh from this moment."""
+    if not auction or auction.status != AuctionStatus.pending:
+        return
+    deadline = auction.started_at + timedelta(seconds=REVEAL_SECONDS)
+    if datetime.utcnow() < deadline:
+        return
+    now = datetime.utcnow()
+    auction.status = AuctionStatus.live
+    auction.started_at = now
+    auction.last_action_at = now
+    db.commit()
+
+
+def _current_auction(db: Session):
+    """Resolves the single in-flight auction, if any: (live, pending).
+    Only one of the two will ever be set at a time."""
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_expired(db, live)
+    if live and live.status != AuctionStatus.live:
+        live = None
+    pending = None
+    if not live:
+        pending = db.query(Auction).filter(Auction.status == AuctionStatus.pending).first()
+        _promote_pending(db, pending)
+        if pending and pending.status == AuctionStatus.live:
+            live = pending
+            pending = None
+    return live, pending
+
+
 @router.get("/admin/auction", response_class=HTMLResponse)
 def auction_console(
     request: Request,
@@ -73,10 +128,7 @@ def auction_console(
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
-    _finalize_expired(db, live)
-    if live and live.status != AuctionStatus.live:
-        live = None
+    live, pending = _current_auction(db)
 
     a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
     sold_ids = [row[0] for row in db.query(Auction.player_id).filter(Auction.status == AuctionStatus.sold)]
@@ -101,7 +153,7 @@ def auction_console(
             "request": request, "user": user, "live": live, "live_photo": live_photo,
             "pool": pool, "teams": teams, "auction_type": auction_type,
             "msg": msg, "min_next_bid": min_next_bid, "seconds_left": seconds_left,
-            "timer_total": TIMER_SECONDS, "can_undo": can_undo,
+            "timer_total": TIMER_SECONDS, "can_undo": can_undo, "pending": pending,
         },
     )
 
@@ -113,8 +165,8 @@ def start_auction(
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
-    if db.query(Auction).filter(Auction.status == AuctionStatus.live).first():
-        return _redirect(auction_type, "Another auction is already live, close it first")
+    if db.query(Auction).filter(Auction.status.in_([AuctionStatus.live, AuctionStatus.pending])).first():
+        return _redirect(auction_type, "Another auction is already live or revealing, finish that first")
 
     player = db.query(Player).filter(Player.id == player_id).first()
     if not player:
@@ -296,10 +348,7 @@ def mark_unsold(
 
 
 def _live_context(db: Session):
-    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
-    _finalize_expired(db, live)
-    if live and live.status != AuctionStatus.live:
-        live = None
+    live, pending = _current_auction(db)
     photo = _player_photo(db, live.player, live.current_team_id) if live else None
     seconds_left = None
     recent_bids = []
@@ -314,44 +363,63 @@ def _live_context(db: Session):
         db.query(Auction).filter(Auction.status == AuctionStatus.sold)
         .order_by(Auction.closed_at.asc()).all()
     )
-    return live, photo, seconds_left, teams, recent_bids, sold_auctions
+    reveal_seconds_left = None
+    reveal_category = None
+    if pending:
+        reveal_seconds_left = max(0, REVEAL_SECONDS - int((datetime.utcnow() - pending.started_at).total_seconds()))
+        reveal_category = pending.player.primary_skill
+    return live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
+        _live_context(db)
+    )
+    reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment",
-         "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker"},
+         "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
+         "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
+         "reveal_category": reveal_category, "reveal_photos": reveal_photos},
     )
 
 
 @router.get("/auction/live/fragment", response_class=HTMLResponse)
 def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
+        _live_context(db)
+    )
+    reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": TIMER_SECONDS, "teams": teams, "recent_bids": recent_bids,
-         "sold_auctions": sold_auctions},
+         "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
+         "reveal_photos": reveal_photos},
     )
 
 
 @router.get("/auction/live/timer", response_class=HTMLResponse)
 def live_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
+        _live_context(db)
+    )
     return templates.TemplateResponse(
         "auction/_timer_fragment.html",
-        {"request": request, "live": live, "seconds_left": seconds_left},
+        {"request": request, "live": live, "seconds_left": seconds_left,
+         "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS},
     )
 
 
 @router.get("/auction/live/ticker", response_class=HTMLResponse)
 def live_ticker(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions = _live_context(db)
+    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
+        _live_context(db)
+    )
     return templates.TemplateResponse(
         "auction/_ticker_fragment.html",
         {"request": request, "sold_auctions": sold_auctions},

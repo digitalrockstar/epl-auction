@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Roll{% endblock %}
+{% block content %}
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Auction</div>
+        <h1>Roll</h1>
+        <p class="sub">Pick a skill category and let the app randomly pull the next player from that pool.</p>
+    </div>
+    <a href="/auction/live" target="_blank" class="btn btn-outline btn-sm">Open TV View ↗</a>
+</div>
+
+<div class="tabs">
+    <a href="/admin/roll?auction_type=captain" class="{{ 'active' if auction_type == 'captain' }}">Captain's Auction</a>
+    <a href="/admin/roll?auction_type=player" class="{{ 'active' if auction_type == 'player' }}">Player's Auction</a>
+</div>
+
+{% if msg %}<span class="error">{{ msg }}</span>{% endif %}
+
+{% if live %}
+<div class="panel">
+    <p>An auction is currently live. <a href="/admin/auction?auction_type={{ auction_type }}">Go to the console</a> to run it before rolling again.</p>
+</div>
+{% elif pending %}
+<div class="panel">
+    <p>Revealing <b>{{ pending.player.user.name }}</b> ({{ pending.player.primary_skill }}) - bidding opens shortly.
+    <a href="/admin/roll/reveal?auction_type={{ auction_type }}">Go to reveal</a></p>
+</div>
+{% else %}
+<div class="tile-grid">
+    {% for c in categories %}
+    <div class="quick-tile" style="align-items:stretch;">
+        <b>{{ counts[c] }}</b>
+        <span>{{ c }}</span>
+        {% if counts[c] > 0 %}
+        <form method="post" action="/admin/roll/spin" style="margin-top:10px;margin-bottom:0;">
+            <input type="hidden" name="auction_type" value="{{ auction_type }}">
+            <input type="hidden" name="category" value="{{ c }}">
+            <button type="submit" class="btn-gold" style="width:100%;">Roll</button>
+        </form>
+        {% else %}
+        <p style="color:var(--text-muted);font-size:12.5px;margin-top:10px;">Category complete - move to the next one.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

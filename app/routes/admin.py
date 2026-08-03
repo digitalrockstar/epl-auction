@@ -136,7 +136,8 @@ def team_roster(
     ctx = roster_context(team)
     return templates.TemplateResponse(
         "manager/my_team.html",
-        {"request": request, "user": user, "team": team, "admin_view": True, "all_teams": all_teams, **ctx},
+        {"request": request, "user": user, "team": team, "is_own": False,
+         "all_teams": all_teams, "switch_prefix": "/admin/teams", "switch_suffix": "/roster", **ctx},
     )
 
 
