@@ -12,9 +12,8 @@ from app.templating import templates
 
 @router.get("/live", response_class=HTMLResponse)
 def spectator_live(request: Request, db: Session = Depends(get_db)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
-        _live_context(db)
-    )
+    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+     reveal_category, ticker_speed) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/live.html",
@@ -23,15 +22,14 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
          "sold_auctions": sold_auctions, "fragment_url": "/spectator/live/fragment",
          "timer_fragment_url": "/spectator/live/timer", "ticker_fragment_url": "/spectator/live/ticker",
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
-         "reveal_category": reveal_category, "reveal_photos": reveal_photos},
+         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed},
     )
 
 
 @router.get("/live/fragment", response_class=HTMLResponse)
 def spectator_fragment(request: Request, db: Session = Depends(get_db)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
-        _live_context(db)
-    )
+    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+     reveal_category, ticker_speed) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
@@ -44,9 +42,8 @@ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/live/timer", response_class=HTMLResponse)
 def spectator_timer(request: Request, db: Session = Depends(get_db)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
-        _live_context(db)
-    )
+    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+     reveal_category, ticker_speed) = _live_context(db)
     return templates.TemplateResponse(
         "auction/_timer_fragment.html",
         {"request": request, "live": live, "seconds_left": seconds_left,
@@ -56,10 +53,9 @@ def spectator_timer(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/live/ticker", response_class=HTMLResponse)
 def spectator_ticker(request: Request, db: Session = Depends(get_db)):
-    live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left, reveal_category = (
-        _live_context(db)
-    )
+    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+     reveal_category, ticker_speed) = _live_context(db)
     return templates.TemplateResponse(
         "auction/_ticker_fragment.html",
-        {"request": request, "sold_auctions": sold_auctions},
+        {"request": request, "sold_auctions": sold_auctions, "ticker_speed": ticker_speed},
     )

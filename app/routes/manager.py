@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models import Team, Auction, AuctionStatus, Bid, User, Role
 from app.auth import require_role
 from app.bidding import next_bid_amount, purse_check
+from app.app_settings import get_slabs
 from app.routes.auction import _player_photo, _players_bought
 
 router = APIRouter()
@@ -70,7 +71,7 @@ def bid_panel(request: Request, db: Session = Depends(get_db), user: User = Depe
     next_amount, disabled, disabled_reason = None, True, ""
 
     if live and team:
-        next_amount = next_bid_amount(live)
+        next_amount = next_bid_amount(live, get_slabs(db))
         if live.current_team_id == team.id:
             disabled, disabled_reason = True, "You're already leading this bid"
         else:
@@ -92,7 +93,7 @@ def place_my_bid(request: Request, db: Session = Depends(get_db), user: User = D
     team = _my_team(db, user)
     live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
     if live and team and live.current_team_id != team.id:
-        amount = next_bid_amount(live)
+        amount = next_bid_amount(live, get_slabs(db))
         bought = _players_bought(db, team.id)
         if not purse_check(team, live.auction_type, amount, bought):
             db.add(Bid(auction_id=live.id, team_id=team.id, amount=amount, entered_by_admin_id=user.id))

@@ -39,7 +39,7 @@
 {% elif pending %}
 <div class="tv-card" data-status="pending">
     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if pending.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
-    <h1 style="margin-top:24px;">Rolling for next {{ reveal_category }} player&hellip;</h1>
+    <h1 style="margin-top:24px;">{{ "Rolling for the next captain&hellip;" if pending.auction_type.value == "captain" else "Rolling for next " + reveal_category + " player&hellip;" }}</h1>
     <div class="tv-shuffle-grid">
         {% for p in reveal_photos %}
         <img src="{{ p }}" onerror="this.src='/static/img/placeholder_player_photo.svg'" class="tv-shuffle-photo" style="animation-delay: {{ loop.index0 * 0.15 }}s;">
