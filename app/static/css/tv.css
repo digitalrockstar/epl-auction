@@ -103,21 +103,20 @@ html, body { overflow-x: hidden; }
 
 .tv-bid-amount { transition: all 0.2s ease; }
 
-/* Result stamp: shown over the last player's card for the hold window
-   after sold/unsold, before the card is allowed to clear. */
+/* Result stamp: PNG badge (sold/unsold) bounced in on the right edge of
+   the player's photo for the hold window after sold/unsold, before the
+   card is allowed to clear. */
+.tv-photo-wrap { position: relative; flex-shrink: 0; }
 .tv-result-stamp {
-    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-    background: rgba(5,6,10,0.72); border-radius: 18px; z-index: 2;
-    font-size: clamp(28px, 6vw, 64px); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; text-align: center;
-    padding: 20px; box-sizing: border-box; animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
+    position: absolute; top: 50%; right: -14px; z-index: 2;
+    width: clamp(64px, 8vw, 140px); aspect-ratio: 1 / 1; object-fit: contain;
+    background: transparent; pointer-events: none;
+    animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
 }
-.tv-result-stamp.no-replay { animation: none; }
-.tv-result-stamp.sold { color: var(--green); text-shadow: 0 0 24px var(--green-soft); }
-.tv-result-stamp.unsold { color: var(--red); text-shadow: 0 0 24px var(--red-soft); }
-.tv-result-sub { font-size: clamp(16px, 3vw, 28px); font-weight: 700; letter-spacing: 0.02em; text-transform: none; color: var(--blue); text-shadow: none; }
+.tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
 @keyframes tv-stamp-in {
-    from { transform: scale(1.6) rotate(-8deg); opacity: 0; }
-    to { transform: scale(1) rotate(-4deg); opacity: 1; }
+    from { transform: translateY(-50%) scale(1.6) rotate(-8deg); opacity: 0; }
+    to { transform: translateY(-50%) scale(1) rotate(-4deg); opacity: 1; }
 }
 
 .purse-ticker {

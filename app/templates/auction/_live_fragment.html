@@ -39,8 +39,12 @@
 {% elif resolved %}
 <div class="tv-card" data-status="{{ resolved.status.value }}">
     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if resolved.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
-    <img src="{{ resolved_photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo"
-         onerror="this.src='/static/img/placeholder_player_photo.svg'">
+    <div class="tv-photo-wrap">
+        <img src="{{ resolved_photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo"
+             onerror="this.src='/static/img/placeholder_player_photo.svg'">
+        <img src="{{ '/static/img/result_stamp_sold.png' if resolved.status.value == 'sold' else '/static/img/result_stamp_unsold.png' }}"
+             class="tv-result-stamp" data-resolved-id="{{ resolved.id }}" alt="">
+    </div>
     <div class="tv-info">
         <h1>{{ resolved.player.user.name }}</h1>
         {% if resolved.status.value == "sold" %}
@@ -49,10 +53,6 @@
             {% if resolved.current_team %}<span class="tv-bid-team">{{ resolved.current_team.name }}</span>{% endif %}
         </div>
         {% endif %}
-    </div>
-    <div class="tv-result-stamp {{ 'sold' if resolved.status.value == 'sold' else 'unsold' }}" data-resolved-id="{{ resolved.id }}">
-        <span>{{ "SOLD" if resolved.status.value == "sold" else "WILL BE BACK" }}</span>
-        {% if resolved.status.value == "sold" and resolved.current_team %}<span class="tv-result-sub">{{ resolved.current_team.name }}</span>{% endif %}
     </div>
 </div>
 {% elif pending %}
