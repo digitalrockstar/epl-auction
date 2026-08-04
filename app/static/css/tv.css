@@ -115,6 +115,7 @@ html, body { overflow-x: hidden; }
     animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
 }
 .tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
+@media (min-width: 901px) { .tv-result-stamp { width: clamp(128px, 16vw, 280px); } }
 @keyframes tv-stamp-in {
     from { transform: translateY(-50%) scale(1.6) rotate(-8deg); opacity: 0; }
     to { transform: translateY(-50%) scale(1) rotate(-4deg); opacity: 1; }
