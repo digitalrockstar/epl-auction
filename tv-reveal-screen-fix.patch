@@ -1,0 +1,32 @@
+diff --git a/app/static/css/tv.css b/app/static/css/tv.css
+index 3dd7f5d..336b1ed 100644
+--- a/app/static/css/tv.css
++++ b/app/static/css/tv.css
+@@ -68,6 +68,14 @@ html, body { overflow-x: hidden; }
+     border-radius: 20px;
+     box-shadow: 0 0 40px rgba(232,171,47,0.08);
+ }
++/* Reveal/roll screen stacks vertically (heading, shuffle grid, caption),
++   unlike the live/resolved cards which are a photo+info row. .tv-card
++   defaults to flex-row, which was squeezing these into slivers and
++   wrapping text one character per line. */
++.tv-card[data-status="pending"] {
++    flex-direction: column;
++    text-align: center;
++}
+ .tv-mode-tag {
+     position: absolute; top: -16px; left: 34px;
+     background: #e8ab2f; color: #1a1305; font-weight: 800;
+diff --git a/app/templates/auction/_live_fragment.html b/app/templates/auction/_live_fragment.html
+index f4484d6..4c88df8 100644
+--- a/app/templates/auction/_live_fragment.html
++++ b/app/templates/auction/_live_fragment.html
+@@ -57,7 +57,7 @@
+ {% elif pending %}
+ <div class="tv-card" data-status="pending">
+     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if pending.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
+-    <h1 style="margin-top:24px;">{{ "Rolling for the next captain&hellip;" if pending.auction_type.value == "captain" else "Rolling for next " + reveal_category + " player&hellip;" }}</h1>
++    <h1 style="margin-top:24px;">{{ "Rolling for the next captain…" if pending.auction_type.value == "captain" else "Rolling for next " + reveal_category + " player…" }}</h1>
+     <div class="tv-shuffle-grid">
+         {% for p in reveal_photos %}
+         <img src="{{ p }}" onerror="this.src='/static/img/placeholder_player_photo.svg'" class="tv-shuffle-photo" style="animation-delay: {{ loop.index0 * 0.15 }}s;">

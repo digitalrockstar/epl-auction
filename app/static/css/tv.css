@@ -68,6 +68,14 @@ html, body { overflow-x: hidden; }
     border-radius: 20px;
     box-shadow: 0 0 40px rgba(232,171,47,0.08);
 }
+/* Reveal/roll screen stacks vertically (heading, shuffle grid, caption),
+   unlike the live/resolved cards which are a photo+info row. .tv-card
+   defaults to flex-row, which was squeezing these into slivers and
+   wrapping text one character per line. */
+.tv-card[data-status="pending"] {
+    flex-direction: column;
+    text-align: center;
+}
 .tv-mode-tag {
     position: absolute; top: -16px; left: 34px;
     background: #e8ab2f; color: #1a1305; font-weight: 800;
