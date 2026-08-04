@@ -12,13 +12,29 @@
 {% if msg %}<span class="error" style="color:var(--green);">{{ msg }}</span>{% endif %}
 
 <div class="panel">
-    <h3 style="margin-bottom:14px;">Telegram &amp; TV ticker</h3>
-    <form method="post" action="/admin/settings/general">
+    <h3 style="margin-bottom:14px;">Telegram</h3>
+    <form method="post" action="/admin/settings/telegram">
         <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
             <input type="checkbox" name="telegram_enabled" {% if settings.telegram_enabled %}checked{% endif %} style="width:auto;">
             Send a Telegram message on every SOLD / UNSOLD
         </label>
+        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
+    </form>
+</div>
 
+<div class="panel">
+    <h3 style="margin-bottom:14px;">Bidding timer</h3>
+    <form method="post" action="/admin/settings/timer">
+        <span class="field-label">Timer duration (seconds)</span>
+        <input type="number" name="timer_seconds" value="{{ settings.timer_seconds }}" min="10" style="width:120px;">
+        <p style="color:var(--text-muted);font-size:12px;margin-top:4px;margin-bottom:14px;">How long each player/captain stays open for bidding once live, counted from the last bid.</p>
+        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h3 style="margin-bottom:14px;">TV ticker</h3>
+    <form method="post" action="/admin/settings/ticker">
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
             <div>
                 <span class="field-label">Ticker scroll duration (seconds)</span>

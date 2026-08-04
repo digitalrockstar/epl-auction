@@ -213,6 +213,7 @@ class Settings(Base):
 
     id = Column(Integer, primary_key=True)
     telegram_enabled = Column(Boolean, default=True)
+    timer_seconds = Column(Integer, default=90)
     ticker_speed_seconds = Column(Integer, default=36)
     ticker_window = Column(Integer, default=15)
     increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
