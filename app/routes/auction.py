@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
 from app.auth import require_role, require_login
-from app.config import REVEAL_SECONDS
+from app.config import REVEAL_SECONDS, RESULT_HOLD_SECONDS
 from app.bidding import next_bid_amount, purse_check, base_price_for
 from app.app_settings import get_settings, get_slabs
 from app.notify import notify, notify_sold
@@ -381,14 +381,32 @@ def _live_context(db: Session):
         reveal_seconds_left = max(0, REVEAL_SECONDS - int((datetime.utcnow() - pending.started_at).total_seconds()))
         if pending.auction_type != AuctionType.captain:
             reveal_category = pending.player.primary_skill
+
+    # Hold the most recently closed auction on screen for a few seconds
+    # (SOLD / WILL BE BACK stamp) instead of letting the card vanish the
+    # instant the next poll sees status flip away from "live".
+    resolved = None
+    resolved_photo = None
+    if not live:
+        last_closed = (
+            db.query(Auction)
+            .filter(Auction.status.in_([AuctionStatus.sold, AuctionStatus.unsold]))
+            .order_by(Auction.closed_at.desc())
+            .first()
+        )
+        if last_closed and last_closed.closed_at and \
+                (datetime.utcnow() - last_closed.closed_at).total_seconds() < RESULT_HOLD_SECONDS:
+            resolved = last_closed
+            resolved_photo = _player_photo(db, resolved.player, resolved.current_team_id)
+
     return (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-            reveal_category, settings.ticker_speed_seconds, settings.timer_seconds)
+            reveal_category, settings.ticker_speed_seconds, settings.timer_seconds, resolved, resolved_photo)
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
+     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/live.html",
@@ -397,28 +415,29 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
          "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment",
          "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
-         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed},
+         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
+         "resolved": resolved, "resolved_photo": resolved_photo},
     )
 
 
 @router.get("/auction/live/fragment", response_class=HTMLResponse)
 def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
+     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
-         "reveal_photos": reveal_photos},
+         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
     )
 
 
 @router.get("/auction/live/timer", response_class=HTMLResponse)
 def live_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
+     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     return templates.TemplateResponse(
         "auction/_timer_fragment.html",
         {"request": request, "live": live, "seconds_left": seconds_left,
@@ -429,7 +448,7 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
 @router.get("/auction/live/ticker", response_class=HTMLResponse)
 def live_ticker(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
+     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     return templates.TemplateResponse(
         "auction/_ticker_fragment.html",
         {"request": request, "sold_auctions": sold_auctions, "ticker_speed": ticker_speed},

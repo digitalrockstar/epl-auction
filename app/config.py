@@ -6,6 +6,7 @@ MIN_SQUAD_SIZE = int(os.getenv("MIN_SQUAD_SIZE", 13))
 MAX_PURSE = int(os.getenv("MAX_PURSE", 2500000))
 TIMER_SECONDS = int(os.getenv("TIMER_SECONDS", 90))
 REVEAL_SECONDS = int(os.getenv("REVEAL_SECONDS", 12))
+RESULT_HOLD_SECONDS = int(os.getenv("RESULT_HOLD_SECONDS", 7))
 TICKER_SPEED_SECONDS = int(os.getenv("TICKER_SPEED_SECONDS", 36))
 TICKER_WINDOW = int(os.getenv("TICKER_WINDOW", 15))
 

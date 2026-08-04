@@ -34,8 +34,8 @@ html, body { overflow-x: hidden; }
 .tv-feed-item .fi-amt { color: #e8ab2f; font-weight: 700; }
 .tv-feed-item .fi-time { color: #5b5f6e; font-size: 11px; }
 
-.tv-card { display: flex; gap: 40px; align-items: center; padding: 34px; box-sizing: border-box; }
-.tv-photo { width: clamp(160px, 22vw, 300px); height: clamp(210px, 28vw, 380px); object-fit: cover; border-radius: 16px; border: 4px solid #e8ab2f; background: #1b1e28; flex-shrink: 0; }
+.tv-card { display: flex; gap: 40px; align-items: center; padding: 34px; box-sizing: border-box; flex-wrap: wrap; }
+.tv-photo { width: clamp(110px, 18vw, 300px); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 16px; border: 4px solid #e8ab2f; background: #1b1e28; flex-shrink: 0; }
 .tv-info { min-width: 0; }
 .tv-info h1 { font-size: clamp(24px, 4vw, 42px); margin: 0 0 10px; overflow-wrap: anywhere; }
 .tv-tag { font-size: clamp(13px, 1.6vw, 18px); color: #a0a4ae; margin-bottom: 22px; overflow-wrap: anywhere; }
@@ -88,6 +88,21 @@ html, body { overflow-x: hidden; }
 
 .tv-bid-amount { transition: all 0.2s ease; }
 
+/* Result stamp: shown over the last player's card for the hold window
+   after sold/unsold, before the card is allowed to clear. */
+.tv-result-stamp {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(5,6,10,0.72); border-radius: 18px; z-index: 2;
+    font-size: clamp(28px, 6vw, 64px); font-weight: 900; letter-spacing: 2px; text-align: center;
+    padding: 20px; box-sizing: border-box; animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
+}
+.tv-result-stamp.sold { color: #3ddc84; text-shadow: 0 0 24px rgba(61,220,132,0.5); }
+.tv-result-stamp.unsold { color: #e5534b; text-shadow: 0 0 24px rgba(229,83,75,0.4); }
+@keyframes tv-stamp-in {
+    from { transform: scale(1.6) rotate(-8deg); opacity: 0; }
+    to { transform: scale(1) rotate(-4deg); opacity: 1; }
+}
+
 .purse-ticker {
     position: fixed; bottom: 0; left: 0; right: 0;
     display: flex; gap: 16px; padding: 16px 30px;
@@ -99,13 +114,23 @@ html, body { overflow-x: hidden; }
 .purse-bar { height: 4px; background: #262a37; border-radius: 2px; margin-top: 6px; overflow: hidden; }
 .purse-bar-fill { height: 100%; transition: width 0.5s ease; }
 
+/* Mid-size TV/browser windows: side panel was fighting the card for
+   width and forcing text to compress while the photo stayed pinned to
+   its clamp floor. Drop the side panel below the card here instead of
+   waiting for the mobile breakpoint. */
+@media (max-width: 1300px) and (min-width: 901px) {
+    .tv-wrap-outer { flex-direction: column; }
+    .tv-side { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .tv-side-panel { flex: 1 1 260px; }
+}
+
 /* Spectator / mobile mode */
 @media (max-width: 900px) {
     .tv-wrap-outer { flex-direction: column; margin-top: 94px; padding: 12px; gap: 14px; }
     .tv-side { width: 100%; flex-direction: column; }
     .tv-side-panel { width: 100%; box-sizing: border-box; }
     .tv-card { flex-direction: column; gap: 18px; padding: 18px; text-align: center; }
-    .tv-photo { width: min(60vw, 220px); height: auto; aspect-ratio: 300 / 380; margin: 0 auto; }
+    .tv-photo { width: min(60vw, 220px); height: auto; aspect-ratio: 1 / 1; margin: 0 auto; }
     .tv-bid { justify-content: center; }
     .tv-stats { grid-template-columns: repeat(2, 1fr); text-align: left; }
     .tv-topbar { padding: 8px 12px; flex-wrap: wrap; gap: 6px; row-gap: 4px; }

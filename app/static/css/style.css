@@ -321,8 +321,8 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
     border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px;
 }
 .team-card .team-card-head { display: flex; align-items: center; justify-content: space-between; }
-.team-card .team-name-row { display: flex; align-items: center; gap: 10px; }
-.team-card .team-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--surface-3); }
+.team-name-row { display: flex; align-items: center; gap: 10px; }
+.team-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--surface-3); flex-shrink: 0; }
 .team-card .team-name { font-size: 17px; font-weight: 800; }
 .team-card .team-meta { font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
 .team-card .team-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }

@@ -1,0 +1,269 @@
+diff --git a/app/config.py b/app/config.py
+index d834817..64f38aa 100644
+--- a/app/config.py
++++ b/app/config.py
+@@ -5,7 +5,8 @@ PLAYER_BASE_PRICE = int(os.getenv("PLAYER_BASE_PRICE", 50000))
+ MIN_SQUAD_SIZE = int(os.getenv("MIN_SQUAD_SIZE", 13))
+ MAX_PURSE = int(os.getenv("MAX_PURSE", 2500000))
+ TIMER_SECONDS = int(os.getenv("TIMER_SECONDS", 90))
+-REVEAL_SECONDS = int(os.getenv("REVEAL_SECONDS", 12))
++REVEAL_SECONDS = int(os.getenv("REVEAL_SECONDS", 12))
++RESULT_HOLD_SECONDS = int(os.getenv("RESULT_HOLD_SECONDS", 7))
+ TICKER_SPEED_SECONDS = int(os.getenv("TICKER_SPEED_SECONDS", 36))
+ TICKER_WINDOW = int(os.getenv("TICKER_WINDOW", 15))
+ 
+diff --git a/app/routes/auction.py b/app/routes/auction.py
+index 26bb4b5..379c6ce 100644
+--- a/app/routes/auction.py
++++ b/app/routes/auction.py
+@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
+ from app.database import get_db
+ from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
+ from app.auth import require_role, require_login
+-from app.config import REVEAL_SECONDS
++from app.config import REVEAL_SECONDS, RESULT_HOLD_SECONDS
+ from app.bidding import next_bid_amount, purse_check, base_price_for
+ from app.app_settings import get_settings, get_slabs
+ from app.notify import notify, notify_sold
+@@ -381,14 +381,32 @@ def _live_context(db: Session):
+         reveal_seconds_left = max(0, REVEAL_SECONDS - int((datetime.utcnow() - pending.started_at).total_seconds()))
+         if pending.auction_type != AuctionType.captain:
+             reveal_category = pending.player.primary_skill
++
++    # Hold the most recently closed auction on screen for a few seconds
++    # (SOLD / WILL BE BACK stamp) instead of letting the card vanish the
++    # instant the next poll sees status flip away from "live".
++    resolved = None
++    resolved_photo = None
++    if not live:
++        last_closed = (
++            db.query(Auction)
++            .filter(Auction.status.in_([AuctionStatus.sold, AuctionStatus.unsold]))
++            .order_by(Auction.closed_at.desc())
++            .first()
++        )
++        if last_closed and last_closed.closed_at and \
++                (datetime.utcnow() - last_closed.closed_at).total_seconds() < RESULT_HOLD_SECONDS:
++            resolved = last_closed
++            resolved_photo = _player_photo(db, resolved.player, resolved.current_team_id)
++
+     return (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-            reveal_category, settings.ticker_speed_seconds, settings.timer_seconds)
++            reveal_category, settings.ticker_speed_seconds, settings.timer_seconds, resolved, resolved_photo)
+ 
+ 
+ @router.get("/auction/live", response_class=HTMLResponse)
+ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+     return templates.TemplateResponse(
+         "auction/live.html",
+@@ -397,28 +415,29 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
+          "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment",
+          "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
+          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
+-         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed},
++         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
++         "resolved": resolved, "resolved_photo": resolved_photo},
+     )
+ 
+ 
+ @router.get("/auction/live/fragment", response_class=HTMLResponse)
+ def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+     return templates.TemplateResponse(
+         "auction/_live_fragment.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
+          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
+-         "reveal_photos": reveal_photos},
++         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
+     )
+ 
+ 
+ @router.get("/auction/live/timer", response_class=HTMLResponse)
+ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     return templates.TemplateResponse(
+         "auction/_timer_fragment.html",
+         {"request": request, "live": live, "seconds_left": seconds_left,
+@@ -429,7 +448,7 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
+ @router.get("/auction/live/ticker", response_class=HTMLResponse)
+ def live_ticker(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     return templates.TemplateResponse(
+         "auction/_ticker_fragment.html",
+         {"request": request, "sold_auctions": sold_auctions, "ticker_speed": ticker_speed},
+diff --git a/app/routes/spectator.py b/app/routes/spectator.py
+index 8f58c71..b58a2f7 100644
+--- a/app/routes/spectator.py
++++ b/app/routes/spectator.py
+@@ -13,7 +13,7 @@ from app.templating import templates
+ @router.get("/live", response_class=HTMLResponse)
+ def spectator_live(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+     return templates.TemplateResponse(
+         "auction/live.html",
+@@ -22,28 +22,29 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
+          "sold_auctions": sold_auctions, "fragment_url": "/spectator/live/fragment",
+          "timer_fragment_url": "/spectator/live/timer", "ticker_fragment_url": "/spectator/live/ticker",
+          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
+-         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed},
++         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
++         "resolved": resolved, "resolved_photo": resolved_photo},
+     )
+ 
+ 
+ @router.get("/live/fragment", response_class=HTMLResponse)
+ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+     return templates.TemplateResponse(
+         "auction/_live_fragment.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
+          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
+-         "reveal_photos": reveal_photos},
++         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
+     )
+ 
+ 
+ @router.get("/live/timer", response_class=HTMLResponse)
+ def spectator_timer(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     return templates.TemplateResponse(
+         "auction/_timer_fragment.html",
+         {"request": request, "live": live, "seconds_left": seconds_left,
+@@ -54,7 +55,7 @@ def spectator_timer(request: Request, db: Session = Depends(get_db)):
+ @router.get("/live/ticker", response_class=HTMLResponse)
+ def spectator_ticker(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+-     reveal_category, ticker_speed, timer_seconds) = _live_context(db)
++     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     return templates.TemplateResponse(
+         "auction/_ticker_fragment.html",
+         {"request": request, "sold_auctions": sold_auctions, "ticker_speed": ticker_speed},
+diff --git a/app/static/css/style.css b/app/static/css/style.css
+index cdc6a3a..e25581d 100644
+--- a/app/static/css/style.css
++++ b/app/static/css/style.css
+@@ -321,8 +321,8 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
+     border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px;
+ }
+ .team-card .team-card-head { display: flex; align-items: center; justify-content: space-between; }
+-.team-card .team-name-row { display: flex; align-items: center; gap: 10px; }
+-.team-card .team-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--surface-3); }
++.team-name-row { display: flex; align-items: center; gap: 10px; }
++.team-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--surface-3); flex-shrink: 0; }
+ .team-card .team-name { font-size: 17px; font-weight: 800; }
+ .team-card .team-meta { font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
+ .team-card .team-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+diff --git a/app/static/css/tv.css b/app/static/css/tv.css
+index 1f4ffd0..3dd7f5d 100644
+--- a/app/static/css/tv.css
++++ b/app/static/css/tv.css
+@@ -34,8 +34,8 @@ html, body { overflow-x: hidden; }
+ .tv-feed-item .fi-amt { color: #e8ab2f; font-weight: 700; }
+ .tv-feed-item .fi-time { color: #5b5f6e; font-size: 11px; }
+ 
+-.tv-card { display: flex; gap: 40px; align-items: center; padding: 34px; box-sizing: border-box; }
+-.tv-photo { width: clamp(160px, 22vw, 300px); height: clamp(210px, 28vw, 380px); object-fit: cover; border-radius: 16px; border: 4px solid #e8ab2f; background: #1b1e28; flex-shrink: 0; }
++.tv-card { display: flex; gap: 40px; align-items: center; padding: 34px; box-sizing: border-box; flex-wrap: wrap; }
++.tv-photo { width: clamp(110px, 18vw, 300px); aspect-ratio: 1 / 1; object-fit: cover; border-radius: 16px; border: 4px solid #e8ab2f; background: #1b1e28; flex-shrink: 0; }
+ .tv-info { min-width: 0; }
+ .tv-info h1 { font-size: clamp(24px, 4vw, 42px); margin: 0 0 10px; overflow-wrap: anywhere; }
+ .tv-tag { font-size: clamp(13px, 1.6vw, 18px); color: #a0a4ae; margin-bottom: 22px; overflow-wrap: anywhere; }
+@@ -86,7 +86,22 @@ html, body { overflow-x: hidden; }
+ .tv-timer-low { color: #e5534b; border-color: #e5534b; animation: pulse 1s infinite; }
+ @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+ 
+-.tv-bid-amount { transition: all 0.2s ease; }
++.tv-bid-amount { transition: all 0.2s ease; }
++
++/* Result stamp: shown over the last player's card for the hold window
++   after sold/unsold, before the card is allowed to clear. */
++.tv-result-stamp {
++    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
++    background: rgba(5,6,10,0.72); border-radius: 18px; z-index: 2;
++    font-size: clamp(28px, 6vw, 64px); font-weight: 900; letter-spacing: 2px; text-align: center;
++    padding: 20px; box-sizing: border-box; animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
++}
++.tv-result-stamp.sold { color: #3ddc84; text-shadow: 0 0 24px rgba(61,220,132,0.5); }
++.tv-result-stamp.unsold { color: #e5534b; text-shadow: 0 0 24px rgba(229,83,75,0.4); }
++@keyframes tv-stamp-in {
++    from { transform: scale(1.6) rotate(-8deg); opacity: 0; }
++    to { transform: scale(1) rotate(-4deg); opacity: 1; }
++}
+ 
+ .purse-ticker {
+     position: fixed; bottom: 0; left: 0; right: 0;
+@@ -99,13 +114,23 @@ html, body { overflow-x: hidden; }
+ .purse-bar { height: 4px; background: #262a37; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+ .purse-bar-fill { height: 100%; transition: width 0.5s ease; }
+ 
++/* Mid-size TV/browser windows: side panel was fighting the card for
++   width and forcing text to compress while the photo stayed pinned to
++   its clamp floor. Drop the side panel below the card here instead of
++   waiting for the mobile breakpoint. */
++@media (max-width: 1300px) and (min-width: 901px) {
++    .tv-wrap-outer { flex-direction: column; }
++    .tv-side { width: 100%; flex-direction: row; flex-wrap: wrap; }
++    .tv-side-panel { flex: 1 1 260px; }
++}
++
+ /* Spectator / mobile mode */
+ @media (max-width: 900px) {
+     .tv-wrap-outer { flex-direction: column; margin-top: 94px; padding: 12px; gap: 14px; }
+     .tv-side { width: 100%; flex-direction: column; }
+     .tv-side-panel { width: 100%; box-sizing: border-box; }
+     .tv-card { flex-direction: column; gap: 18px; padding: 18px; text-align: center; }
+-    .tv-photo { width: min(60vw, 220px); height: auto; aspect-ratio: 300 / 380; margin: 0 auto; }
++    .tv-photo { width: min(60vw, 220px); height: auto; aspect-ratio: 1 / 1; margin: 0 auto; }
+     .tv-bid { justify-content: center; }
+     .tv-stats { grid-template-columns: repeat(2, 1fr); text-align: left; }
+     .tv-topbar { padding: 8px 12px; flex-wrap: wrap; gap: 6px; row-gap: 4px; }
+diff --git a/app/templates/auction/_live_fragment.html b/app/templates/auction/_live_fragment.html
+index 8d6569c..f4484d6 100644
+--- a/app/templates/auction/_live_fragment.html
++++ b/app/templates/auction/_live_fragment.html
+@@ -36,6 +36,24 @@
+         {% if live.player.brief %}<p class="tv-brief">&ldquo;{{ live.player.brief }}&rdquo;</p>{% endif %}
+     </div>
+ </div>
++{% elif resolved %}
++<div class="tv-card" data-status="{{ resolved.status.value }}">
++    <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if resolved.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
++    <img src="{{ resolved_photo or '/static/img/placeholder_player_photo.svg' }}" class="tv-photo"
++         onerror="this.src='/static/img/placeholder_player_photo.svg'">
++    <div class="tv-info">
++        <h1>{{ resolved.player.user.name }}</h1>
++        {% if resolved.status.value == "sold" %}
++        <div class="tv-bid">
++            <span class="tv-bid-amount">₹{{ (resolved.current_bid|inr) }}</span>
++            {% if resolved.current_team %}<span class="tv-bid-team">{{ resolved.current_team.name }}</span>{% endif %}
++        </div>
++        {% endif %}
++    </div>
++    <div class="tv-result-stamp {{ 'sold' if resolved.status.value == 'sold' else 'unsold' }}">
++        {{ "SOLD" if resolved.status.value == "sold" else "WILL BE BACK" }}
++    </div>
++</div>
+ {% elif pending %}
+ <div class="tv-card" data-status="pending">
+     <div class="tv-mode-tag">{{ "CAPTAIN'S AUCTION" if pending.auction_type.value == "captain" else "PLAYER'S AUCTION" }}</div>
