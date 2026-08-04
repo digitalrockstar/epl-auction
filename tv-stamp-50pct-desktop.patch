@@ -1,0 +1,17 @@
+diff --git a/app/static/css/tv.css b/app/static/css/tv.css
+
+--- a/app/static/css/tv.css
++++ b/app/static/css/tv.css
+@@ -115,11 +115,15 @@ html, body { overflow-x: hidden; }
+ .tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
+ @media (min-width: 901px) { .tv-result-stamp { width: clamp(64px, 8vw, 140px); } }
+
+ @keyframes tv-stamp-in {
+-    from { transform: translateY(-50%) scale(1.6) rotate(-8deg); opacity: 0; }
+-    to { transform: translateY(-50%) scale(1) rotate(-4deg); opacity: 1; }
++    0% { opacity: 0; transform: translateY(-140%) scale(1.35) rotate(-4deg); }
++    55% { opacity: 1; transform: translateY(-42%) scale(0.92) rotate(-4deg); }
++    72% { transform: translateY(-54%) scale(1.05) rotate(-4deg); }
++    88% { transform: translateY(-48%) scale(0.98) rotate(-4deg); }
++    100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(-4deg); }
+ }

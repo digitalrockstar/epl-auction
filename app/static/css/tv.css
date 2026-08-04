@@ -115,10 +115,14 @@ html, body { overflow-x: hidden; }
     animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
 }
 .tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
-@media (min-width: 901px) { .tv-result-stamp { width: clamp(128px, 16vw, 280px); } }
+@media (min-width: 901px) { .tv-result-stamp { width: clamp(64px, 8vw, 140px); } }
 @keyframes tv-stamp-in {
-    from { transform: translateY(-50%) scale(1.6) rotate(-8deg); opacity: 0; }
-    to { transform: translateY(-50%) scale(1) rotate(-4deg); opacity: 1; }
+    0%   { opacity: 0; transform: translateY(-180%) scale(1.15) rotate(-4deg); filter: blur(2px); }
+    18%  { opacity: 1; transform: translateY(-55%) scale(1.08) rotate(-4deg); filter: blur(0); }
+    32%  { transform: translateY(-45%) scale(0.86) rotate(-4deg); }
+    48%  { transform: translateY(-53%) scale(1.04) rotate(-4deg); }
+    68%  { transform: translateY(-49%) scale(0.98) rotate(-4deg); }
+    100% { transform: translateY(-50%) scale(1) rotate(-4deg); opacity: 1; }
 }
 
 .purse-ticker {
