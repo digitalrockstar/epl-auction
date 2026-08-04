@@ -115,7 +115,7 @@ html, body { overflow-x: hidden; }
     animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
 }
 .tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
-@media (min-width: 901px) { .tv-result-stamp { width: clamp(64px, 8vw, 140px); } }
+@media (min-width: 901px) { .tv-result-stamp { width: clamp(96px, 12vw, 210px); } }
 @keyframes tv-stamp-in {
     0%   { opacity: 0; transform: translateY(-180%) scale(1.15) rotate(-4deg); filter: blur(2px); }
     18%  { opacity: 1; transform: translateY(-55%) scale(1.08) rotate(-4deg); filter: blur(0); }
