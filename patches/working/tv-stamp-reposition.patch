@@ -1,0 +1,26 @@
+diff --git a/app/static/css/tv.css b/app/static/css/tv.css
+index 677375b..ccf81f5 100644
+--- a/app/static/css/tv.css
++++ b/app/static/css/tv.css
+@@ -103,14 +103,15 @@ html, body { overflow-x: hidden; }
+ 
+ .tv-bid-amount { transition: all 0.2s ease; }
+ 
+-/* Result stamp: PNG badge (sold/unsold) bounced in on the right edge of
+-   the player's photo for the hold window after sold/unsold, before the
+-   card is allowed to clear. */
+-.tv-photo-wrap { position: relative; flex-shrink: 0; }
++/* Result stamp: PNG badge (sold/unsold) bounced into the card's open
++   right-hand space (clear of the photo and text) for the hold window
++   after sold/unsold, before the card is allowed to clear. */
++.tv-photo-wrap { flex-shrink: 0; }
+ .tv-result-stamp {
+-    position: absolute; top: 50%; right: -14px; z-index: 2;
+-    width: clamp(64px, 8vw, 140px); aspect-ratio: 1 / 1; object-fit: contain;
++    position: absolute; top: 50%; right: 40px; z-index: 2;
++    width: clamp(160px, 20vw, 350px); aspect-ratio: 1 / 1; object-fit: contain;
+     background: transparent; pointer-events: none;
++    transform: translateY(-50%);
+     animation: tv-stamp-in 0.4s cubic-bezier(.2,1.4,.4,1);
+ }
+ .tv-result-stamp.no-replay { animation: none; transform: translateY(-50%) rotate(-4deg); }
