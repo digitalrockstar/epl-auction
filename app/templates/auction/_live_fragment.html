@@ -50,8 +50,9 @@
         </div>
         {% endif %}
     </div>
-    <div class="tv-result-stamp {{ 'sold' if resolved.status.value == 'sold' else 'unsold' }}">
-        {{ "SOLD" if resolved.status.value == "sold" else "WILL BE BACK" }}
+    <div class="tv-result-stamp {{ 'sold' if resolved.status.value == 'sold' else 'unsold' }}" data-resolved-id="{{ resolved.id }}">
+        <span>{{ "SOLD" if resolved.status.value == "sold" else "WILL BE BACK" }}</span>
+        {% if resolved.status.value == "sold" and resolved.current_team %}<span class="tv-result-sub">{{ resolved.current_team.name }}</span>{% endif %}
     </div>
 </div>
 {% elif pending %}

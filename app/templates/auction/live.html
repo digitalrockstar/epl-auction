@@ -35,7 +35,7 @@
     <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
 
     <script>
-    let lastBid = null, lastTeam = null, lastStatus = null;
+    let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', () => {
         const el = document.getElementById('tv-wrap');
         const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
@@ -47,6 +47,21 @@
         }
         if (status === 'unsold' && lastStatus !== 'unsold') {
             document.getElementById('snd-unsold').play().catch(()=>{});
+        }
+
+        // SOLD / WILL BE BACK stamp should bounce in once, then hold still,
+        // not replay its entrance animation on every 3s poll while it's
+        // still on screen.
+        const stamp = document.querySelector('.tv-result-stamp');
+        if (stamp) {
+            const rid = stamp.dataset.resolvedId;
+            if (rid === lastResolvedId) {
+                stamp.classList.add('no-replay');
+            } else {
+                lastResolvedId = rid;
+            }
+        } else {
+            lastResolvedId = null;
         }
         lastBid = bid; lastTeam = team; lastStatus = status;
     });

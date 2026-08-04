@@ -303,7 +303,7 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
     margin-right: 8px; vertical-align: middle;
 }
 
-.avatar-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--surface-3); vertical-align: middle; margin-right: 8px; }
+.avatar-sm { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; background: var(--surface-3); vertical-align: middle; margin-right: 8px; }
 .avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: var(--surface-3); }
 
 /* ---- Tabs ---- */
@@ -386,7 +386,7 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 
 /* ---- Player photo frame with jersey number ---- */
 .player-photo-frame { position: relative; width: 140px; flex-shrink: 0; }
-.player-photo-frame img { width: 140px; height: 180px; object-fit: cover; border-radius: 10px; background: var(--surface-2); }
+.player-photo-frame img { width: 140px; height: 140px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; background: var(--surface-2); }
 .jersey-tag {
     position: absolute; top: 8px; left: 8px; background: rgba(10,11,15,0.85);
     color: var(--gold); font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;
