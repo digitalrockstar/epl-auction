@@ -26,20 +26,42 @@ def settings_page(
     )
 
 
-@router.post("/general", response_class=HTMLResponse)
-def update_general(
+@router.post("/telegram", response_class=HTMLResponse)
+def update_telegram(
     telegram_enabled: str = Form(None),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    settings = get_settings(db)
+    settings.telegram_enabled = telegram_enabled == "on"
+    db.commit()
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Telegram setting saved"), status_code=303)
+
+
+@router.post("/timer", response_class=HTMLResponse)
+def update_timer(
+    timer_seconds: int = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    settings = get_settings(db)
+    settings.timer_seconds = max(10, timer_seconds)
+    db.commit()
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Timer duration saved"), status_code=303)
+
+
+@router.post("/ticker", response_class=HTMLResponse)
+def update_ticker(
     ticker_speed_seconds: int = Form(...),
     ticker_window: int = Form(...),
     db: Session = Depends(get_db),
     user: User = Depends(super_admin_only),
 ):
     settings = get_settings(db)
-    settings.telegram_enabled = telegram_enabled == "on"
     settings.ticker_speed_seconds = max(5, ticker_speed_seconds)
     settings.ticker_window = max(1, ticker_window)
     db.commit()
-    return RedirectResponse(url="/admin/settings?msg=" + quote("Settings saved"), status_code=303)
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Ticker settings saved"), status_code=303)
 
 
 @router.post("/slabs", response_class=HTMLResponse)

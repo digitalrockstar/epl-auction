@@ -2,14 +2,14 @@ import json
 from sqlalchemy.orm import Session
 
 from app.models import Settings
-from app.config import INCREMENT_SLABS as DEFAULT_SLABS, TICKER_SPEED_SECONDS, TICKER_WINDOW
+from app.config import INCREMENT_SLABS as DEFAULT_SLABS, TICKER_SPEED_SECONDS, TICKER_WINDOW, TIMER_SECONDS
 
 
 def get_settings(db: Session) -> Settings:
     s = db.query(Settings).first()
     if not s:
         s = Settings(
-            id=1, telegram_enabled=True,
+            id=1, telegram_enabled=True, timer_seconds=TIMER_SECONDS,
             ticker_speed_seconds=TICKER_SPEED_SECONDS, ticker_window=TICKER_WINDOW,
         )
         db.add(s)
