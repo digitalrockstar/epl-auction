@@ -30,18 +30,24 @@ def roll_page(
 ):
     a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
     live, pending = _current_auction(db)
-    counts = _category_counts(db, a_type)
+    counts = None
+    captain_count = None
+    if a_type == AuctionType.captain:
+        captain_count = len(_eligible_pool(db, a_type))
+    else:
+        counts = _category_counts(db, a_type)
     return templates.TemplateResponse(
         "admin/roll.html",
         {"request": request, "user": user, "auction_type": auction_type, "msg": msg,
-         "categories": SKILL_CATEGORIES, "counts": counts, "live": live, "pending": pending},
+         "categories": SKILL_CATEGORIES, "counts": counts, "captain_count": captain_count,
+         "live": live, "pending": pending},
     )
 
 
 @router.post("/spin", response_class=HTMLResponse)
 def spin(
     auction_type: str = Form(...),
-    category: str = Form(...),
+    category: str = Form(None),
     db: Session = Depends(get_db),
     user: User = Depends(staff_only),
 ):
@@ -51,17 +57,22 @@ def spin(
             url += f"&msg={msg}"
         return RedirectResponse(url=url, status_code=303)
 
-    if category not in SKILL_CATEGORIES:
-        return back("Unknown category")
-
     live, pending = _current_auction(db)
     if live or pending:
         return back("An auction is already live or revealing, finish that first")
 
     a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
-    pool = _eligible_pool(db, a_type, category)
-    if not pool:
-        return back(f"{category} pool is done - move to the next category")
+
+    if a_type == AuctionType.captain:
+        pool = _eligible_pool(db, a_type)
+        if not pool:
+            return back("All captain nominees have already gone through the auction")
+    else:
+        if category not in SKILL_CATEGORIES:
+            return back("Unknown category")
+        pool = _eligible_pool(db, a_type, category)
+        if not pool:
+            return back(f"{category} pool is done - move to the next category")
 
     chosen = random.choice(pool)
     base_price = base_price_for(a_type)

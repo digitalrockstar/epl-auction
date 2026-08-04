@@ -1,6 +1,6 @@
 {% if sold_auctions and sold_auctions|length > 4 %}
 <div class="tv-ticker">
-    <div class="tv-ticker-track">
+    <div class="tv-ticker-track" style="animation-duration: {{ ticker_speed or 36 }}s;">
         {% for a in sold_auctions %}
         <span class="tv-ticker-item">{{ a.player.user.name }} sold to {{ a.player.team.name }} for ₹{{ (a.current_bid|inr) }}</span>
         {% endfor %}

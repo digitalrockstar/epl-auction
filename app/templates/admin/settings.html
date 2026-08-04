@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Super Admin</div>
+        <h1>Settings</h1>
+        <p class="sub">App-wide knobs. Changes apply immediately, no redeploy needed.</p>
+    </div>
+</div>
+
+{% if msg %}<span class="error" style="color:var(--green);">{{ msg }}</span>{% endif %}
+
+<div class="panel">
+    <h3 style="margin-bottom:14px;">Telegram &amp; TV ticker</h3>
+    <form method="post" action="/admin/settings/general">
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+            <input type="checkbox" name="telegram_enabled" {% if settings.telegram_enabled %}checked{% endif %} style="width:auto;">
+            Send a Telegram message on every SOLD / UNSOLD
+        </label>
+
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+            <div>
+                <span class="field-label">Ticker scroll duration (seconds)</span>
+                <input type="number" name="ticker_speed_seconds" value="{{ settings.ticker_speed_seconds }}" min="5" style="width:120px;">
+                <p style="color:var(--text-muted);font-size:12px;margin-top:4px;">Lower = faster scroll.</p>
+            </div>
+            <div>
+                <span class="field-label">Ticker window (players shown)</span>
+                <input type="number" name="ticker_window" value="{{ settings.ticker_window }}" min="1" style="width:120px;">
+                <p style="color:var(--text-muted);font-size:12px;margin-top:4px;">Only the most recent N sold players loop in the ticker.</p>
+            </div>
+        </div>
+        <button type="submit" class="btn-gold" style="width:auto;margin-top:16px;">Save</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h3 style="margin-bottom:14px;">Bidding increment slabs</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">While the bid is below a ceiling, that row's increment applies. The last row has no ceiling, it's the increment for everything above.</p>
+    <form method="post" action="/admin/settings/slabs">
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+            {% for ceiling, increment in slabs %}
+            <div style="display:flex;gap:10px;align-items:center;">
+                {% if not loop.last %}
+                <span style="width:130px;color:var(--text-muted);font-size:13px;">Below ₹</span>
+                <input type="number" name="ceiling_{{ loop.index }}" value="{{ ceiling|int }}" required>
+                {% else %}
+                <span style="width:130px;color:var(--text-muted);font-size:13px;">Above that</span>
+                <span style="flex:1;"></span>
+                {% endif %}
+                <span style="width:70px;color:var(--text-muted);font-size:13px;">step ₹</span>
+                <input type="number" name="increment_{{ loop.index }}" value="{{ increment }}" required>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn-gold" style="width:auto;margin-top:16px;">Save slabs</button>
+    </form>
+</div>
+
+<div class="panel" style="border-color:var(--red);">
+    <h3 style="margin-bottom:6px;color:var(--red);">Reset all auction data</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">
+        Clears every bid, auction, match, and kit-image record, and resets each team's captain/purse and each
+        player's team/sold-price/captain flag. Players, managers, teams, and admin logins are kept exactly as they are.
+        This cannot be undone.
+    </p>
+    <form method="post" action="/admin/settings/reset" onsubmit="return confirm('This wipes all auction data. Are you sure?');">
+        <span class="field-label">Type RESET to confirm</span>
+        <input type="text" name="confirm" placeholder="RESET" style="max-width:200px;" required>
+        <button type="submit" class="btn-danger" style="width:auto;margin-top:12px;">Reset all data</button>
+    </form>
+</div>
+{% endblock %}

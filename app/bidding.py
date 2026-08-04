@@ -6,18 +6,19 @@ def base_price_for(auction_type) -> int:
     return CAPTAIN_BASE_PRICE if auction_type == AuctionType.captain else PLAYER_BASE_PRICE
 
 
-def increment_for(current_bid: int) -> int:
-    for ceiling, step in INCREMENT_SLABS:
+def increment_for(current_bid: int, slabs=None) -> int:
+    slabs = slabs or INCREMENT_SLABS
+    for ceiling, step in slabs:
         if current_bid < ceiling:
             return step
-    return INCREMENT_SLABS[-1][1]
+    return slabs[-1][1]
 
 
-def next_bid_amount(auction) -> int:
+def next_bid_amount(auction, slabs=None) -> int:
     """The exact amount the next bid must be, given slab-based increments."""
     if not auction.current_team_id:
         return auction.base_price
-    return auction.current_bid + increment_for(auction.current_bid)
+    return auction.current_bid + increment_for(auction.current_bid, slabs)
 
 
 def purse_check(team, auction_type, bid_amount: int, players_bought: int) -> str:

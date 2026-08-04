@@ -204,3 +204,15 @@ class PlayingXI(Base):
 
     match = relationship("Match")
     player = relationship("Player")
+
+
+class Settings(Base):
+    """Single-row table (id always 1) holding admin-tunable knobs that would
+    otherwise require an env var change and redeploy."""
+    __tablename__ = "settings"
+
+    id = Column(Integer, primary_key=True)
+    telegram_enabled = Column(Boolean, default=True)
+    ticker_speed_seconds = Column(Integer, default=36)
+    ticker_window = Column(Integer, default=15)
+    increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
