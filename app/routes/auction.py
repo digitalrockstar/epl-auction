@@ -421,10 +421,10 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = bool(countdown_target and datetime.now() < countdown_target and not live)
+    show_countdown = bool(countdown_target and datetime.utcnow() < countdown_target and not live)
     print("LIVE:", live)
     print("COUNTDOWN TARGET:", countdown_target)
-    print("NOW:", datetime.now())
+    print("NOW:", datetime.utcnow())
     print("SHOW_COUNTDOWN:", show_countdown)
     return templates.TemplateResponse(
         "auction/live.html",
@@ -468,7 +468,7 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
 @router.get("/auction/live/countdown", response_class=HTMLResponse)
 def live_countdown(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = countdown_target and datetime.now() < countdown_target
+    show_countdown = countdown_target and datetime.utcnow() < countdown_target
     ctx = {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown}
     if show_countdown:
         return templates.TemplateResponse("auction/_countdown_fragment.html", ctx)

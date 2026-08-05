@@ -16,7 +16,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = bool(countdown_target and datetime.now() < countdown_target and not live)
+    show_countdown = bool(countdown_target and datetime.utcnow() < countdown_target and not live)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -36,7 +36,7 @@ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = countdown_target and datetime.now() < countdown_target
+    show_countdown = countdown_target and datetime.utcnow() < countdown_target
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
@@ -61,7 +61,7 @@ def spectator_timer(request: Request, db: Session = Depends(get_db)):
 @router.get("/live/countdown", response_class=HTMLResponse)
 def spectator_countdown(request: Request, db: Session = Depends(get_db)):
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = countdown_target and datetime.now() < countdown_target
+    show_countdown = countdown_target and datetime.utcnow() < countdown_target
     return templates.TemplateResponse(
         "auction/_countdown_fragment.html",
         {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown},
