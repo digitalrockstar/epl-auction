@@ -67,9 +67,9 @@
     <p class="tv-tag" style="margin-top:18px;">Bidding opens shortly&hellip;</p>
 </div>
 {% elif countdown_target %}
-<div class="tv-empty flip-countdown-wrap" data-status="none">
+<div class="tv-empty flip-countdown-wrap" id="flip-countdown-wrap" hx-preserve="true" data-status="none">
     <p class="tv-tag" style="margin-bottom:14px;">{{ countdown_label }} STARTS IN</p>
-    <div class="flip-countdown" id="flip-countdown" hx-preserve="true" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
+    <div class="flip-countdown" id="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
         <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
         <div class="flip-unit"><span class="flip-value" data-unit="h">00</span><label>Hours</label></div>
         <div class="flip-unit"><span class="flip-value" data-unit="m">00</span><label>Mins</label></div>

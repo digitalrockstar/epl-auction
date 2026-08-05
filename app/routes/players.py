@@ -56,6 +56,18 @@ def _truthy(val: str) -> bool:
     return (val or "").strip().lower() in ("yes", "y", "true", "1", "interested")
 
 
+WK_MAP = {
+    "regular keeper": "Regular",
+    "ocassional keeper": "Occasional",
+    "occasional keeper": "Occasional",
+    "not a wicket keeper": "Not a Keeper",
+}
+
+
+def _wicketkeeper_status(val: str) -> str:
+    return WK_MAP.get((val or "").strip().lower(), "Not a Keeper")
+
+
 @router.get("", response_class=HTMLResponse)
 def players_page(request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
     players = db.query(Player).order_by(Player.id).all()
@@ -114,7 +126,7 @@ def import_registrations(
             batting_hand=row.get(REG_HEADERS["batting_hand"]),
             bowling_style=row.get(REG_HEADERS["bowling_style"]),
             bowling_hand=row.get(REG_HEADERS["bowling_hand"]),
-            is_wicketkeeper=_truthy(row.get(REG_HEADERS["wicketkeeping"])),
+            is_wicketkeeper=_wicketkeeper_status(row.get(REG_HEADERS["wicketkeeping"])),
             wants_captaincy=_truthy(row.get(REG_HEADERS["wants_captaincy"])),
             experience_level=row.get(REG_HEADERS["experience_level"]),
             brief=row.get(REG_HEADERS["brief"]),

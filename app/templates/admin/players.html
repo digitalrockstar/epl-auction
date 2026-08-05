@@ -42,7 +42,7 @@
 <div class="table-wrap">
 <table class="data-table">
     <thead>
-        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>Captain?</th><th>Team</th><th>Status</th><th>CricHeroes</th><th>Upload</th></tr>
+        <tr><th>Player</th><th>Role</th><th>Bat / Bowl</th><th>WK</th><th>Captain?</th><th>Team</th><th>Status</th><th>CricHeroes</th><th>Upload</th></tr>
     </thead>
     <tbody>
         {% for p in players %}
@@ -53,6 +53,7 @@
             </td>
             <td>{{ p.primary_skill or "-" }}</td>
             <td style="color:var(--text-muted);font-size:12.5px;">{{ p.batting_hand or "-" }} / {{ p.bowling_style or "-" }}</td>
+            <td style="color:var(--text-muted);font-size:12.5px;">{{ p.is_wicketkeeper or "-" }}</td>
             <td>{{ "Interested" if p.wants_captaincy else "Not Interested" }}</td>
             <td>{{ p.team.name if p.team else "-" }}</td>
             <td>

@@ -26,7 +26,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;">
             <div>
                 <h2><a href="/players/{{ live.player.id }}">{{ live.player.user.name }}</a></h2>
-                <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · {{ live.player.batting_hand or "-" }} · Base ₹{{ (live.base_price|inr) }}</p>
+                <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }} · {{ live.player.batting_hand or "-" }}{% if live.player.is_wicketkeeper in ("Regular", "Occasional") %} · WK ({{ live.player.is_wicketkeeper }}){% endif %} · Base ₹{{ (live.base_price|inr) }}</p>
             </div>
             <div id="admin-timer-slot" hx-get="/admin/auction/timer?auction_type={{ auction_type }}" hx-trigger="every 1s" hx-swap="innerHTML">
                 {% include "admin/_timer_fragment.html" %}
