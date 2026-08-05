@@ -20,16 +20,8 @@
       "app_auth_verify_password",
       "app_database",
       "app_database_get_db",
-      "app_models_models_rationale_37",
       "app_models_models_role",
-      "app_models_models_user",
       "app_routes_admin",
-      "archive_2026_07_29_v1_app_auth",
-      "archive_2026_07_29_v1_app_auth_hash_password",
-      "archive_2026_07_29_v1_app_auth_py_role",
-      "archive_2026_07_29_v1_app_auth_rationale_36",
-      "archive_2026_07_29_v1_app_auth_require_role",
-      "archive_2026_07_29_v1_app_auth_verify_password",
       "archive_2026_07_29_v1_app_main",
       "archive_2026_07_29_v1_app_main_home",
       "archive_2026_07_29_v1_app_main_login_page",
@@ -62,6 +54,17 @@
       "archive_2026_07_29_v2_app_main_py_session",
       "archive_2026_07_29_v2_app_routes_admin",
       "archive_2026_07_29_v2_app_routes_players",
+      "archive_2026_07_29_v2_app_routes_players_import_registrations",
+      "archive_2026_07_29_v2_app_routes_players_import_stats",
+      "archive_2026_07_29_v2_app_routes_players_players_page",
+      "archive_2026_07_29_v2_app_routes_players_py_get",
+      "archive_2026_07_29_v2_app_routes_players_py_post",
+      "archive_2026_07_29_v2_app_routes_players_py_request",
+      "archive_2026_07_29_v2_app_routes_players_py_session",
+      "archive_2026_07_29_v2_app_routes_players_py_uploadfile",
+      "archive_2026_07_29_v2_app_routes_players_py_user",
+      "archive_2026_07_29_v2_app_routes_players_set_kit_image",
+      "archive_2026_07_29_v2_app_routes_players_truthy",
       "archive_2026_07_29_v2_seed",
       "archive_2026_07_29_v2_seed_rationale_1",
       "archive_2026_07_29_v3_app_main",
@@ -75,9 +78,10 @@
       "archive_2026_07_29_v3_app_main_py_request",
       "archive_2026_07_29_v3_app_main_py_session",
       "archive_2026_07_29_v3_app_routes_admin",
-      "archive_2026_07_29_v3_app_routes_matches",
       "archive_2026_07_29_v3_seed",
       "archive_2026_07_29_v3_seed_rationale_1",
+      "migrate_add_auction_countdowns",
+      "migrate_add_auction_countdowns_rationale_1",
       "migrate_add_cricheroes_url",
       "migrate_add_cricheroes_url_rationale_1",
       "reset",
@@ -86,8 +90,18 @@
       "seed_rationale_1"
     ],
     "1": [
+      "app_app_settings",
+      "app_app_settings_get_settings",
+      "app_app_settings_get_slabs",
+      "app_app_settings_py_session",
+      "app_app_settings_rationale_24",
+      "app_app_settings_slabs_to_json",
+      "app_bidding",
       "app_bidding_base_price_for",
+      "app_bidding_increment_for",
       "app_config",
+      "app_models_models_rationale_37",
+      "app_models_models_user",
       "app_routes_auction",
       "app_routes_auction_admin_state",
       "app_routes_auction_admin_timer",
@@ -96,13 +110,16 @@
       "app_routes_auction_eligible_pool",
       "app_routes_auction_finalize_expired",
       "app_routes_auction_live_context",
+      "app_routes_auction_live_countdown",
       "app_routes_auction_live_fragment",
       "app_routes_auction_live_ticker",
       "app_routes_auction_live_timer",
       "app_routes_auction_live_view",
       "app_routes_auction_mark_sold",
       "app_routes_auction_mark_unsold",
+      "app_routes_auction_next_auction_countdown",
       "app_routes_auction_padded_photos",
+      "app_routes_auction_place_bid",
       "app_routes_auction_player_photo",
       "app_routes_auction_promote_pending",
       "app_routes_auction_py_get",
@@ -111,6 +128,7 @@
       "app_routes_auction_py_session",
       "app_routes_auction_rationale_114",
       "app_routes_auction_rationale_32",
+      "app_routes_auction_rationale_407",
       "app_routes_auction_rationale_44",
       "app_routes_auction_rationale_65",
       "app_routes_auction_rationale_98",
@@ -128,10 +146,23 @@
       "app_routes_roll_reveal_status",
       "app_routes_roll_roll_page",
       "app_routes_roll_spin",
+      "app_routes_settings",
+      "app_routes_settings_py_get",
+      "app_routes_settings_py_post",
+      "app_routes_settings_py_request",
+      "app_routes_settings_py_session",
+      "app_routes_settings_reset_all",
+      "app_routes_settings_settings_page",
+      "app_routes_settings_update_auction_dates",
+      "app_routes_settings_update_slabs",
+      "app_routes_settings_update_telegram",
+      "app_routes_settings_update_ticker",
+      "app_routes_settings_update_timer",
       "app_routes_spectator",
       "app_routes_spectator_py_get",
       "app_routes_spectator_py_request",
       "app_routes_spectator_py_session",
+      "app_routes_spectator_spectator_countdown",
       "app_routes_spectator_spectator_fragment",
       "app_routes_spectator_spectator_live",
       "app_routes_spectator_spectator_ticker",
@@ -146,16 +177,6 @@
       "archive_2026_07_29_v3_app_routes_spectator_spectator_live"
     ],
     "2": [
-      "app_main",
-      "app_main_healthz",
-      "app_main_home",
-      "app_main_login_page",
-      "app_main_login_submit",
-      "app_main_logout",
-      "app_main_py_get",
-      "app_main_py_post",
-      "app_main_py_request",
-      "app_main_py_session",
       "app_models_init",
       "app_models_models",
       "app_models_models_auction",
@@ -176,87 +197,37 @@
       "app_models_models_team",
       "app_models_models_team_purse_remaining",
       "app_reset_logic",
-      "app_routes_matches",
-      "app_routes_matches_create_match",
-      "app_routes_matches_matches_page",
-      "app_routes_matches_points_table",
-      "app_routes_matches_py_get",
-      "app_routes_matches_py_post",
-      "app_routes_matches_py_request",
-      "app_routes_matches_py_session",
-      "app_routes_matches_py_user",
-      "app_routes_matches_record_result",
-      "app_routes_matches_record_xi",
+      "app_reset_logic_py_session",
+      "app_reset_logic_rationale_7",
+      "app_reset_logic_reset_auction_data",
       "archive_2026_07_29_v1_app_models_init",
+      "archive_2026_07_29_v1_app_routes_auction",
       "archive_2026_07_29_v2_app_models_init",
+      "archive_2026_07_29_v2_app_routes_auction",
+      "archive_2026_07_29_v2_app_routes_auction_auction_console",
+      "archive_2026_07_29_v2_app_routes_auction_live_fragment",
+      "archive_2026_07_29_v2_app_routes_auction_live_view",
+      "archive_2026_07_29_v2_app_routes_auction_mark_sold",
+      "archive_2026_07_29_v2_app_routes_auction_mark_unsold",
+      "archive_2026_07_29_v2_app_routes_auction_place_bid",
+      "archive_2026_07_29_v2_app_routes_auction_player_photo",
+      "archive_2026_07_29_v2_app_routes_auction_py_get",
+      "archive_2026_07_29_v2_app_routes_auction_py_player",
+      "archive_2026_07_29_v2_app_routes_auction_py_post",
+      "archive_2026_07_29_v2_app_routes_auction_py_request",
+      "archive_2026_07_29_v2_app_routes_auction_py_session",
+      "archive_2026_07_29_v2_app_routes_auction_py_user",
+      "archive_2026_07_29_v2_app_routes_auction_redirect",
+      "archive_2026_07_29_v2_app_routes_auction_start_auction",
       "archive_2026_07_29_v3_app_models_init",
       "base",
+      "reset_data",
+      "reset_data_rationale_1",
       "str"
     ],
     "3": [
-      "app_images",
-      "app_images_find",
-      "app_images_player_image_folders",
-      "app_images_rationale_1",
-      "app_images_rationale_50",
-      "app_images_rationale_86",
-      "app_images_rationale_97",
-      "app_images_resolve_player_photo",
-      "app_images_resolve_team_logo",
-      "app_images_save_uploaded_image",
-      "app_images_slugify",
-      "app_routes_players",
-      "app_routes_players_import_registrations",
-      "app_routes_players_import_stats",
-      "app_routes_players_player_profile",
-      "app_routes_players_players_list_view_only",
-      "app_routes_players_players_page",
-      "app_routes_players_py_get",
-      "app_routes_players_py_post",
-      "app_routes_players_py_request",
-      "app_routes_players_py_session",
-      "app_routes_players_py_uploadfile",
-      "app_routes_players_py_user",
-      "app_routes_players_set_kit_image",
-      "app_routes_players_truthy",
-      "app_routes_players_upload_main_photo",
-      "app_templating",
-      "app_templating_inr",
-      "app_templating_rationale_6",
-      "path"
-    ],
-    "4": [
-      "app_bidding",
-      "app_bidding_increment_for",
       "app_bidding_next_bid_amount",
-      "app_bidding_purse_check",
       "app_bidding_rationale_18",
-      "app_bidding_rationale_25",
-      "app_routes_auction_place_bid",
-      "app_routes_auction_players_bought",
-      "app_routes_manager",
-      "app_routes_manager_bid_panel",
-      "app_routes_manager_bid_panel_page",
-      "app_routes_manager_my_team",
-      "app_routes_manager_place_my_bid",
-      "app_routes_manager_py_get",
-      "app_routes_manager_py_post",
-      "app_routes_manager_py_request",
-      "app_routes_manager_py_session",
-      "app_routes_manager_roster_context",
-      "app_routes_manager_view_team_roster",
-      "archive_2026_07_29_v3_app_routes_manager",
-      "archive_2026_07_29_v3_app_routes_manager_bid_panel",
-      "archive_2026_07_29_v3_app_routes_manager_bid_panel_page",
-      "archive_2026_07_29_v3_app_routes_manager_my_team",
-      "archive_2026_07_29_v3_app_routes_manager_place_my_bid",
-      "archive_2026_07_29_v3_app_routes_manager_py_get",
-      "archive_2026_07_29_v3_app_routes_manager_py_post",
-      "archive_2026_07_29_v3_app_routes_manager_py_request",
-      "archive_2026_07_29_v3_app_routes_manager_py_session",
-      "archive_2026_07_29_v3_app_routes_manager_py_user"
-    ],
-    "5": [
       "app_notify",
       "app_notify_celebration_emojis",
       "app_notify_notify",
@@ -284,7 +255,87 @@
       "archive_2026_07_29_v3_app_routes_auction_start_auction",
       "archive_2026_07_29_v3_app_routes_auction_undo_bid"
     ],
+    "4": [
+      "app_images",
+      "app_images_find",
+      "app_images_player_image_folders",
+      "app_images_rationale_1",
+      "app_images_rationale_50",
+      "app_images_rationale_86",
+      "app_images_rationale_97",
+      "app_images_resolve_player_photo",
+      "app_images_resolve_team_logo",
+      "app_images_save_uploaded_image",
+      "app_images_slugify",
+      "app_routes_admin_assign_manager",
+      "app_routes_admin_audit_log",
+      "app_routes_admin_create_team",
+      "app_routes_admin_manager_form",
+      "app_routes_admin_py_get",
+      "app_routes_admin_py_post",
+      "app_routes_admin_py_request",
+      "app_routes_admin_py_session",
+      "app_routes_admin_py_uploadfile",
+      "app_routes_admin_py_user",
+      "app_routes_admin_team_roster",
+      "app_routes_admin_teams_page",
+      "app_routes_admin_upload_team_logo",
+      "app_templating",
+      "app_templating_inr",
+      "app_templating_rationale_6",
+      "path"
+    ],
+    "5": [
+      "app_bidding_purse_check",
+      "app_bidding_rationale_25",
+      "app_routes_auction_players_bought",
+      "app_routes_manager",
+      "app_routes_manager_bid_panel",
+      "app_routes_manager_bid_panel_page",
+      "app_routes_manager_my_team",
+      "app_routes_manager_place_my_bid",
+      "app_routes_manager_py_get",
+      "app_routes_manager_py_post",
+      "app_routes_manager_py_request",
+      "app_routes_manager_py_session",
+      "app_routes_manager_roster_context",
+      "app_routes_manager_teams_index",
+      "app_routes_manager_view_team_roster",
+      "archive_2026_07_29_v3_app_routes_manager",
+      "archive_2026_07_29_v3_app_routes_manager_bid_panel",
+      "archive_2026_07_29_v3_app_routes_manager_bid_panel_page",
+      "archive_2026_07_29_v3_app_routes_manager_my_team",
+      "archive_2026_07_29_v3_app_routes_manager_place_my_bid",
+      "archive_2026_07_29_v3_app_routes_manager_py_get",
+      "archive_2026_07_29_v3_app_routes_manager_py_post",
+      "archive_2026_07_29_v3_app_routes_manager_py_request",
+      "archive_2026_07_29_v3_app_routes_manager_py_session",
+      "archive_2026_07_29_v3_app_routes_manager_py_user"
+    ],
     "6": [
+      "app_main",
+      "app_main_healthz",
+      "app_main_home",
+      "app_main_login_page",
+      "app_main_login_submit",
+      "app_main_logout",
+      "app_main_py_get",
+      "app_main_py_post",
+      "app_main_py_request",
+      "app_main_py_session",
+      "app_routes_matches",
+      "app_routes_matches_create_match",
+      "app_routes_matches_matches_page",
+      "app_routes_matches_points_table",
+      "app_routes_matches_py_get",
+      "app_routes_matches_py_post",
+      "app_routes_matches_py_request",
+      "app_routes_matches_py_session",
+      "app_routes_matches_py_user",
+      "app_routes_matches_record_result",
+      "app_routes_matches_record_xi"
+    ],
+    "7": [
       "archive_2026_07_29_v1_app_models_models",
       "archive_2026_07_29_v1_app_models_models_auction",
       "archive_2026_07_29_v1_app_models_models_auctionstatus",
@@ -307,7 +358,7 @@
       "archive_2026_07_29_v1_app_models_models_team_purse_remaining",
       "archive_2026_07_29_v1_app_models_models_user"
     ],
-    "7": [
+    "8": [
       "archive_2026_07_29_v2_app_models_models",
       "archive_2026_07_29_v2_app_models_models_auction",
       "archive_2026_07_29_v2_app_models_models_auctionstatus",
@@ -330,7 +381,7 @@
       "archive_2026_07_29_v2_app_models_models_team_purse_remaining",
       "archive_2026_07_29_v2_app_models_models_user"
     ],
-    "8": [
+    "9": [
       "archive_2026_07_29_v3_app_models_models",
       "archive_2026_07_29_v3_app_models_models_auction",
       "archive_2026_07_29_v3_app_models_models_auctionstatus",
@@ -353,28 +404,6 @@
       "archive_2026_07_29_v3_app_models_models_team_purse_remaining",
       "archive_2026_07_29_v3_app_models_models_user"
     ],
-    "9": [
-      "app_app_settings",
-      "app_app_settings_get_settings",
-      "app_app_settings_get_slabs",
-      "app_app_settings_py_session",
-      "app_app_settings_rationale_22",
-      "app_app_settings_slabs_to_json",
-      "app_reset_logic_py_session",
-      "app_reset_logic_rationale_7",
-      "app_reset_logic_reset_auction_data",
-      "app_routes_settings",
-      "app_routes_settings_py_get",
-      "app_routes_settings_py_post",
-      "app_routes_settings_py_request",
-      "app_routes_settings_py_session",
-      "app_routes_settings_reset_all",
-      "app_routes_settings_settings_page",
-      "app_routes_settings_update_general",
-      "app_routes_settings_update_slabs",
-      "reset_data",
-      "reset_data_rationale_1"
-    ],
     "10": [
       "archive_2026_07_29_v3_app_auth",
       "archive_2026_07_29_v3_app_auth_check_rate_limit",
@@ -395,7 +424,24 @@
       "archive_2026_07_29_v3_app_auth_verify_password"
     ],
     "11": [
-      "archive_2026_07_29_v1_app_routes_auction",
+      "app_routes_players",
+      "app_routes_players_export_players_csv",
+      "app_routes_players_import_registrations",
+      "app_routes_players_import_stats",
+      "app_routes_players_player_profile",
+      "app_routes_players_players_list_view_only",
+      "app_routes_players_players_page",
+      "app_routes_players_py_get",
+      "app_routes_players_py_post",
+      "app_routes_players_py_request",
+      "app_routes_players_py_session",
+      "app_routes_players_set_kit_image",
+      "app_routes_players_truthy",
+      "app_routes_players_upload_main_photo",
+      "app_routes_players_wicketkeeper_status",
+      "uploadfile"
+    ],
+    "12": [
       "archive_2026_07_29_v1_app_routes_auction_auction_console",
       "archive_2026_07_29_v1_app_routes_auction_live_fragment",
       "archive_2026_07_29_v1_app_routes_auction_live_view",
@@ -412,40 +458,7 @@
       "archive_2026_07_29_v1_app_routes_auction_redirectresponse_or_console",
       "archive_2026_07_29_v1_app_routes_auction_start_auction"
     ],
-    "12": [
-      "archive_2026_07_29_v2_app_routes_auction",
-      "archive_2026_07_29_v2_app_routes_auction_auction_console",
-      "archive_2026_07_29_v2_app_routes_auction_live_fragment",
-      "archive_2026_07_29_v2_app_routes_auction_live_view",
-      "archive_2026_07_29_v2_app_routes_auction_mark_sold",
-      "archive_2026_07_29_v2_app_routes_auction_mark_unsold",
-      "archive_2026_07_29_v2_app_routes_auction_place_bid",
-      "archive_2026_07_29_v2_app_routes_auction_player_photo",
-      "archive_2026_07_29_v2_app_routes_auction_py_get",
-      "archive_2026_07_29_v2_app_routes_auction_py_player",
-      "archive_2026_07_29_v2_app_routes_auction_py_post",
-      "archive_2026_07_29_v2_app_routes_auction_py_request",
-      "archive_2026_07_29_v2_app_routes_auction_py_session",
-      "archive_2026_07_29_v2_app_routes_auction_py_user",
-      "archive_2026_07_29_v2_app_routes_auction_redirect",
-      "archive_2026_07_29_v2_app_routes_auction_start_auction"
-    ],
     "13": [
-      "app_routes_admin_assign_manager",
-      "app_routes_admin_audit_log",
-      "app_routes_admin_create_team",
-      "app_routes_admin_manager_form",
-      "app_routes_admin_py_get",
-      "app_routes_admin_py_post",
-      "app_routes_admin_py_request",
-      "app_routes_admin_py_session",
-      "app_routes_admin_py_uploadfile",
-      "app_routes_admin_py_user",
-      "app_routes_admin_team_roster",
-      "app_routes_admin_teams_page",
-      "app_routes_admin_upload_team_logo"
-    ],
-    "14": [
       "archive_2026_07_29_v3_app_routes_players",
       "archive_2026_07_29_v3_app_routes_players_import_registrations",
       "archive_2026_07_29_v3_app_routes_players_import_stats",
@@ -459,6 +472,20 @@
       "archive_2026_07_29_v3_app_routes_players_py_user",
       "archive_2026_07_29_v3_app_routes_players_set_kit_image",
       "archive_2026_07_29_v3_app_routes_players_truthy"
+    ],
+    "14": [
+      "archive_2026_07_29_v1_app_auth",
+      "archive_2026_07_29_v1_app_auth_get_current_user",
+      "archive_2026_07_29_v1_app_auth_hash_password",
+      "archive_2026_07_29_v1_app_auth_py_request",
+      "archive_2026_07_29_v1_app_auth_py_role",
+      "archive_2026_07_29_v1_app_auth_py_session",
+      "archive_2026_07_29_v1_app_auth_py_user",
+      "archive_2026_07_29_v1_app_auth_rationale_20",
+      "archive_2026_07_29_v1_app_auth_rationale_36",
+      "archive_2026_07_29_v1_app_auth_require_login",
+      "archive_2026_07_29_v1_app_auth_require_role",
+      "archive_2026_07_29_v1_app_auth_verify_password"
     ],
     "15": [
       "archive_2026_07_29_v1_app_routes_players",
@@ -475,17 +502,17 @@
       "archive_2026_07_29_v1_app_routes_players_truthy"
     ],
     "16": [
-      "archive_2026_07_29_v2_app_routes_players_import_registrations",
-      "archive_2026_07_29_v2_app_routes_players_import_stats",
-      "archive_2026_07_29_v2_app_routes_players_players_page",
-      "archive_2026_07_29_v2_app_routes_players_py_get",
-      "archive_2026_07_29_v2_app_routes_players_py_post",
-      "archive_2026_07_29_v2_app_routes_players_py_request",
-      "archive_2026_07_29_v2_app_routes_players_py_session",
-      "archive_2026_07_29_v2_app_routes_players_py_uploadfile",
-      "archive_2026_07_29_v2_app_routes_players_py_user",
-      "archive_2026_07_29_v2_app_routes_players_set_kit_image",
-      "archive_2026_07_29_v2_app_routes_players_truthy"
+      "archive_2026_07_29_v3_app_routes_matches",
+      "archive_2026_07_29_v3_app_routes_matches_create_match",
+      "archive_2026_07_29_v3_app_routes_matches_matches_page",
+      "archive_2026_07_29_v3_app_routes_matches_points_table",
+      "archive_2026_07_29_v3_app_routes_matches_py_get",
+      "archive_2026_07_29_v3_app_routes_matches_py_post",
+      "archive_2026_07_29_v3_app_routes_matches_py_request",
+      "archive_2026_07_29_v3_app_routes_matches_py_session",
+      "archive_2026_07_29_v3_app_routes_matches_py_user",
+      "archive_2026_07_29_v3_app_routes_matches_record_result",
+      "archive_2026_07_29_v3_app_routes_matches_record_xi"
     ],
     "17": [
       "archive_2026_07_29_v3_app_routes_admin_assign_manager",
@@ -500,18 +527,6 @@
       "archive_2026_07_29_v3_app_routes_admin_teams_page"
     ],
     "18": [
-      "archive_2026_07_29_v3_app_routes_matches_create_match",
-      "archive_2026_07_29_v3_app_routes_matches_matches_page",
-      "archive_2026_07_29_v3_app_routes_matches_points_table",
-      "archive_2026_07_29_v3_app_routes_matches_py_get",
-      "archive_2026_07_29_v3_app_routes_matches_py_post",
-      "archive_2026_07_29_v3_app_routes_matches_py_request",
-      "archive_2026_07_29_v3_app_routes_matches_py_session",
-      "archive_2026_07_29_v3_app_routes_matches_py_user",
-      "archive_2026_07_29_v3_app_routes_matches_record_result",
-      "archive_2026_07_29_v3_app_routes_matches_record_xi"
-    ],
-    "19": [
       "archive_2026_07_29_v1_app_routes_admin_assign_manager",
       "archive_2026_07_29_v1_app_routes_admin_create_team",
       "archive_2026_07_29_v1_app_routes_admin_manager_form",
@@ -522,7 +537,7 @@
       "archive_2026_07_29_v1_app_routes_admin_py_user",
       "archive_2026_07_29_v1_app_routes_admin_teams_page"
     ],
-    "20": [
+    "19": [
       "archive_2026_07_29_v2_app_routes_admin_assign_manager",
       "archive_2026_07_29_v2_app_routes_admin_create_team",
       "archive_2026_07_29_v2_app_routes_admin_manager_form",
@@ -533,7 +548,7 @@
       "archive_2026_07_29_v2_app_routes_admin_py_user",
       "archive_2026_07_29_v2_app_routes_admin_teams_page"
     ],
-    "21": [
+    "20": [
       "archive_2026_07_29_v3_app_bidding",
       "archive_2026_07_29_v3_app_bidding_base_price_for",
       "archive_2026_07_29_v3_app_bidding_increment_for",
@@ -542,15 +557,7 @@
       "archive_2026_07_29_v3_app_bidding_rationale_17",
       "archive_2026_07_29_v3_app_bidding_rationale_24"
     ],
-    "22": [
-      "archive_2026_07_29_v1_app_auth_get_current_user",
-      "archive_2026_07_29_v1_app_auth_py_request",
-      "archive_2026_07_29_v1_app_auth_py_session",
-      "archive_2026_07_29_v1_app_auth_py_user",
-      "archive_2026_07_29_v1_app_auth_rationale_20",
-      "archive_2026_07_29_v1_app_auth_require_login"
-    ],
-    "23": [
+    "21": [
       "archive_2026_07_29_v2_app_auth_get_current_user",
       "archive_2026_07_29_v2_app_auth_py_request",
       "archive_2026_07_29_v2_app_auth_py_session",
@@ -558,44 +565,50 @@
       "archive_2026_07_29_v2_app_auth_rationale_29",
       "archive_2026_07_29_v2_app_auth_require_login"
     ],
-    "24": [
+    "22": [
       "archive_2026_07_29_v1_app_database",
       "archive_2026_07_29_v1_app_database_get_db"
     ],
-    "25": [
+    "23": [
       "archive_2026_07_29_v2_app_database",
       "archive_2026_07_29_v2_app_database_get_db"
     ],
-    "26": [
+    "24": [
       "archive_2026_07_29_v3_app_database",
       "archive_2026_07_29_v3_app_database_get_db"
     ],
-    "27": [
+    "25": [
       "app_init"
     ],
-    "28": [
+    "26": [
       "app_models_models_py_base"
     ],
-    "29": [
+    "27": [
       "app_models_models_py_str"
     ],
-    "30": [
+    "28": [
       "app_routes_auction_py_auction"
     ],
-    "31": [
+    "29": [
       "app_routes_auction_py_auctiontype"
     ],
-    "32": [
+    "30": [
       "app_routes_auction_py_player"
     ],
-    "33": [
+    "31": [
       "app_routes_auction_py_user"
     ],
-    "34": [
+    "32": [
       "app_routes_init"
     ],
-    "35": [
+    "33": [
       "app_routes_manager_py_user"
+    ],
+    "34": [
+      "app_routes_players_py_uploadfile"
+    ],
+    "35": [
+      "app_routes_players_py_user"
     ],
     "36": [
       "app_routes_roll_py_auctiontype"
@@ -629,30 +642,30 @@
     ]
   },
   "cohesion": {
-    "0": 0.06200411401704378,
-    "1": 0.09800362976406533,
-    "2": 0.1246376811594203,
-    "3": 0.1632183908045977,
-    "4": 0.18719211822660098,
-    "5": 0.2153846153846154,
-    "6": 0.14285714285714285,
+    "0": 0.05586741512964448,
+    "1": 0.0753501400560224,
+    "2": 0.1332099907493062,
+    "3": 0.19576719576719576,
+    "4": 0.1455026455026455,
+    "5": 0.20333333333333334,
+    "6": 0.18095238095238095,
     "7": 0.14285714285714285,
     "8": 0.14285714285714285,
-    "9": 0.19473684210526315,
+    "9": 0.14285714285714285,
     "10": 0.14705882352941177,
-    "11": 0.38333333333333336,
-    "12": 0.35,
-    "13": 0.38461538461538464,
-    "14": 0.3974358974358974,
+    "11": 0.3416666666666667,
+    "12": 0.3523809523809524,
+    "13": 0.3974358974358974,
+    "14": 0.22727272727272727,
     "15": 0.3939393939393939,
-    "16": 0.38181818181818183,
+    "16": 0.36363636363636365,
     "17": 0.4444444444444444,
-    "18": 0.3333333333333333,
+    "18": 0.4444444444444444,
     "19": 0.4444444444444444,
-    "20": 0.4444444444444444,
-    "21": 0.3333333333333333,
-    "22": 0.5333333333333333,
-    "23": 0.5333333333333333,
+    "20": 0.3333333333333333,
+    "21": 0.5333333333333333,
+    "22": 1.0,
+    "23": 1.0,
     "24": 1.0,
     "25": 1.0,
     "26": 1.0,
@@ -680,51 +693,51 @@
     {
       "id": "app_models_models_user",
       "label": "User",
-      "degree": 63
+      "degree": 71
     },
     {
       "id": "app_models_models_role",
       "label": "Role",
-      "degree": 37
+      "degree": 32
     },
     {
       "id": "app_models_models_team",
       "label": "Team",
-      "degree": 32
-    },
-    {
-      "id": "app_models_models_player",
-      "label": "Player",
-      "degree": 25
+      "degree": 28
     },
     {
       "id": "app_database_get_db",
       "label": "get_db()",
-      "degree": 23
+      "degree": 22
+    },
+    {
+      "id": "app_models_models_player",
+      "label": "Player",
+      "degree": 22
     },
     {
       "id": "app_models_models_bid",
       "label": "Bid",
-      "degree": 23
-    },
-    {
-      "id": "app_auth_hash_password",
-      "label": "hash_password()",
-      "degree": 22
+      "degree": 21
     },
     {
       "id": "app_models_models_auction",
       "label": "Auction",
-      "degree": 22
+      "degree": 20
+    },
+    {
+      "id": "app_auth_hash_password",
+      "label": "hash_password()",
+      "degree": 19
+    },
+    {
+      "id": "app_app_settings_get_settings",
+      "label": "get_settings()",
+      "degree": 19
     },
     {
       "id": "app_auth_normalize_phone",
       "label": "normalize_phone()",
-      "degree": 21
-    },
-    {
-      "id": "app_models_models_playerteamimage",
-      "label": "PlayerTeamImage",
       "degree": 18
     }
   ],
@@ -734,28 +747,6 @@
       "target": "normalize_phone()",
       "source_files": [
         "archive/2026-07-29_v2/app/routes/admin.py",
-        "app/auth.py"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "connects across different repos/directories; bridges separate communities"
-    },
-    {
-      "source": "import_registrations()",
-      "target": "normalize_phone()",
-      "source_files": [
-        "archive/2026-07-29_v2/app/routes/players.py",
-        "app/auth.py"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "connects across different repos/directories; bridges separate communities"
-    },
-    {
-      "source": "import_stats()",
-      "target": "normalize_phone()",
-      "source_files": [
-        "archive/2026-07-29_v2/app/routes/players.py",
         "app/auth.py"
       ],
       "confidence": "EXTRACTED",
@@ -778,6 +769,28 @@
       "target": "normalize_phone()",
       "source_files": [
         "archive/2026-07-29_v3/app/routes/players.py",
+        "app/auth.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "import_stats()",
+      "target": "normalize_phone()",
+      "source_files": [
+        "archive/2026-07-29_v3/app/routes/players.py",
+        "app/auth.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "assign_manager()",
+      "target": "hash_password()",
+      "source_files": [
+        "archive/2026-07-29_v1/app/routes/admin.py",
         "app/auth.py"
       ],
       "confidence": "EXTRACTED",
