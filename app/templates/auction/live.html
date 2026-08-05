@@ -45,7 +45,7 @@
     <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
 
     <script>
-    let flipInterval = null;
+    let flipInterval = null, waitPoll = null;
     function initFlipCountdown() {
         clearInterval(flipInterval);
         const el = document.querySelector('.flip-countdown');
@@ -55,7 +55,9 @@
             const diff = target - Date.now();
             if (diff <= 0) {
                 clearInterval(flipInterval);
-                location.reload();
+                const slot = document.getElementById('tv-countdown-slot');
+                if (slot) slot.innerHTML = '<div class="tv-empty" data-status="none">AUCTION STARTING NOW</div>';
+                startWaitPoll();
                 return;
             }
             const d = Math.floor(diff / 86400000);
@@ -76,7 +78,19 @@
         tick();
         flipInterval = setInterval(tick, 1000);
     }
+    function startWaitPoll() {
+        clearInterval(waitPoll);
+        waitPoll = setInterval(() => {
+            fetch("{{ fragment_url }}").then(r => r.text()).then(html => {
+                if (html.includes('data-status="pending"') || html.includes('data-status="live"')) {
+                    clearInterval(waitPoll);
+                    location.reload();
+                }
+            }).catch(() => {});
+        }, 3000);
+    }
     if (document.querySelector('.flip-countdown')) initFlipCountdown();
+    else if (document.getElementById('tv-countdown-slot')) startWaitPoll();
 
     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', (e) => {

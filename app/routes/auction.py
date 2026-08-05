@@ -408,7 +408,7 @@ def _next_auction_countdown(db: Session):
     auction until any captain-type auction has been rolled, then player's auction
     until any player-type auction has been rolled, then nothing."""
     settings = get_settings(db)
-    now = datetime.utcnow()
+    now = datetime.utcnow() + timedelta(hours=5, minutes=30)
     if settings.captain_auction_at and now < settings.captain_auction_at:
         return "CAPTAIN'S AUCTION", settings.captain_auction_at
     if settings.player_auction_at and now < settings.player_auction_at:
