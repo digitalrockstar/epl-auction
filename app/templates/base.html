@@ -123,15 +123,18 @@
             Players
         </a>
         {% endif %}
-        <a href="/logout">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        <button type="button" class="mobile-more-btn" id="mobileMenuToggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
             More
-        </a>
+        </button>
     </nav>
     {% endif %}
 </div>
 <script>
 document.getElementById('navToggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
+document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
 });
 </script>
