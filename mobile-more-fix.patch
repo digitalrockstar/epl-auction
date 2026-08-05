@@ -1,0 +1,44 @@
+diff --git a/app/static/css/style.css b/app/static/css/style.css
+index f77dad7..b2af21b 100644
+--- a/app/static/css/style.css
++++ b/app/static/css/style.css
+@@ -419,9 +419,10 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
+         background: var(--surface); border-top: 1px solid var(--border);
+         padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+     }
+-    .mobile-tabbar a {
++    .mobile-tabbar a, .mobile-tabbar button {
+         flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+         color: var(--text-muted); font-size: 10px; padding: 4px 0;
++        background: none; border: none; font-family: inherit; cursor: pointer;
+     }
+     .mobile-tabbar a.active { color: var(--gold); }
+     .mobile-tabbar a:hover { text-decoration: none; }
+diff --git a/app/templates/base.html b/app/templates/base.html
+index ee5fd9c..1b20cf2 100644
+--- a/app/templates/base.html
++++ b/app/templates/base.html
+@@ -123,10 +123,10 @@
+             Players
+         </a>
+         {% endif %}
+-        <a href="/logout">
+-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
++        <button type="button" class="mobile-more-btn" id="mobileMenuToggle">
++            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+             More
+-        </a>
++        </button>
+     </nav>
+     {% endif %}
+ </div>
+@@ -134,6 +134,9 @@
+ document.getElementById('navToggle')?.addEventListener('click', () => {
+     document.getElementById('sidebar').classList.toggle('open');
+ });
++document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
++    document.getElementById('sidebar').classList.toggle('open');
++});
+ </script>
+ </body>
+ </html>

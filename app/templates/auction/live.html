@@ -51,8 +51,19 @@
             el.querySelectorAll('.flip-value').forEach(span => {
                 const next = String(vals[span.dataset.unit]).padStart(2, '0');
                 if (span.textContent !== next) {
+                    const oldVal = span.textContent;
+
+                    for (let i = 0; i < next.length; i++) {
+                        if (oldVal[i] !== next[i]) {
+                            const digit = span.children[i];
+                            digit.textContent = next[i];
+                            digit.classList.remove('flip');
+                            void digit.offsetWidth;
+                            digit.classList.add('flip');
+                        }
+                    }
+
                     span.textContent = next;
-                    span.classList.remove('flip'); void span.offsetWidth; span.classList.add('flip');
                 }
             });
             if (diff <= 0) clearInterval(flipInterval);

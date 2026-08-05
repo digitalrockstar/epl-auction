@@ -1,0 +1,16 @@
+diff --git a/app/static/css/style.css b/app/static/css/style.css
+index 8984746..f77dad7 100644
+--- a/app/static/css/style.css
++++ b/app/static/css/style.css
+@@ -277,9 +277,10 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
+ @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+ 
+ /* ---- Tables ---- */
+-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
++.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+ .teams-table, table.data-table {
+     width: 100%;
++    min-width: 640px;
+     border-collapse: collapse;
+     background: var(--surface);
+     border: 1px solid var(--border);
