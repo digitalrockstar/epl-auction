@@ -1,6 +1,6 @@
-{% if countdown_target %}
+{% if screen_state == "countdown" %}
 <div class="tv-empty flip-countdown-wrap" data-status="none">
-    <p class="tv-tag" style="margin-bottom:14px;">{{ countdown_label }} STARTS IN</p>
+    <p class="tv-tag" style="margin-bottom:14px;">AUCTION STARTS IN</p>
     <div class="flip-countdown" id="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
         <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
         <div class="flip-unit"><span class="flip-value" data-unit="h">00</span><label>Hours</label></div>
@@ -8,4 +8,6 @@
         <div class="flip-unit"><span class="flip-value" data-unit="s">00</span><label>Secs</label></div>
     </div>
 </div>
+{% elif screen_state == "starting_now" %}
+<div class="tv-starting-now" data-status="none">AUCTION STARTING NOW</div>
 {% endif %}

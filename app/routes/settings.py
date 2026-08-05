@@ -67,19 +67,17 @@ def update_ticker(
 
 @router.post("/auction-dates", response_class=HTMLResponse)
 def update_auction_dates(
-    captain_auction_at: str = Form(...),
-    player_auction_at: str = Form(...),
+    auction_date: str = Form(...),
     db: Session = Depends(get_db),
     user: User = Depends(super_admin_only),
 ):
     settings = get_settings(db)
     try:
-        settings.captain_auction_at = datetime.strptime(captain_auction_at, "%Y-%m-%dT%H:%M")
-        settings.player_auction_at = datetime.strptime(player_auction_at, "%Y-%m-%dT%H:%M")
+        settings.captain_auction_at = datetime.strptime(auction_date, "%Y-%m-%dT%H:%M")
     except ValueError:
         return RedirectResponse(url="/admin/settings?msg=" + quote("Invalid date/time"), status_code=303)
     db.commit()
-    return RedirectResponse(url="/admin/settings?msg=" + quote("Auction countdown times saved (IST)"), status_code=303)
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Auction date saved (IST)"), status_code=303)
 
 
 @router.post("/slabs", response_class=HTMLResponse)

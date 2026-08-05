@@ -176,3 +176,15 @@ html, body { overflow-x: hidden; }
     .purse-ticker { flex-wrap: wrap; padding: 10px 14px; }
     .purse-chip { flex: 1 1 45%; }
 }
+
+.tv-starting-now {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 60vh; text-align: center;
+    font-size: clamp(28px, 6vw, 72px); font-weight: 800; letter-spacing: 2px;
+    color: var(--gold); text-shadow: 0 0 30px rgba(212, 175, 55, 0.35);
+    animation: tv-starting-pulse 1.8s ease-in-out infinite;
+}
+@keyframes tv-starting-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
