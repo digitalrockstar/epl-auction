@@ -16,7 +16,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = countdown_target and datetime.now() < countdown_target
+    show_countdown = bool(countdown_target and datetime.now() < countdown_target and not live)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
