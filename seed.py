@@ -53,10 +53,10 @@ else:
 
 # ---- Sample managers, one per team (placeholder phones - swap for real numbers before going live) ----
 MANAGERS = [
-    ("Spartans", "Adarsh S", "9800011111", "OTZED"),
-    ("Titans", "Himanshu R", "9800022222", "VHXDH"),
-    ("Warriors", "Pavan T", "9800033333", "VJKNR"),
-    ("Yoddhas", "Hitesh P", "9800044444", "SSMQA"),
+    ("Spartans", "Adarsh S", "9800011111", "QAZWS"),
+    ("Titans", "Himanshu R", "9800022222", "PLMOK"),
+    ("Warriors", "Pavan T", "9800033333", "ZXCAS"),
+    ("Yoddhas", "Hitesh P", "9800044444", "BNMKL"),
 ]
 for team_name, mgr_name, phone, password in MANAGERS:
     team = db.query(Team).filter(Team.name == team_name).first()
