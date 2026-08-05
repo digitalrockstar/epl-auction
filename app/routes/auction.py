@@ -422,6 +422,10 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
     show_countdown = bool(countdown_target and datetime.now() < countdown_target and not live)
+    print("LIVE:", live)
+    print("COUNTDOWN TARGET:", countdown_target)
+    print("NOW:", datetime.now())
+    print("SHOW_COUNTDOWN:", show_countdown)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
