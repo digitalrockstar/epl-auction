@@ -46,7 +46,7 @@ html, body { overflow-x: hidden; }
 .tv-stats b { font-size: clamp(16px, 2vw, 24px); display: block; color: #e8ab2f; }
 .tv-brief { margin-top: 24px; font-size: 15px; color: #c4c7cf; max-width: 700px; font-style: italic; overflow-wrap: anywhere; }
 .tv-empty { text-align: center; font-size: clamp(20px, 4vw, 34px); color: #a0a4ae; padding: 100px 20px; }
-.flip-countdown-wrap { padding: 70px 20px; }
+.flip-countdown-wrap { padding: 0 20px 40px; }
 .flip-countdown { display: flex; justify-content: center; gap: clamp(10px, 2vw, 24px); }
 .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .flip-value {

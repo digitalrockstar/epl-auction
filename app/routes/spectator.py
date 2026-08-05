@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.config import REVEAL_SECONDS
 from app.routes.auction import _live_context, _padded_photos, _eligible_pool, _next_auction_countdown
-
+from datetime import datetime
 router = APIRouter(prefix="/spectator")
 from app.templating import templates
 
@@ -16,6 +16,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
+    show_countdown = countdown_target and datetime.now() < countdown_target
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -26,7 +27,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
          "resolved": resolved, "resolved_photo": resolved_photo,
-         "countdown_label": countdown_label, "countdown_target": countdown_target},
+         "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown},
     )
 
 
@@ -34,13 +35,15 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
 def spectator_fragment(request: Request, db: Session = Depends(get_db)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+    countdown_label, countdown_target = _next_auction_countdown(db)
+    show_countdown = countdown_target and datetime.now() < countdown_target
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
+         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown},
     )
 
 
@@ -58,9 +61,10 @@ def spectator_timer(request: Request, db: Session = Depends(get_db)):
 @router.get("/live/countdown", response_class=HTMLResponse)
 def spectator_countdown(request: Request, db: Session = Depends(get_db)):
     countdown_label, countdown_target = _next_auction_countdown(db)
+    show_countdown = countdown_target and datetime.now() < countdown_target
     return templates.TemplateResponse(
         "auction/_countdown_fragment.html",
-        {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target},
+        {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown},
     )
 
 
