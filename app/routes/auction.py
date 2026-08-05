@@ -406,11 +406,11 @@ def _live_context(db: Session):
 def _next_auction_countdown(db: Session):
     """Idle-screen flip countdown: which auction's start time to show. Captain's
     auction until any captain-type auction has been rolled, then player's auction
-    until any player-type auction has been rolled, then nothing."""
-    settings = get_settings(db)
-    if not db.query(Auction).filter(Auction.auction_type == AuctionType.captain).first():
+    until any player-type auction has been rolled, then nothing."""    settings = get_settings(db)
+    now = datetime.utcnow()
+    if settings.captain_auction_at and now < settings.captain_auction_at:
         return "CAPTAIN'S AUCTION", settings.captain_auction_at
-    if not db.query(Auction).filter(Auction.auction_type == AuctionType.player).first():
+    if settings.player_auction_at and now < settings.player_auction_at:
         return "PLAYER'S AUCTION", settings.player_auction_at
     return None, None
 
@@ -421,11 +421,7 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = bool(countdown_target and datetime.utcnow() < countdown_target and not live)
-    print("LIVE:", live)
-    print("COUNTDOWN TARGET:", countdown_target)
-    print("NOW:", datetime.utcnow())
-    print("SHOW_COUNTDOWN:", show_countdown)
+    show_countdown = countdown_target is not None
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -468,7 +464,7 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
 @router.get("/auction/live/countdown", response_class=HTMLResponse)
 def live_countdown(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     countdown_label, countdown_target = _next_auction_countdown(db)
-    show_countdown = countdown_target and datetime.utcnow() < countdown_target
+    show_countdown = countdown_target is not None
     ctx = {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown}
     if show_countdown:
         return templates.TemplateResponse("auction/_countdown_fragment.html", ctx)
