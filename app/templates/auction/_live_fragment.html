@@ -90,7 +90,7 @@
         <div class="purse-ticker" style="position:static;padding:0;background:none;border:none;flex-direction:column;gap:12px;">
             {% for t in teams %}
             <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
-                <span class="purse-team">{{ t.name }} · {{ t.players|length }}/13</span>
+                <span class="purse-team">{{ t.name }} · {{ t.players|length }}/12</span>
                 <span class="purse-amt">₹{{ (t.purse_remaining|inr) }}</span>
                 <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#e8ab2f' }}"></div></div>
             </div>

@@ -7,7 +7,7 @@
     <div>
         <span class="field-label" style="margin-bottom:2px;">Highest Bidder</span>
         <div style="font-size:16px;font-weight:700;">
-            {% if live.current_team %}{{ live.current_team.name }} ({{ live.current_team.players|length }}/13){% else %}No bids yet{% endif %}
+            {% if live.current_team %}{{ live.current_team.name }} ({{ live.current_team.players|length }}/12){% else %}No bids yet{% endif %}
         </div>
     </div>
     <div>
@@ -18,7 +18,7 @@
 
 <div class="bid-col-grid">
     {% for t in teams %}
-    {% set squad_full = t.players|length >= 13 %}
+    {% set squad_full = t.players|length >= 12 %}
     {% set captain_taken = live.auction_type.value == "captain" and t.captain_id %}
     <div class="bid-col" style="border-top-color:{{ t.primary_color or '#e8ab2f' }};">
         <div class="bc-head">
@@ -26,7 +26,7 @@
             {% if live.current_team_id == t.id %}<span class="badge badge-gold">Leading</span>{% endif %}
         </div>
         <span class="bc-purse">₹{{ (t.purse_remaining|inr) }}</span>
-        <div class="bc-mini"><span>Players {{ t.players|length }}/13</span></div>
+        <div class="bc-mini"><span>Players {{ t.players|length }}/12</span></div>
         <form method="post" action="/admin/auction/{{ live.id }}/bid">
             <input type="hidden" name="auction_type" value="{{ auction_type }}">
             <input type="hidden" name="team_id" value="{{ t.id }}">

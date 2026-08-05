@@ -71,7 +71,7 @@ app/static/images/teams/<team-slug>.png              -> team logo
   thing, they save straight into these folders. Use them for one-off corrections; use the folder drop
   for loading everyone at once.
 - `CAPTAIN_BASE_PRICE` (200000), `PLAYER_BASE_PRICE` (50000)
-- `MIN_SQUAD_SIZE` (13), `MAX_PURSE` (2500000), `TIMER_SECONDS` (180)
+- `MIN_SQUAD_SIZE` (12), `MAX_PURSE` (2500000), `TIMER_SECONDS` (180)
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (optional)
 
 ## Not yet built
