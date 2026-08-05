@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.models import Settings
@@ -11,6 +12,7 @@ def get_settings(db: Session) -> Settings:
         s = Settings(
             id=1, telegram_enabled=True, timer_seconds=TIMER_SECONDS,
             ticker_speed_seconds=TICKER_SPEED_SECONDS, ticker_window=TICKER_WINDOW,
+            captain_auction_at=datetime(2026, 8, 7, 21, 0), player_auction_at=datetime(2026, 8, 22, 17, 0),
         )
         db.add(s)
         db.commit()

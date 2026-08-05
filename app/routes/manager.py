@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Team, Auction, AuctionStatus, Bid, User, Role
-from app.auth import require_role
+from app.auth import require_role, require_login
 from app.bidding import next_bid_amount, purse_check
 from app.app_settings import get_slabs
 from app.routes.auction import _player_photo, _players_bought
@@ -43,9 +43,15 @@ def my_team(request: Request, db: Session = Depends(get_db), user: User = Depend
     )
 
 
+@router.get("/teams", response_class=HTMLResponse)
+def teams_index(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    teams = db.query(Team).order_by(Team.id).all()
+    return templates.TemplateResponse("manager/teams_index.html", {"request": request, "user": user, "teams": teams})
+
+
 @router.get("/team/{team_id}", response_class=HTMLResponse)
 def view_team_roster(
-    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)
+    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)
 ):
     team = db.query(Team).filter(Team.id == team_id).first()
     all_teams = db.query(Team).order_by(Team.id).all()

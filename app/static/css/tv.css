@@ -46,6 +46,18 @@ html, body { overflow-x: hidden; }
 .tv-stats b { font-size: clamp(16px, 2vw, 24px); display: block; color: #e8ab2f; }
 .tv-brief { margin-top: 24px; font-size: 15px; color: #c4c7cf; max-width: 700px; font-style: italic; overflow-wrap: anywhere; }
 .tv-empty { text-align: center; font-size: clamp(20px, 4vw, 34px); color: #a0a4ae; padding: 100px 20px; }
+.flip-countdown-wrap { padding: 70px 20px; }
+.flip-countdown { display: flex; justify-content: center; gap: clamp(10px, 2vw, 24px); }
+.flip-unit { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.flip-value {
+    display: inline-block; min-width: clamp(60px, 8vw, 110px); background: #14161d;
+    border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px;
+    font-size: clamp(30px, 6vw, 64px); font-weight: 800; color: var(--gold);
+    font-variant-numeric: tabular-nums;
+}
+.flip-value.flip { animation: flip-tick 0.5s ease; }
+@keyframes flip-tick { 0% { transform: rotateX(90deg); opacity: 0.3; } 100% { transform: rotateX(0deg); opacity: 1; } }
+.flip-unit label { font-size: clamp(11px, 1.2vw, 14px); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
 
 .tv-shuffle-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 14px;

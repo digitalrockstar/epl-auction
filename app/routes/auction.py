@@ -403,11 +403,24 @@ def _live_context(db: Session):
             reveal_category, settings.ticker_speed_seconds, settings.timer_seconds, resolved, resolved_photo)
 
 
+def _next_auction_countdown(db: Session):
+    """Idle-screen flip countdown: which auction's start time to show. Captain's
+    auction until any captain-type auction has been rolled, then player's auction
+    until any player-type auction has been rolled, then nothing."""
+    settings = get_settings(db)
+    if not db.query(Auction).filter(Auction.auction_type == AuctionType.captain).first():
+        return "CAPTAIN'S AUCTION", settings.captain_auction_at
+    if not db.query(Auction).filter(Auction.auction_type == AuctionType.player).first():
+        return "PLAYER'S AUCTION", settings.player_auction_at
+    return None, None
+
+
 @router.get("/auction/live", response_class=HTMLResponse)
 def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+    countdown_label, countdown_target = _next_auction_countdown(db)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -416,7 +429,8 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
          "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
-         "resolved": resolved, "resolved_photo": resolved_photo},
+         "resolved": resolved, "resolved_photo": resolved_photo,
+         "countdown_label": countdown_label, "countdown_target": countdown_target},
     )
 
 
@@ -425,12 +439,14 @@ def live_fragment(request: Request, db: Session = Depends(get_db), user: User = 
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
+    countdown_label, countdown_target = _next_auction_countdown(db)
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
+         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo,
+         "countdown_label": countdown_label, "countdown_target": countdown_target},
     )
 
 

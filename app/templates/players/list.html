@@ -7,14 +7,32 @@
         <h1>Players</h1>
         <p class="sub">All registered players. Click a name for the full stats card.</p>
     </div>
-</div>
-
-<div class="tabs" style="display:flex;gap:8px;margin-bottom:18px;">
-    <a href="/players?tab=players" class="btn {{ 'btn-gold' if tab == 'players' else 'btn-outline' }} btn-sm">All Players</a>
-    {% if show_captain_tab %}
-    <a href="/players?tab=captains" class="btn {{ 'btn-gold' if tab == 'captains' else 'btn-outline' }} btn-sm">Captain Nominations</a>
+    {% if user.role.value == "manager" %}
+    <div style="display:flex;gap:8px;">
+        <a href="/players/export.csv?kind=players" class="btn btn-outline btn-sm">Download Players CSV</a>
+        <a href="/players/export.csv?kind=captains" class="btn btn-outline btn-sm">Download Captains CSV</a>
+    </div>
     {% endif %}
 </div>
+
+<div class="tabs">
+    <a href="/players?tab=players{{ '&skill=' + selected_skill if selected_skill }}" class="{{ 'active' if tab == 'players' }}">All Players</a>
+    {% if show_captain_tab %}
+    <a href="/players?tab=captains{{ '&skill=' + selected_skill if selected_skill }}" class="{{ 'active' if tab == 'captains' }}">Captain Nominations</a>
+    {% endif %}
+</div>
+
+<form method="get" action="/players" style="margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <span class="field-label">Primary Skill</span>
+    <select name="skill" onchange="this.form.submit()" style="min-width:180px;">
+        <option value="">All skills</option>
+        {% for s in skills %}
+        <option value="{{ s }}" {% if s == selected_skill %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_skill %}<a href="/players?tab={{ tab }}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+</form>
 
 {% set sold_count = players|selectattr("team")|list|length %}
 <div class="stat-grid">

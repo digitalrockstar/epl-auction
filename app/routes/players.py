@@ -1,7 +1,7 @@
 import csv
 import io
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -13,6 +13,16 @@ router = APIRouter(prefix="/admin/players")
 profile_router = APIRouter(prefix="/players")
 from app.templating import templates
 staff_only = require_role(Role.super_admin, Role.admin)
+manager_only = require_role(Role.manager)
+
+EXPORT_FIELDS = [
+    "name", "phone", "primary_skill", "batting_position", "batting_hand", "bowling_style",
+    "bowling_hand", "is_wicketkeeper", "experience_level", "wants_captaincy", "team",
+    "sold_price", "fee_status", "matches_won", "matches_lost", "bat_matches", "bat_innings",
+    "bat_runs", "bat_sr", "bat_avg", "bat_4s", "bat_6s", "bat_30s", "bat_ducks", "bowl_matches",
+    "bowl_innings", "bowl_wickets", "bowl_economy", "bowl_3wkts", "bowl_dots", "bowl_extras",
+    "bowl_4s_given", "bowl_6s_given", "field_catches", "field_runouts", "brief", "cricheroes_url",
+]
 
 REG_HEADERS = {
     "name": "Full Name",
@@ -248,6 +258,7 @@ def set_kit_image(
 @profile_router.get("", response_class=HTMLResponse)
 def players_list_view_only(
     tab: str = "players",
+    skill: str = "",
     request: Request = None,
     db: Session = Depends(get_db),
     user: User = Depends(require_login),
@@ -266,11 +277,41 @@ def players_list_view_only(
     query = db.query(Player).order_by(Player.id)
     if tab == "captains":
         query = query.filter(Player.wants_captaincy.is_(True))
+    if skill:
+        query = query.filter(Player.primary_skill == skill)
     players = query.all()
+    skills = sorted({s for (s,) in db.query(Player.primary_skill).distinct() if s})
 
     return templates.TemplateResponse(
         "players/list.html",
-        {"request": request, "user": user, "players": players, "tab": tab, "show_captain_tab": show_captain_tab},
+        {"request": request, "user": user, "players": players, "tab": tab,
+         "show_captain_tab": show_captain_tab, "skills": skills, "selected_skill": skill},
+    )
+
+
+@profile_router.get("/export.csv")
+def export_players_csv(kind: str = "players", db: Session = Depends(get_db), user: User = Depends(manager_only)):
+    query = db.query(Player).order_by(Player.id)
+    if kind == "captains":
+        query = query.filter(Player.wants_captaincy.is_(True))
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(EXPORT_FIELDS)
+    for p in query.all():
+        writer.writerow([
+            p.user.name, p.user.phone, p.primary_skill, p.batting_position, p.batting_hand,
+            p.bowling_style, p.bowling_hand, p.is_wicketkeeper, p.experience_level, p.wants_captaincy,
+            p.team.name if p.team else "", p.sold_price, p.fee_status.value if p.fee_status else "",
+            p.matches_won, p.matches_lost, p.bat_matches, p.bat_innings, p.bat_runs, p.bat_sr,
+            p.bat_avg, p.bat_4s, p.bat_6s, p.bat_30s, p.bat_ducks, p.bowl_matches, p.bowl_innings,
+            p.bowl_wickets, p.bowl_economy, p.bowl_3wkts, p.bowl_dots, p.bowl_extras,
+            p.bowl_4s_given, p.bowl_6s_given, p.field_catches, p.field_runouts, p.brief, p.cricheroes_url,
+        ])
+    output.seek(0)
+    filename = "captains_raw_data.csv" if kind == "captains" else "players_raw_data.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]), media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 

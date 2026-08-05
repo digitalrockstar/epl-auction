@@ -11,7 +11,7 @@
         <h1>{{ live.player.user.name }}</h1>
         <p class="tv-tag">{{ live.player.primary_skill or "" }} | {{ live.player.batting_hand or "" }}
            {% if live.player.bowling_style %} | {{ live.player.bowling_style }}{% endif %}
-           {% if live.player.is_wicketkeeper %} | WK{% endif %}</p>
+           {% if live.player.is_wicketkeeper in ("Regular", "Occasional") %} | WK ({{ live.player.is_wicketkeeper }}){% endif %}</p>
 
         <div class="tv-bid">
             <span class="tv-bid-amount">₹{{ (live.current_bid|inr) }}</span>
@@ -65,6 +65,16 @@
         {% endfor %}
     </div>
     <p class="tv-tag" style="margin-top:18px;">Bidding opens shortly&hellip;</p>
+</div>
+{% elif countdown_target %}
+<div class="tv-empty flip-countdown-wrap" data-status="none">
+    <p class="tv-tag" style="margin-bottom:14px;">{{ countdown_label }} STARTS IN</p>
+    <div class="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
+        <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
+        <div class="flip-unit"><span class="flip-value" data-unit="h">00</span><label>Hours</label></div>
+        <div class="flip-unit"><span class="flip-value" data-unit="m">00</span><label>Mins</label></div>
+        <div class="flip-unit"><span class="flip-value" data-unit="s">00</span><label>Secs</label></div>
+    </div>
 </div>
 {% else %}
 <div class="tv-empty" data-status="none">Auction not live right now</div>

@@ -115,6 +115,16 @@
     <h1>Welcome, {{ user.name }}!</h1>
 </div>
 <p style="color:var(--text-muted);">Registration received. Watch the live auction below when it starts.</p>
+<div class="tile-grid" style="margin-top:14px;">
+    <a href="/teams" class="quick-tile">
+        <svg class="qi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <b>Roster</b><span>Browse every team</span>
+    </a>
+    <a href="/players" class="quick-tile">
+        <svg class="qi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg>
+        <b>Players</b><span>All registered players</span>
+    </a>
+</div>
 <a href="/spectator/live" class="btn btn-outline" target="_blank" style="margin-top:14px;">Open Spectator View ↗</a>
 {% endif %}
 

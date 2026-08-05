@@ -1,0 +1,578 @@
+diff --git a/app/app_settings.py b/app/app_settings.py
+index 0aafe39..0098552 100644
+--- a/app/app_settings.py
++++ b/app/app_settings.py
+@@ -1,4 +1,5 @@
+ import json
++from datetime import datetime
+ from sqlalchemy.orm import Session
+ 
+ from app.models import Settings
+@@ -11,6 +12,7 @@ def get_settings(db: Session) -> Settings:
+         s = Settings(
+             id=1, telegram_enabled=True, timer_seconds=TIMER_SECONDS,
+             ticker_speed_seconds=TICKER_SPEED_SECONDS, ticker_window=TICKER_WINDOW,
++            captain_auction_at=datetime(2026, 8, 7, 21, 0), player_auction_at=datetime(2026, 8, 22, 17, 0),
+         )
+         db.add(s)
+         db.commit()
+diff --git a/app/models/models.py b/app/models/models.py
+index 425f1ac..f48c0cb 100644
+--- a/app/models/models.py
++++ b/app/models/models.py
+@@ -216,4 +216,6 @@ class Settings(Base):
+     timer_seconds = Column(Integer, default=90)
+     ticker_speed_seconds = Column(Integer, default=36)
+     ticker_window = Column(Integer, default=15)
+-    increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
++    increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
++    captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
++    player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))
+diff --git a/app/routes/auction.py b/app/routes/auction.py
+index 379c6ce..c4121fa 100644
+--- a/app/routes/auction.py
++++ b/app/routes/auction.py
+@@ -403,11 +403,24 @@ def _live_context(db: Session):
+             reveal_category, settings.ticker_speed_seconds, settings.timer_seconds, resolved, resolved_photo)
+ 
+ 
++def _next_auction_countdown(db: Session):
++    """Idle-screen flip countdown: which auction's start time to show. Captain's
++    auction until any captain-type auction has been rolled, then player's auction
++    until any player-type auction has been rolled, then nothing."""
++    settings = get_settings(db)
++    if not db.query(Auction).filter(Auction.auction_type == AuctionType.captain).first():
++        return "CAPTAIN'S AUCTION", settings.captain_auction_at
++    if not db.query(Auction).filter(Auction.auction_type == AuctionType.player).first():
++        return "PLAYER'S AUCTION", settings.player_auction_at
++    return None, None
++
++
+ @router.get("/auction/live", response_class=HTMLResponse)
+ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
++    countdown_label, countdown_target = _next_auction_countdown(db)
+     return templates.TemplateResponse(
+         "auction/live.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+@@ -416,7 +429,8 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
+          "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
+          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
+          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
+-         "resolved": resolved, "resolved_photo": resolved_photo},
++         "resolved": resolved, "resolved_photo": resolved_photo,
++         "countdown_label": countdown_label, "countdown_target": countdown_target},
+     )
+ 
+ 
+@@ -425,12 +439,14 @@ def live_fragment(request: Request, db: Session = Depends(get_db), user: User =
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
++    countdown_label, countdown_target = _next_auction_countdown(db)
+     return templates.TemplateResponse(
+         "auction/_live_fragment.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
+          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
+-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
++         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo,
++         "countdown_label": countdown_label, "countdown_target": countdown_target},
+     )
+ 
+ 
+diff --git a/app/routes/manager.py b/app/routes/manager.py
+index 480ebf5..668a02f 100644
+--- a/app/routes/manager.py
++++ b/app/routes/manager.py
+@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
+ 
+ from app.database import get_db
+ from app.models import Team, Auction, AuctionStatus, Bid, User, Role
+-from app.auth import require_role
++from app.auth import require_role, require_login
+ from app.bidding import next_bid_amount, purse_check
+ from app.app_settings import get_slabs
+ from app.routes.auction import _player_photo, _players_bought
+@@ -43,9 +43,15 @@ def my_team(request: Request, db: Session = Depends(get_db), user: User = Depend
+     )
+ 
+ 
++@router.get("/teams", response_class=HTMLResponse)
++def teams_index(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
++    teams = db.query(Team).order_by(Team.id).all()
++    return templates.TemplateResponse("manager/teams_index.html", {"request": request, "user": user, "teams": teams})
++
++
+ @router.get("/team/{team_id}", response_class=HTMLResponse)
+ def view_team_roster(
+-    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)
++    team_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)
+ ):
+     team = db.query(Team).filter(Team.id == team_id).first()
+     all_teams = db.query(Team).order_by(Team.id).all()
+diff --git a/app/routes/players.py b/app/routes/players.py
+index cb8533c..6ea4490 100644
+--- a/app/routes/players.py
++++ b/app/routes/players.py
+@@ -1,7 +1,7 @@
+ import csv
+ import io
+ from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
+-from fastapi.responses import HTMLResponse
++from fastapi.responses import HTMLResponse, StreamingResponse
+ from sqlalchemy.orm import Session
+ 
+ from app.database import get_db
+@@ -13,6 +13,16 @@ router = APIRouter(prefix="/admin/players")
+ profile_router = APIRouter(prefix="/players")
+ from app.templating import templates
+ staff_only = require_role(Role.super_admin, Role.admin)
++manager_only = require_role(Role.manager)
++
++EXPORT_FIELDS = [
++    "name", "phone", "primary_skill", "batting_position", "batting_hand", "bowling_style",
++    "bowling_hand", "is_wicketkeeper", "experience_level", "wants_captaincy", "team",
++    "sold_price", "fee_status", "matches_won", "matches_lost", "bat_matches", "bat_innings",
++    "bat_runs", "bat_sr", "bat_avg", "bat_4s", "bat_6s", "bat_30s", "bat_ducks", "bowl_matches",
++    "bowl_innings", "bowl_wickets", "bowl_economy", "bowl_3wkts", "bowl_dots", "bowl_extras",
++    "bowl_4s_given", "bowl_6s_given", "field_catches", "field_runouts", "brief", "cricheroes_url",
++]
+ 
+ REG_HEADERS = {
+     "name": "Full Name",
+@@ -248,6 +258,7 @@ def set_kit_image(
+ @profile_router.get("", response_class=HTMLResponse)
+ def players_list_view_only(
+     tab: str = "players",
++    skill: str = "",
+     request: Request = None,
+     db: Session = Depends(get_db),
+     user: User = Depends(require_login),
+@@ -266,11 +277,41 @@ def players_list_view_only(
+     query = db.query(Player).order_by(Player.id)
+     if tab == "captains":
+         query = query.filter(Player.wants_captaincy.is_(True))
++    if skill:
++        query = query.filter(Player.primary_skill == skill)
+     players = query.all()
++    skills = sorted({s for (s,) in db.query(Player.primary_skill).distinct() if s})
+ 
+     return templates.TemplateResponse(
+         "players/list.html",
+-        {"request": request, "user": user, "players": players, "tab": tab, "show_captain_tab": show_captain_tab},
++        {"request": request, "user": user, "players": players, "tab": tab,
++         "show_captain_tab": show_captain_tab, "skills": skills, "selected_skill": skill},
++    )
++
++
++@profile_router.get("/export.csv")
++def export_players_csv(kind: str = "players", db: Session = Depends(get_db), user: User = Depends(manager_only)):
++    query = db.query(Player).order_by(Player.id)
++    if kind == "captains":
++        query = query.filter(Player.wants_captaincy.is_(True))
++    output = io.StringIO()
++    writer = csv.writer(output)
++    writer.writerow(EXPORT_FIELDS)
++    for p in query.all():
++        writer.writerow([
++            p.user.name, p.user.phone, p.primary_skill, p.batting_position, p.batting_hand,
++            p.bowling_style, p.bowling_hand, p.is_wicketkeeper, p.experience_level, p.wants_captaincy,
++            p.team.name if p.team else "", p.sold_price, p.fee_status.value if p.fee_status else "",
++            p.matches_won, p.matches_lost, p.bat_matches, p.bat_innings, p.bat_runs, p.bat_sr,
++            p.bat_avg, p.bat_4s, p.bat_6s, p.bat_30s, p.bat_ducks, p.bowl_matches, p.bowl_innings,
++            p.bowl_wickets, p.bowl_economy, p.bowl_3wkts, p.bowl_dots, p.bowl_extras,
++            p.bowl_4s_given, p.bowl_6s_given, p.field_catches, p.field_runouts, p.brief, p.cricheroes_url,
++        ])
++    output.seek(0)
++    filename = "captains_raw_data.csv" if kind == "captains" else "players_raw_data.csv"
++    return StreamingResponse(
++        iter([output.getvalue()]), media_type="text/csv",
++        headers={"Content-Disposition": f"attachment; filename={filename}"},
+     )
+ 
+ 
+diff --git a/app/routes/settings.py b/app/routes/settings.py
+index 4131051..67978af 100644
+--- a/app/routes/settings.py
++++ b/app/routes/settings.py
+@@ -1,3 +1,4 @@
++from datetime import datetime
+ from urllib.parse import quote
+ from fastapi import APIRouter, Request, Depends, Form
+ from fastapi.responses import HTMLResponse, RedirectResponse
+@@ -64,6 +65,23 @@ def update_ticker(
+     return RedirectResponse(url="/admin/settings?msg=" + quote("Ticker settings saved"), status_code=303)
+ 
+ 
++@router.post("/auction-dates", response_class=HTMLResponse)
++def update_auction_dates(
++    captain_auction_at: str = Form(...),
++    player_auction_at: str = Form(...),
++    db: Session = Depends(get_db),
++    user: User = Depends(super_admin_only),
++):
++    settings = get_settings(db)
++    try:
++        settings.captain_auction_at = datetime.strptime(captain_auction_at, "%Y-%m-%dT%H:%M")
++        settings.player_auction_at = datetime.strptime(player_auction_at, "%Y-%m-%dT%H:%M")
++    except ValueError:
++        return RedirectResponse(url="/admin/settings?msg=" + quote("Invalid date/time"), status_code=303)
++    db.commit()
++    return RedirectResponse(url="/admin/settings?msg=" + quote("Auction countdown times saved (IST)"), status_code=303)
++
++
+ @router.post("/slabs", response_class=HTMLResponse)
+ async def update_slabs(
+     request: Request,
+diff --git a/app/routes/spectator.py b/app/routes/spectator.py
+index b58a2f7..4b208de 100644
+--- a/app/routes/spectator.py
++++ b/app/routes/spectator.py
+@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
+ 
+ from app.database import get_db
+ from app.config import REVEAL_SECONDS
+-from app.routes.auction import _live_context, _padded_photos, _eligible_pool
++from app.routes.auction import _live_context, _padded_photos, _eligible_pool, _next_auction_countdown
+ 
+ router = APIRouter(prefix="/spectator")
+ from app.templating import templates
+@@ -15,6 +15,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
++    countdown_label, countdown_target = _next_auction_countdown(db)
+     return templates.TemplateResponse(
+         "auction/live.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+@@ -23,7 +24,8 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
+          "timer_fragment_url": "/spectator/live/timer", "ticker_fragment_url": "/spectator/live/ticker",
+          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
+          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
+-         "resolved": resolved, "resolved_photo": resolved_photo},
++         "resolved": resolved, "resolved_photo": resolved_photo,
++         "countdown_label": countdown_label, "countdown_target": countdown_target},
+     )
+ 
+ 
+@@ -32,12 +34,14 @@ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
+     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
+      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
+     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
++    countdown_label, countdown_target = _next_auction_countdown(db)
+     return templates.TemplateResponse(
+         "auction/_live_fragment.html",
+         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
+          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
+          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
+-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
++         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo,
++         "countdown_label": countdown_label, "countdown_target": countdown_target},
+     )
+ 
+ 
+diff --git a/app/static/css/tv.css b/app/static/css/tv.css
+index c7605a2..b72b9c1 100644
+--- a/app/static/css/tv.css
++++ b/app/static/css/tv.css
+@@ -45,7 +45,19 @@ html, body { overflow-x: hidden; }
+ .tv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 16px 24px; font-size: clamp(13px, 1.4vw, 18px); }
+ .tv-stats b { font-size: clamp(16px, 2vw, 24px); display: block; color: #e8ab2f; }
+ .tv-brief { margin-top: 24px; font-size: 15px; color: #c4c7cf; max-width: 700px; font-style: italic; overflow-wrap: anywhere; }
+-.tv-empty { text-align: center; font-size: clamp(20px, 4vw, 34px); color: #a0a4ae; padding: 100px 20px; }
++.tv-empty { text-align: center; font-size: clamp(20px, 4vw, 34px); color: #a0a4ae; padding: 100px 20px; }
++.flip-countdown-wrap { padding: 70px 20px; }
++.flip-countdown { display: flex; justify-content: center; gap: clamp(10px, 2vw, 24px); }
++.flip-unit { display: flex; flex-direction: column; align-items: center; gap: 8px; }
++.flip-value {
++    display: inline-block; min-width: clamp(60px, 8vw, 110px); background: #14161d;
++    border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px;
++    font-size: clamp(30px, 6vw, 64px); font-weight: 800; color: var(--gold);
++    font-variant-numeric: tabular-nums;
++}
++.flip-value.flip { animation: flip-tick 0.5s ease; }
++@keyframes flip-tick { 0% { transform: rotateX(90deg); opacity: 0.3; } 100% { transform: rotateX(0deg); opacity: 1; } }
++.flip-unit label { font-size: clamp(11px, 1.2vw, 14px); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+ 
+ .tv-shuffle-grid {
+     display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 14px;
+diff --git a/app/templates/admin/settings.html b/app/templates/admin/settings.html
+index 35c3295..7690388 100644
+--- a/app/templates/admin/settings.html
++++ b/app/templates/admin/settings.html
+@@ -32,6 +32,24 @@
+     </form>
+ </div>
+ 
++<div class="panel">
++    <h3 style="margin-bottom:14px;">Auction countdown (TV &amp; spectator view, IST)</h3>
++    <form method="post" action="/admin/settings/auction-dates">
++        <div style="display:flex;gap:20px;flex-wrap:wrap;">
++            <div>
++                <span class="field-label">Captain's Auction starts</span>
++                <input type="datetime-local" name="captain_auction_at" value="{{ settings.captain_auction_at.strftime('%Y-%m-%dT%H:%M') if settings.captain_auction_at else '' }}">
++            </div>
++            <div>
++                <span class="field-label">Player's Auction starts</span>
++                <input type="datetime-local" name="player_auction_at" value="{{ settings.player_auction_at.strftime('%Y-%m-%dT%H:%M') if settings.player_auction_at else '' }}">
++            </div>
++        </div>
++        <p style="color:var(--text-muted);font-size:12px;margin-top:8px;margin-bottom:14px;">Shown as a flip countdown on the idle TV/spectator screen until that auction's first player goes live. Times are IST.</p>
++        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
++    </form>
++</div>
++
+ <div class="panel">
+     <h3 style="margin-bottom:14px;">TV ticker</h3>
+     <form method="post" action="/admin/settings/ticker">
+diff --git a/app/templates/auction/_live_fragment.html b/app/templates/auction/_live_fragment.html
+index c52478f..c2f245f 100644
+--- a/app/templates/auction/_live_fragment.html
++++ b/app/templates/auction/_live_fragment.html
+@@ -11,7 +11,7 @@
+         <h1>{{ live.player.user.name }}</h1>
+         <p class="tv-tag">{{ live.player.primary_skill or "" }} | {{ live.player.batting_hand or "" }}
+            {% if live.player.bowling_style %} | {{ live.player.bowling_style }}{% endif %}
+-           {% if live.player.is_wicketkeeper %} | WK{% endif %}</p>
++           {% if live.player.is_wicketkeeper in ("Regular", "Occasional") %} | WK ({{ live.player.is_wicketkeeper }}){% endif %}</p>
+ 
+         <div class="tv-bid">
+             <span class="tv-bid-amount">₹{{ (live.current_bid|inr) }}</span>
+@@ -66,6 +66,16 @@
+     </div>
+     <p class="tv-tag" style="margin-top:18px;">Bidding opens shortly&hellip;</p>
+ </div>
++{% elif countdown_target %}
++<div class="tv-empty flip-countdown-wrap" data-status="none">
++    <p class="tv-tag" style="margin-bottom:14px;">{{ countdown_label }} STARTS IN</p>
++    <div class="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
++        <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
++        <div class="flip-unit"><span class="flip-value" data-unit="h">00</span><label>Hours</label></div>
++        <div class="flip-unit"><span class="flip-value" data-unit="m">00</span><label>Mins</label></div>
++        <div class="flip-unit"><span class="flip-value" data-unit="s">00</span><label>Secs</label></div>
++    </div>
++</div>
+ {% else %}
+ <div class="tv-empty" data-status="none">Auction not live right now</div>
+ {% endif %}
+diff --git a/app/templates/auction/live.html b/app/templates/auction/live.html
+index e5f81bd..5aa84fe 100644
+--- a/app/templates/auction/live.html
++++ b/app/templates/auction/live.html
+@@ -35,8 +35,36 @@
+     <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
+ 
+     <script>
++    let flipInterval = null;
++    function initFlipCountdown() {
++        clearInterval(flipInterval);
++        const el = document.querySelector('.flip-countdown');
++        if (!el) return;
++        const target = new Date(el.dataset.target).getTime();
++        const tick = () => {
++            const diff = Math.max(0, target - Date.now());
++            const d = Math.floor(diff / 86400000);
++            const h = Math.floor(diff % 86400000 / 3600000);
++            const m = Math.floor(diff % 3600000 / 60000);
++            const s = Math.floor(diff % 60000 / 1000);
++            const vals = { d, h, m, s };
++            el.querySelectorAll('.flip-value').forEach(span => {
++                const next = String(vals[span.dataset.unit]).padStart(2, '0');
++                if (span.textContent !== next) {
++                    span.textContent = next;
++                    span.classList.remove('flip'); void span.offsetWidth; span.classList.add('flip');
++                }
++            });
++            if (diff <= 0) clearInterval(flipInterval);
++        };
++        tick();
++        flipInterval = setInterval(tick, 1000);
++    }
++    initFlipCountdown();
++
+     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
+     document.body.addEventListener('htmx:afterSwap', () => {
++        initFlipCountdown();
+         const el = document.getElementById('tv-wrap');
+         const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
+         if (bid !== undefined && lastBid !== null && (bid !== lastBid || team !== lastTeam)) {
+diff --git a/app/templates/base.html b/app/templates/base.html
+index 15381cb..ee5fd9c 100644
+--- a/app/templates/base.html
++++ b/app/templates/base.html
+@@ -48,6 +48,12 @@
+             <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
+             {% endif %}
+ 
++            {% if user.role.value == "player" %}
++            <div class="nav-group">Browse</div>
++            <a href="/teams" class="{{ 'active' if request.url.path == '/teams' or request.url.path.startswith('/team/') }}">Roster</a>
++            <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
++            {% endif %}
++
+             <div class="nav-group">Watch</div>
+             <a href="/auction/live" target="_blank">TV view ↗</a>
+             <a href="/spectator/live" target="_blank">Spectator link ↗</a>
+@@ -107,6 +113,16 @@
+             Bid
+         </a>
+         {% endif %}
++        {% if user.role.value == "player" %}
++        <a href="/teams" class="{{ 'active' if request.url.path == '/teams' or request.url.path.startswith('/team/') }}">
++            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
++            Roster
++        </a>
++        <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">
++            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg>
++            Players
++        </a>
++        {% endif %}
+         <a href="/logout">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+             More
+diff --git a/app/templates/dashboard.html b/app/templates/dashboard.html
+index ed1627b..faf1089 100644
+--- a/app/templates/dashboard.html
++++ b/app/templates/dashboard.html
+@@ -115,6 +115,16 @@
+     <h1>Welcome, {{ user.name }}!</h1>
+ </div>
+ <p style="color:var(--text-muted);">Registration received. Watch the live auction below when it starts.</p>
++<div class="tile-grid" style="margin-top:14px;">
++    <a href="/teams" class="quick-tile">
++        <svg class="qi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
++        <b>Roster</b><span>Browse every team</span>
++    </a>
++    <a href="/players" class="quick-tile">
++        <svg class="qi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg>
++        <b>Players</b><span>All registered players</span>
++    </a>
++</div>
+ <a href="/spectator/live" class="btn btn-outline" target="_blank" style="margin-top:14px;">Open Spectator View ↗</a>
+ {% endif %}
+ 
+diff --git a/app/templates/manager/teams_index.html b/app/templates/manager/teams_index.html
+new file mode 100644
+index 0000000..6b0d713
+--- /dev/null
++++ b/app/templates/manager/teams_index.html
+@@ -0,0 +1,38 @@
++{% extends "base.html" %}
++{% block title %}Teams{% endblock %}
++{% block content %}
++<div class="page-head-row">
++    <div class="page-head">
++        <div class="eyebrow">Browse</div>
++        <h1>Teams</h1>
++        <p class="sub">Read-only view of every team's roster, purse and captain. Click a team for the full squad.</p>
++    </div>
++</div>
++
++<div class="team-grid">
++    {% for team in teams %}
++    <div class="team-card" style="border-top-color:{{ team.primary_color or '#e8ab2f' }};">
++        <div class="team-card-head">
++            <div class="team-name-row">
++                <img class="team-logo" src="{{ team_logo(team) }}" alt="{{ team.name }} logo" onerror="this.src='/static/img/placeholder_team_logo.svg'">
++                <div>
++                    <div class="team-name">{{ team.name }}</div>
++                    <div class="team-meta">
++                        <span>Manager: {{ team.manager.name if team.manager else "Not assigned" }}</span>
++                        <span>Captain: {{ team.captain.user.name if team.captain else "Not yet" }}</span>
++                    </div>
++                </div>
++            </div>
++        </div>
++        <div class="team-stats">
++            <div><b>₹{{ (team.purse_remaining|inr) }}</b><span>Purse Left</span></div>
++            <div><b>{{ team.players|length }}</b><span>Players</span></div>
++            <div><b>₹{{ (team.purse_total|inr) }}</b><span>Total Purse</span></div>
++        </div>
++        <a href="/team/{{ team.id }}" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:14px;text-decoration:none;">View roster</a>
++    </div>
++    {% else %}
++    <div class="empty-state panel"><p>No teams yet.</p></div>
++    {% endfor %}
++</div>
++{% endblock %}
+diff --git a/app/templates/players/list.html b/app/templates/players/list.html
+index 00965d7..36bb596 100644
+--- a/app/templates/players/list.html
++++ b/app/templates/players/list.html
+@@ -7,15 +7,33 @@
+         <h1>Players</h1>
+         <p class="sub">All registered players. Click a name for the full stats card.</p>
+     </div>
++    {% if user.role.value == "manager" %}
++    <div style="display:flex;gap:8px;">
++        <a href="/players/export.csv?kind=players" class="btn btn-outline btn-sm">Download Players CSV</a>
++        <a href="/players/export.csv?kind=captains" class="btn btn-outline btn-sm">Download Captains CSV</a>
++    </div>
++    {% endif %}
+ </div>
+ 
+-<div class="tabs" style="display:flex;gap:8px;margin-bottom:18px;">
+-    <a href="/players?tab=players" class="btn {{ 'btn-gold' if tab == 'players' else 'btn-outline' }} btn-sm">All Players</a>
++<div class="tabs">
++    <a href="/players?tab=players{{ '&skill=' + selected_skill if selected_skill }}" class="{{ 'active' if tab == 'players' }}">All Players</a>
+     {% if show_captain_tab %}
+-    <a href="/players?tab=captains" class="btn {{ 'btn-gold' if tab == 'captains' else 'btn-outline' }} btn-sm">Captain Nominations</a>
++    <a href="/players?tab=captains{{ '&skill=' + selected_skill if selected_skill }}" class="{{ 'active' if tab == 'captains' }}">Captain Nominations</a>
+     {% endif %}
+ </div>
+ 
++<form method="get" action="/players" style="margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
++    <input type="hidden" name="tab" value="{{ tab }}">
++    <span class="field-label">Primary Skill</span>
++    <select name="skill" onchange="this.form.submit()" style="min-width:180px;">
++        <option value="">All skills</option>
++        {% for s in skills %}
++        <option value="{{ s }}" {% if s == selected_skill %}selected{% endif %}>{{ s }}</option>
++        {% endfor %}
++    </select>
++    {% if selected_skill %}<a href="/players?tab={{ tab }}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
++</form>
++
+ {% set sold_count = players|selectattr("team")|list|length %}
+ <div class="stat-grid">
+     <div class="stat-tile gold"><span class="value">{{ players|length }}</span><span class="label">Total Players</span></div>
+diff --git a/migrate_add_auction_countdowns.py b/migrate_add_auction_countdowns.py
+new file mode 100644
+index 0000000..5f515db
+--- /dev/null
++++ b/migrate_add_auction_countdowns.py
+@@ -0,0 +1,31 @@
++"""
++One-off schema migration: adds captain_auction_at / player_auction_at columns
++to the settings table (for the TV/spectator countdown timers). Run once
++against any database created before these columns existed:
++
++    python migrate_add_auction_countdowns.py
++
++Safe to re-run - if a column's already there, it just says so and exits.
++Works against both SQLite and Postgres.
++"""
++from sqlalchemy import text
++from app.database import engine
++
++COLUMNS = [
++    ("captain_auction_at", "TIMESTAMP", "2026-08-07 21:00:00"),
++    ("player_auction_at", "TIMESTAMP", "2026-08-22 17:00:00"),
++]
++
++with engine.connect() as conn:
++    for name, col_type, default in COLUMNS:
++        try:
++            conn.execute(text(f"ALTER TABLE settings ADD COLUMN {name} {col_type}"))
++            conn.execute(text(f"UPDATE settings SET {name} = '{default}' WHERE {name} IS NULL"))
++            conn.commit()
++            print(f"Added {name} column to settings.")
++        except Exception as e:
++            msg = str(e).lower()
++            if "duplicate column" in msg or "already exists" in msg:
++                print(f"{name} column already exists, nothing to do.")
++            else:
++                raise

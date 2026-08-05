@@ -33,6 +33,24 @@
 </div>
 
 <div class="panel">
+    <h3 style="margin-bottom:14px;">Auction countdown (TV &amp; spectator view, IST)</h3>
+    <form method="post" action="/admin/settings/auction-dates">
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+            <div>
+                <span class="field-label">Captain's Auction starts</span>
+                <input type="datetime-local" name="captain_auction_at" value="{{ settings.captain_auction_at.strftime('%Y-%m-%dT%H:%M') if settings.captain_auction_at else '' }}">
+            </div>
+            <div>
+                <span class="field-label">Player's Auction starts</span>
+                <input type="datetime-local" name="player_auction_at" value="{{ settings.player_auction_at.strftime('%Y-%m-%dT%H:%M') if settings.player_auction_at else '' }}">
+            </div>
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:8px;margin-bottom:14px;">Shown as a flip countdown on the idle TV/spectator screen until that auction's first player goes live. Times are IST.</p>
+        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
+    </form>
+</div>
+
+<div class="panel">
     <h3 style="margin-bottom:14px;">TV ticker</h3>
     <form method="post" action="/admin/settings/ticker">
         <div style="display:flex;gap:20px;flex-wrap:wrap;">

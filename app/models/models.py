@@ -217,3 +217,5 @@ class Settings(Base):
     ticker_speed_seconds = Column(Integer, default=36)
     ticker_window = Column(Integer, default=15)
     increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
+    captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
+    player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))

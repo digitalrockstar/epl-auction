@@ -48,6 +48,12 @@
             <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
             {% endif %}
 
+            {% if user.role.value == "player" %}
+            <div class="nav-group">Browse</div>
+            <a href="/teams" class="{{ 'active' if request.url.path == '/teams' or request.url.path.startswith('/team/') }}">Roster</a>
+            <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
+            {% endif %}
+
             <div class="nav-group">Watch</div>
             <a href="/auction/live" target="_blank">TV view ↗</a>
             <a href="/spectator/live" target="_blank">Spectator link ↗</a>
@@ -105,6 +111,16 @@
         <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6M6 20l8-8M2 22l4-4"/><path d="M9 7l4-4 4 4-4 4z"/></svg>
             Bid
+        </a>
+        {% endif %}
+        {% if user.role.value == "player" %}
+        <a href="/teams" class="{{ 'active' if request.url.path == '/teams' or request.url.path.startswith('/team/') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Roster
+        </a>
+        <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg>
+            Players
         </a>
         {% endif %}
         <a href="/logout">

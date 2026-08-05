@@ -35,8 +35,36 @@
     <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
 
     <script>
+    let flipInterval = null;
+    function initFlipCountdown() {
+        clearInterval(flipInterval);
+        const el = document.querySelector('.flip-countdown');
+        if (!el) return;
+        const target = new Date(el.dataset.target).getTime();
+        const tick = () => {
+            const diff = Math.max(0, target - Date.now());
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor(diff % 86400000 / 3600000);
+            const m = Math.floor(diff % 3600000 / 60000);
+            const s = Math.floor(diff % 60000 / 1000);
+            const vals = { d, h, m, s };
+            el.querySelectorAll('.flip-value').forEach(span => {
+                const next = String(vals[span.dataset.unit]).padStart(2, '0');
+                if (span.textContent !== next) {
+                    span.textContent = next;
+                    span.classList.remove('flip'); void span.offsetWidth; span.classList.add('flip');
+                }
+            });
+            if (diff <= 0) clearInterval(flipInterval);
+        };
+        tick();
+        flipInterval = setInterval(tick, 1000);
+    }
+    initFlipCountdown();
+
     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', () => {
+        initFlipCountdown();
         const el = document.getElementById('tv-wrap');
         const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
         if (bid !== undefined && lastBid !== null && (bid !== lastBid || team !== lastTeam)) {
