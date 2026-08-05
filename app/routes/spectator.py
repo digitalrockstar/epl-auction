@@ -22,6 +22,7 @@ def spectator_live(request: Request, db: Session = Depends(get_db)):
          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "fragment_url": "/spectator/live/fragment",
          "timer_fragment_url": "/spectator/live/timer", "ticker_fragment_url": "/spectator/live/ticker",
+         "countdown_fragment_url": "/spectator/live/countdown",
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
          "resolved": resolved, "resolved_photo": resolved_photo,
@@ -34,14 +35,12 @@ def spectator_fragment(request: Request, db: Session = Depends(get_db)):
     (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
-    countdown_label, countdown_target = _next_auction_countdown(db)
     return templates.TemplateResponse(
         "auction/_live_fragment.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
          "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
          "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo,
-         "countdown_label": countdown_label, "countdown_target": countdown_target},
+         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
     )
 
 
@@ -53,6 +52,15 @@ def spectator_timer(request: Request, db: Session = Depends(get_db)):
         "auction/_timer_fragment.html",
         {"request": request, "live": live, "seconds_left": seconds_left,
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS},
+    )
+
+
+@router.get("/live/countdown", response_class=HTMLResponse)
+def spectator_countdown(request: Request, db: Session = Depends(get_db)):
+    countdown_label, countdown_target = _next_auction_countdown(db)
+    return templates.TemplateResponse(
+        "auction/_countdown_fragment.html",
+        {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target},
     )
 
 
