@@ -421,6 +421,7 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     countdown_label, countdown_target = _next_auction_countdown(db)
+    show_countdown = countdown_target and datetime.now() < countdown_target
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -431,7 +432,7 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
          "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
          "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
          "resolved": resolved, "resolved_photo": resolved_photo,
-         "countdown_label": countdown_label, "countdown_target": countdown_target},
+         "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown},
     )
 
 
@@ -463,10 +464,11 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
 @router.get("/auction/live/countdown", response_class=HTMLResponse)
 def live_countdown(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
     countdown_label, countdown_target = _next_auction_countdown(db)
-    return templates.TemplateResponse(
-        "auction/_countdown_fragment.html",
-        {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target},
-    )
+    show_countdown = countdown_target and datetime.now() < countdown_target
+    ctx = {"request": request, "countdown_label": countdown_label, "countdown_target": countdown_target, "show_countdown": show_countdown}
+    if show_countdown:
+        return templates.TemplateResponse("auction/_countdown_fragment.html", ctx)
+    return templates.TemplateResponse("auction/_live_fragment.html", ctx)
 
 
 @router.get("/auction/live/ticker", response_class=HTMLResponse)

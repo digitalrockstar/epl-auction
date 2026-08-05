@@ -26,12 +26,11 @@
             <span class="badge badge-live">Live</span>
         </div>
     </div>
-    <div id="tv-countdown-slot" hx-get="{{ countdown_fragment_url }}" hx-trigger="every 20s" hx-swap="innerHTML">
-        {% include "auction/_countdown_fragment.html" %}
-    </div>
-    <div id="tv-wrap" hx-get="{{ fragment_url }}" hx-trigger="every 2s" hx-swap="innerHTML">
-        {% include "auction/_live_fragment.html" %}
-    </div>
+    {% if show_countdown %}
+    <div id="tv-countdown-slot" hx-get="{{ countdown_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">{% include "auction/_countdown_fragment.html" %}</div>
+    {% else %}
+    <div id="tv-wrap" hx-get="{{ fragment_url }}" hx-trigger="every 2s" hx-swap="innerHTML">{% include "auction/_live_fragment.html" %}</div>
+    {% endif %}
 
     <audio id="snd-bid" src="/static/sfx/bid.mp3" preload="auto"></audio>
     <audio id="snd-sold" src="/static/sfx/sold.mp3" preload="auto"></audio>
@@ -48,8 +47,6 @@
             const diff = target - Date.now();
             if (diff <= 0) {
                 clearInterval(flipInterval);
-                const slot = document.getElementById('tv-countdown-slot');
-                if (slot) slot.innerHTML = '<div class="tv-empty" data-status="none">NEXT PLAYER COMING SOON</div>';
                 return;
             }
             const d = Math.floor(diff / 86400000);
