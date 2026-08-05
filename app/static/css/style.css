@@ -267,8 +267,10 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
     padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.03em;
 }
-.badge-live { background: var(--red-soft); color: var(--red); }
-.badge-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--red); display: inline-block; animation: pulse 1.2s infinite; }
+.badge-live { background: var(--green-soft); color: var(--green); }
+.badge-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 1.2s infinite; }
+.badge-offline { background: var(--surface-3); color: var(--text-muted); }
+.badge-offline::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); display: inline-block; }
 .badge-sold { background: var(--green-soft); color: var(--green); }
 .badge-unsold { background: var(--surface-3); color: var(--text-muted); }
 .badge-active { background: var(--green-soft); color: var(--green); }

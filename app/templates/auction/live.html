@@ -17,13 +17,21 @@
             <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">
             EMMANUEL PREMIER LEAGUE
         </div>
+        {% if show_countdown %}
+        <div class="tv-title"><span class="accent">AUCTION</span></div>
+        {% else %}
         <div class="tv-title">LIVE <span class="accent">AUCTION</span></div>
+        {% endif %}
         <div class="tv-meta">
             <span><b>{{ teams|length }}</b> Teams</span>
             <div id="tv-timer-slot" hx-get="{{ timer_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">
                 {% include "auction/_timer_fragment.html" %}
             </div>
+            {% if show_countdown %}
+            <span class="badge badge-offline">Offline</span>
+            {% else %}
             <span class="badge badge-live">Live</span>
+            {% endif %}
         </div>
     </div>
     {% if show_countdown %}
