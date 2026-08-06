@@ -82,7 +82,21 @@
 
     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', (e) => {
-        if (e.target.id === 'tv-countdown-slot') initFlipCountdown();
+        if (e.target.id === 'tv-countdown-slot') {
+            initFlipCountdown();
+            const root = e.target.firstElementChild;
+            const state = root ? root.dataset.state : null;
+            const title = document.getElementById('tv-title');
+            const badge = document.getElementById('tv-status-badge');
+            if (state === 'live') { location.reload(); return; }
+            if (state === 'starting_now') {
+                if (title) title.innerHTML = 'AUCTION <span class="accent">STARTING</span>';
+                if (badge) { badge.textContent = 'Starting'; badge.className = 'badge badge-live'; }
+            } else if (state === 'countdown' || state === 'see_you_next_year') {
+                if (title) title.innerHTML = '<span class="accent">AUCTION</span>';
+                if (badge) { badge.textContent = 'Offline'; badge.className = 'badge badge-offline'; }
+            }
+        }
         const marker = document.getElementById('tv-live-marker');
         if (marker && marker.dataset.live === 'true') { location.reload(); return; }
 

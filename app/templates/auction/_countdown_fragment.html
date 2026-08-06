@@ -1,9 +1,7 @@
 {% if screen_state == "live" %}
-<div id="tv-live-marker" hx-swap-oob="true" data-live="true"></div>
+<div data-state="live"></div>
 {% elif screen_state == "countdown" %}
-<div id="tv-title" hx-swap-oob="true" class="tv-title"><span class="accent">AUCTION</span></div>
-<div id="tv-status-badge" hx-swap-oob="true" class="badge badge-offline">Offline</div>
-<div class="tv-empty flip-countdown-wrap" data-status="none">
+<div data-state="countdown" class="tv-empty flip-countdown-wrap">
     <p class="tv-tag" style="margin-bottom:14px;">AUCTION STARTS IN</p>
     <div class="flip-countdown" id="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
         <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
@@ -13,11 +11,7 @@
     </div>
 </div>
 {% elif screen_state == "starting_now" %}
-<div id="tv-title" hx-swap-oob="true" class="tv-title">AUCTION <span class="accent">STARTING</span></div>
-<div id="tv-status-badge" hx-swap-oob="true" class="badge badge-live">Starting</div>
-<div class="tv-starting-now" data-status="none">AUCTION STARTING NOW</div>
+<div data-state="starting_now" class="tv-starting-now">AUCTION STARTING NOW</div>
 {% elif screen_state == "see_you_next_year" %}
-<div id="tv-title" hx-swap-oob="true" class="tv-title"><span class="accent">AUCTION</span></div>
-<div id="tv-status-badge" hx-swap-oob="true" class="badge badge-offline">Offline</div>
-<div class="tv-starting-now" data-status="none">SEE YOU NEXT YEAR</div>
+<div data-state="see_you_next_year" class="tv-starting-now">SEE YOU NEXT YEAR</div>
 {% endif %}
