@@ -40,7 +40,7 @@
     </div>
     <div id="tv-live-marker" data-live="false" style="display:none;"></div>
     {% if show_countdown %}
-    <div id="tv-countdown-slot" hx-get="{{ countdown_fragment_url }}" hx-trigger="every 5s" hx-swap="innerHTML">
+    <div id="tv-countdown-slot">
         {% include "auction/_countdown_fragment.html" %}
     </div>
     {% else %}
@@ -57,8 +57,8 @@
         clearInterval(flipInterval);
         const el = document.querySelector('.flip-countdown');
         if (!el) return;
-        const target = new Date(el.dataset.target).getTime();
         const tick = () => {
+            const target = new Date(el.dataset.target).getTime();
             const diff = Math.max(0, target - Date.now());
             const d = Math.floor(diff / 86400000);
             const h = Math.floor(diff % 86400000 / 3600000);
@@ -80,23 +80,42 @@
     }
     initFlipCountdown();
 
+    function applyTopbar(state) {
+        const title = document.getElementById('tv-title');
+        const badge = document.getElementById('tv-status-badge');
+        if (state === 'starting_now') {
+            if (title) title.innerHTML = 'AUCTION <span class="accent">STARTING</span>';
+            if (badge) { badge.textContent = 'Starting'; badge.className = 'badge badge-live'; }
+        } else if (state === 'countdown' || state === 'see_you_next_year') {
+            if (title) title.innerHTML = '<span class="accent">AUCTION</span>';
+            if (badge) { badge.textContent = 'Offline'; badge.className = 'badge badge-offline'; }
+        }
+    }
+
+    const countdownSlot = document.getElementById('tv-countdown-slot');
+    if (countdownSlot) {
+        setInterval(() => {
+            fetch("{{ countdown_fragment_url }}").then(r => r.text()).then(html => {
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const newRoot = parsed.body.firstElementChild;
+                const newState = newRoot ? newRoot.dataset.state : null;
+                if (newState === 'live') { location.reload(); return; }
+                const curEl = document.querySelector('.flip-countdown');
+                if (newState === 'countdown' && curEl) {
+                    const newTarget = newRoot.querySelector('.flip-countdown').dataset.target;
+                    if (curEl.dataset.target !== newTarget) curEl.dataset.target = newTarget;
+                    return; // digits unchanged otherwise, no DOM churn
+                }
+                // real state change (or first load mismatch) -> replace once
+                countdownSlot.innerHTML = html;
+                applyTopbar(newState);
+                if (newState === 'countdown') initFlipCountdown();
+            }).catch(() => {});
+        }, 5000);
+    }
+
     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', (e) => {
-        if (e.target.id === 'tv-countdown-slot') {
-            initFlipCountdown();
-            const root = e.target.firstElementChild;
-            const state = root ? root.dataset.state : null;
-            const title = document.getElementById('tv-title');
-            const badge = document.getElementById('tv-status-badge');
-            if (state === 'live') { location.reload(); return; }
-            if (state === 'starting_now') {
-                if (title) title.innerHTML = 'AUCTION <span class="accent">STARTING</span>';
-                if (badge) { badge.textContent = 'Starting'; badge.className = 'badge badge-live'; }
-            } else if (state === 'countdown' || state === 'see_you_next_year') {
-                if (title) title.innerHTML = '<span class="accent">AUCTION</span>';
-                if (badge) { badge.textContent = 'Offline'; badge.className = 'badge badge-offline'; }
-            }
-        }
         const marker = document.getElementById('tv-live-marker');
         if (marker && marker.dataset.live === 'true') { location.reload(); return; }
 

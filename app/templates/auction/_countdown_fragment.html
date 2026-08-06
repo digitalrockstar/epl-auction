@@ -1,7 +1,7 @@
 {% if screen_state == "live" %}
 <div data-state="live"></div>
 {% elif screen_state == "countdown" %}
-<div data-state="countdown" id="flip-countdown-wrap" hx-preserve="true" class="tv-empty flip-countdown-wrap">
+<div data-state="countdown" class="tv-empty flip-countdown-wrap">
     <p class="tv-tag" style="margin-bottom:14px;">AUCTION STARTS IN</p>
     <div class="flip-countdown" id="flip-countdown" data-target="{{ countdown_target.strftime('%Y-%m-%dT%H:%M:%S') }}+05:30">
         <div class="flip-unit"><span class="flip-value" data-unit="d">00</span><label>Days</label></div>
