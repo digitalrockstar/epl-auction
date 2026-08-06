@@ -2,7 +2,7 @@ name: Keep Render Awake
 
 on:
   schedule:
-    - cron: "*/13 * * * *"
+    - cron: "*/14 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Ping Render
         run: |
-          curl -L --fail https://epl-auction-cxfx.onrender.com/healthz
+          curl -L --fail https://epl-auction-8agx.onrender.com/healthz
