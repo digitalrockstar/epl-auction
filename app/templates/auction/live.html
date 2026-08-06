@@ -17,20 +17,24 @@
             <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">
             EMMANUEL PREMIER LEAGUE
         </div>
-        {% if show_countdown %}
-        <div class="tv-title"><span class="accent">AUCTION</span></div>
+        {% if screen_state == "starting_now" %}
+        <div class="tv-title" id="tv-title">AUCTION <span class="accent">STARTING</span></div>
+        {% elif show_countdown %}
+        <div class="tv-title" id="tv-title"><span class="accent">AUCTION</span></div>
         {% else %}
-        <div class="tv-title">LIVE <span class="accent">AUCTION</span></div>
+        <div class="tv-title" id="tv-title">LIVE <span class="accent">AUCTION</span></div>
         {% endif %}
         <div class="tv-meta">
             <span><b>{{ teams|length }}</b> Teams</span>
             <div id="tv-timer-slot" hx-get="{{ timer_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">
                 {% include "auction/_timer_fragment.html" %}
             </div>
-            {% if show_countdown %}
-            <span class="badge badge-offline">Offline</span>
+            {% if screen_state == "starting_now" %}
+            <span class="badge badge-live" id="tv-status-badge">Starting</span>
+            {% elif show_countdown %}
+            <span class="badge badge-offline" id="tv-status-badge">Offline</span>
             {% else %}
-            <span class="badge badge-live">Live</span>
+            <span class="badge badge-live" id="tv-status-badge">Live</span>
             {% endif %}
         </div>
     </div>
@@ -58,6 +62,10 @@
                 fetch("{{ countdown_fragment_url }}").then(r => r.text()).then(html => {
                     const slot = document.getElementById('tv-countdown-slot');
                     if (slot) slot.innerHTML = html;
+                    const title = document.getElementById('tv-title');
+                    if (title) title.innerHTML = 'AUCTION <span class="accent">STARTING</span>';
+                    const badge = document.getElementById('tv-status-badge');
+                    if (badge) { badge.textContent = 'Starting'; badge.className = 'badge badge-live'; }
                 }).finally(startWaitPoll);
                 return;
             }

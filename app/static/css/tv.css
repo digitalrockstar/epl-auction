@@ -179,7 +179,8 @@ html, body { overflow-x: hidden; }
 
 .tv-starting-now {
     display: flex; align-items: center; justify-content: center;
-    min-height: 60vh; text-align: center;
+    width: 100%; min-height: calc(100vh - 100px); box-sizing: border-box;
+    text-align: center; padding: 20px;
     font-size: clamp(28px, 6vw, 72px); font-weight: 800; letter-spacing: 2px;
     color: var(--gold); text-shadow: 0 0 30px rgba(212, 175, 55, 0.35);
     animation: tv-starting-pulse 1.8s ease-in-out infinite;
