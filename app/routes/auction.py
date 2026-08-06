@@ -404,21 +404,19 @@ def _live_context(db: Session):
 
 
 def _next_auction_countdown(db: Session):
-    """Idle-screen state for the TV/spectator view. Compares against the single
-    auction_date (reuses the captain_auction_at column). Returns (state, target):
-    ('countdown', date) while waiting, ('starting_now', None) once the date has
-    passed but nothing's been rolled yet, or (None, None) once the first
-    auction has actually started."""
-    if db.query(Auction).count() > 0:
-        return None, None
+    """Idle-screen state, driven only by settings.captain_auction_at (the single
+    auction date): 'countdown' before it, 'starting_now' same calendar day once
+    it's passed, 'see_you_next_year' on any later day. No other rules."""
     settings = get_settings(db)
-    now = datetime.utcnow() + timedelta(hours=5, minutes=30)
     auction_date = settings.captain_auction_at
     if not auction_date:
         return None, None
+    now = datetime.utcnow() + timedelta(hours=5, minutes=30)
     if now < auction_date:
         return "countdown", auction_date
-    return "starting_now", None
+    if now.date() == auction_date.date():
+        return "starting_now", None
+    return "see_you_next_year", None
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
@@ -427,7 +425,7 @@ def live_view(request: Request, db: Session = Depends(get_db), user: User = Depe
      reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
     reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
     screen_state, countdown_target = _next_auction_countdown(db)
-    show_countdown = screen_state is not None
+    show_countdown = screen_state is not None and not (live or pending)
     return templates.TemplateResponse(
         "auction/live.html",
         {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
@@ -469,12 +467,15 @@ def live_timer(request: Request, db: Session = Depends(get_db), user: User = Dep
 
 @router.get("/auction/live/countdown", response_class=HTMLResponse)
 def live_countdown(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    pending = db.query(Auction).filter(Auction.status == AuctionStatus.pending).first()
     screen_state, countdown_target = _next_auction_countdown(db)
-    show_countdown = screen_state is not None
-    ctx = {"request": request, "screen_state": screen_state, "countdown_target": countdown_target, "show_countdown": show_countdown}
-    if show_countdown:
-        return templates.TemplateResponse("auction/_countdown_fragment.html", ctx)
-    return templates.TemplateResponse("auction/_live_fragment.html", ctx)
+    if live or pending:
+        screen_state = "live"
+    return templates.TemplateResponse(
+        "auction/_countdown_fragment.html",
+        {"request": request, "screen_state": screen_state, "countdown_target": countdown_target},
+    )
 
 
 @router.get("/auction/live/ticker", response_class=HTMLResponse)

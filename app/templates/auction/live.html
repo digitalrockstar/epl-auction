@@ -19,7 +19,7 @@
         </div>
         {% if screen_state == "starting_now" %}
         <div class="tv-title" id="tv-title">AUCTION <span class="accent">STARTING</span></div>
-        {% elif show_countdown %}
+        {% elif screen_state == "see_you_next_year" or screen_state == "countdown" %}
         <div class="tv-title" id="tv-title"><span class="accent">AUCTION</span></div>
         {% else %}
         <div class="tv-title" id="tv-title">LIVE <span class="accent">AUCTION</span></div>
@@ -31,15 +31,18 @@
             </div>
             {% if screen_state == "starting_now" %}
             <span class="badge badge-live" id="tv-status-badge">Starting</span>
-            {% elif show_countdown %}
+            {% elif screen_state == "see_you_next_year" or screen_state == "countdown" %}
             <span class="badge badge-offline" id="tv-status-badge">Offline</span>
             {% else %}
             <span class="badge badge-live" id="tv-status-badge">Live</span>
             {% endif %}
         </div>
     </div>
+    <div id="tv-live-marker" data-live="false" style="display:none;"></div>
     {% if show_countdown %}
-    <div id="tv-countdown-slot">{% include "auction/_countdown_fragment.html" %}</div>
+    <div id="tv-countdown-slot" hx-get="{{ countdown_fragment_url }}" hx-trigger="every 5s" hx-swap="innerHTML">
+        {% include "auction/_countdown_fragment.html" %}
+    </div>
     {% else %}
     <div id="tv-wrap" hx-get="{{ fragment_url }}" hx-trigger="every 2s" hx-swap="innerHTML">{% include "auction/_live_fragment.html" %}</div>
     {% endif %}
@@ -49,26 +52,14 @@
     <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
 
     <script>
-    let flipInterval = null, waitPoll = null;
+    let flipInterval = null;
     function initFlipCountdown() {
         clearInterval(flipInterval);
         const el = document.querySelector('.flip-countdown');
         if (!el) return;
         const target = new Date(el.dataset.target).getTime();
         const tick = () => {
-            const diff = target - Date.now();
-            if (diff <= 0) {
-                clearInterval(flipInterval);
-                fetch("{{ countdown_fragment_url }}").then(r => r.text()).then(html => {
-                    const slot = document.getElementById('tv-countdown-slot');
-                    if (slot) slot.innerHTML = html;
-                    const title = document.getElementById('tv-title');
-                    if (title) title.innerHTML = 'AUCTION <span class="accent">STARTING</span>';
-                    const badge = document.getElementById('tv-status-badge');
-                    if (badge) { badge.textContent = 'Starting'; badge.className = 'badge badge-live'; }
-                }).finally(startWaitPoll);
-                return;
-            }
+            const diff = Math.max(0, target - Date.now());
             const d = Math.floor(diff / 86400000);
             const h = Math.floor(diff % 86400000 / 3600000);
             const m = Math.floor(diff % 3600000 / 60000);
@@ -87,23 +78,16 @@
         tick();
         flipInterval = setInterval(tick, 1000);
     }
-    function startWaitPoll() {
-        clearInterval(waitPoll);
-        waitPoll = setInterval(() => {
-            fetch("{{ fragment_url }}").then(r => r.text()).then(html => {
-                if (html.includes('data-status="pending"') || html.includes('data-status="live"')) {
-                    clearInterval(waitPoll);
-                    location.reload();
-                }
-            }).catch(() => {});
-        }, 3000);
-    }
-    if (document.querySelector('.flip-countdown')) initFlipCountdown();
-    else if (document.getElementById('tv-countdown-slot')) startWaitPoll();
+    initFlipCountdown();
 
     let lastBid = null, lastTeam = null, lastStatus = null, lastResolvedId = null;
     document.body.addEventListener('htmx:afterSwap', (e) => {
+        if (e.target.id === 'tv-countdown-slot') initFlipCountdown();
+        const marker = document.getElementById('tv-live-marker');
+        if (marker && marker.dataset.live === 'true') { location.reload(); return; }
+
         const el = document.getElementById('tv-wrap');
+        if (!el) return;
         const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
         if (bid !== undefined && lastBid !== null && (bid !== lastBid || team !== lastTeam)) {
             document.getElementById('snd-bid').play().catch(()=>{});
