@@ -44,6 +44,11 @@ def reset_since(db: Session, cutoff_ist: datetime) -> dict:
     undoing their effect on team purses and player team assignments.
     """
     cutoff_utc = cutoff_ist - timedelta(hours=5, minutes=30)
+    # Timeout usage isn't timestamped per-activation, so there's no way to
+    # tell which timeouts were called before vs after the cutoff - reset
+    # every team's count, same as a full reset does.
+    for t in db.query(Team).all():
+        t.timeouts_used = 0
     counts = {"bids": 0, "auctions": 0, "matches": 0, "playing_xi": 0}
 
     # Auctions (and their bids) rolled/started after the cutoff: undo any
