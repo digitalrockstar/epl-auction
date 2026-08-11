@@ -20,30 +20,6 @@ def _category_counts(db: Session, a_type: AuctionType):
     return {c: len(_eligible_pool(db, a_type, c)) for c in SKILL_CATEGORIES}
 
 
-@router.get("", response_class=HTMLResponse)
-def roll_page(
-    request: Request,
-    auction_type: str = "player",
-    msg: str = "",
-    db: Session = Depends(get_db),
-    user: User = Depends(staff_only),
-):
-    a_type = AuctionType.captain if auction_type == "captain" else AuctionType.player
-    live, pending = _current_auction(db)
-    counts = None
-    captain_count = None
-    if a_type == AuctionType.captain:
-        captain_count = len(_eligible_pool(db, a_type))
-    else:
-        counts = _category_counts(db, a_type)
-    return templates.TemplateResponse(
-        "admin/roll.html",
-        {"request": request, "user": user, "auction_type": auction_type, "msg": msg,
-         "categories": SKILL_CATEGORIES, "counts": counts, "captain_count": captain_count,
-         "live": live, "pending": pending},
-    )
-
-
 @router.post("/spin", response_class=HTMLResponse)
 def spin(
     auction_type: str = Form(...),
@@ -52,7 +28,7 @@ def spin(
     user: User = Depends(staff_only),
 ):
     def back(msg: str = None):
-        url = f"/admin/roll?auction_type={auction_type}"
+        url = f"/admin/auction?auction_type={auction_type}"
         if msg:
             url += f"&msg={msg}"
         return RedirectResponse(url=url, status_code=303)
@@ -97,7 +73,7 @@ def reveal_page(
     if live:
         return RedirectResponse(url=f"/admin/auction?auction_type={auction_type}", status_code=303)
     if not pending:
-        return RedirectResponse(url=f"/admin/roll?auction_type={auction_type}", status_code=303)
+        return RedirectResponse(url=f"/admin/auction?auction_type={auction_type}", status_code=303)
 
     photo = _player_photo(db, pending.player, None)
     reveal_seconds_left = max(0, REVEAL_SECONDS - int((datetime.utcnow() - pending.started_at).total_seconds()))

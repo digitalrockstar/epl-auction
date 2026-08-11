@@ -251,7 +251,13 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 
 /* Quick access tile grid */
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
-.quick-tile {
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.player-pick-card {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.player-pick-card:hover { border-color: var(--gold); }.quick-tile {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 16px; display: flex; flex-direction: column; gap: 8px; color: var(--text);
     transition: border-color 0.15s ease;

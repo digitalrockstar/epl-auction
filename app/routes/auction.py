@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
 from app.auth import require_role
-from app.config import REVEAL_SECONDS, RESULT_HOLD_SECONDS
+from app.config import REVEAL_SECONDS, RESULT_HOLD_SECONDS, SKILL_CATEGORIES
 from app.bidding import next_bid_amount, purse_check, base_price_for
 from app.app_settings import get_settings, get_slabs
 from app.notify import notify, notify_sold
@@ -220,6 +220,14 @@ def auction_console(
     timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first() if is_timeout else None
     timeout_seconds_left = _timeout_seconds_left(db, live) if is_timeout else None
 
+    roll_counts = None
+    roll_captain_count = None
+    if not live and not pending:
+        if a_type == AuctionType.captain:
+            roll_captain_count = len(_eligible_pool(db, a_type))
+        else:
+            roll_counts = {c: len(_eligible_pool(db, a_type, c)) for c in SKILL_CATEGORIES}
+
     return templates.TemplateResponse(
         "admin/auction_console.html",
         {
@@ -229,6 +237,7 @@ def auction_console(
             "timer_total": timer_seconds, "can_undo": can_undo, "pending": pending,
             "is_paused": is_paused, "is_timeout": is_timeout, "timeout_team": timeout_team,
             "timeout_seconds_left": timeout_seconds_left, "max_timeouts": settings.max_timeouts_per_team,
+            "categories": SKILL_CATEGORIES, "roll_counts": roll_counts, "roll_captain_count": roll_captain_count,
         },
     )
 
