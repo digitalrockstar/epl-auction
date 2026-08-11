@@ -22,6 +22,7 @@ STATEMENTS = [
     ("settings", "light_theme", "ALTER TABLE settings ADD COLUMN light_theme BOOLEAN DEFAULT FALSE"),
     ("matches", "created_at", "ALTER TABLE matches ADD COLUMN created_at TIMESTAMP"),
     ("playing_xi", "created_at", "ALTER TABLE playing_xi ADD COLUMN created_at TIMESTAMP"),
+    ("settings", "light_theme", "ALTER TABLE settings ADD COLUMN light_theme BOOLEAN DEFAULT FALSE"),
 ]
 
 with engine.connect() as conn:
