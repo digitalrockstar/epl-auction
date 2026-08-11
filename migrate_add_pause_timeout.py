@@ -19,6 +19,7 @@ STATEMENTS = [
     ("teams", "timeouts_used", "ALTER TABLE teams ADD COLUMN timeouts_used INTEGER DEFAULT 0"),
     ("settings", "timeout_seconds", "ALTER TABLE settings ADD COLUMN timeout_seconds INTEGER DEFAULT 30"),
     ("settings", "max_timeouts_per_team", "ALTER TABLE settings ADD COLUMN max_timeouts_per_team INTEGER DEFAULT 1"),
+    ("settings", "light_theme", "ALTER TABLE settings ADD COLUMN light_theme BOOLEAN DEFAULT FALSE"),
     ("matches", "created_at", "ALTER TABLE matches ADD COLUMN created_at TIMESTAMP"),
     ("playing_xi", "created_at", "ALTER TABLE playing_xi ADD COLUMN created_at TIMESTAMP"),
 ]

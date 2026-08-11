@@ -13,6 +13,20 @@ def static_version(rel_path: str) -> str:
         return "0"
 
 
+def theme_attr() -> str:
+    """Reads the light/dark toggle straight from Settings, independent of
+    whatever context each route happens to pass in - every page needs this,
+    including ones that never touch Settings otherwise."""
+    from app.database import SessionLocal
+    from app.models import Settings
+    db = SessionLocal()
+    try:
+        s = db.query(Settings).first()
+        return "light" if (s and s.light_theme) else "dark"
+    finally:
+        db.close()
+
+
 def inr(value):
     """Format a number in Indian digit grouping: ##,##,###."""
     if value is None:
@@ -38,4 +52,5 @@ templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["player_photo"] = resolve_player_photo
 templates.env.globals["team_logo"] = resolve_team_logo
 templates.env.globals["static_version"] = static_version
+templates.env.globals["theme_attr"] = theme_attr
 templates.env.filters["inr"] = inr

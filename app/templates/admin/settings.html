@@ -12,6 +12,18 @@
 {% if msg %}<span class="error" style="color:var(--green);">{{ msg }}</span>{% endif %}
 
 <div class="panel">
+    <h3 style="margin-bottom:14px;">Appearance</h3>
+    <form method="post" action="/admin/settings/theme">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" name="light_theme" {% if settings.light_theme %}checked{% endif %}
+                   style="width:auto;" onchange="this.form.submit()">
+            <span>Light theme</span>
+        </label>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:6px;">Off is the default dark/gold theme. Applies across the whole site, including the TV/Spectator view.</p>
+    </form>
+</div>
+
+<div class="panel">
     <h3 style="margin-bottom:14px;">Telegram</h3>
     <form method="post" action="/admin/settings/telegram">
         <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">

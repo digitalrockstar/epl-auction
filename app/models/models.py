@@ -229,5 +229,6 @@ class Settings(Base):
     increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
     timeout_seconds = Column(Integer, default=30)
     max_timeouts_per_team = Column(Integer, default=1)
+    light_theme = Column(Boolean, default=False)
     captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
     player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))

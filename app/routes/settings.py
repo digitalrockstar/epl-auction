@@ -94,6 +94,18 @@ def update_timeout(
     return RedirectResponse(url="/admin/settings?msg=" + quote("Timeout settings saved"), status_code=303)
 
 
+@router.post("/theme", response_class=HTMLResponse)
+def update_theme(
+    light_theme: str = Form(None),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    settings = get_settings(db)
+    settings.light_theme = light_theme == "on"
+    db.commit()
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Theme updated"), status_code=303)
+
+
 @router.post("/slabs", response_class=HTMLResponse)
 async def update_slabs(
     request: Request,
