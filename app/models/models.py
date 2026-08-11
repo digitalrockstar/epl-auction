@@ -229,6 +229,7 @@ class Settings(Base):
     increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
     timeout_seconds = Column(Integer, default=30)
     max_timeouts_per_team = Column(Integer, default=1)
-    light_theme = Column(Boolean, default=False)
+    light_theme = Column(Boolean, default=False)  # legacy, kept for old rows; theme below is authoritative
+    theme = Column(String, default="dark")  # dark, light, epl-night, graphite-gold, warm-ivory, clean-broadcast
     captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
     player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))

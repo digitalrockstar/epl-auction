@@ -96,12 +96,16 @@ def update_timeout(
 
 @router.post("/theme", response_class=HTMLResponse)
 def update_theme(
-    light_theme: str = Form(None),
+    theme: str = Form(...),
     db: Session = Depends(get_db),
     user: User = Depends(super_admin_only),
 ):
+    from app.templating import VALID_THEMES
+    if theme not in VALID_THEMES:
+        theme = "dark"
     settings = get_settings(db)
-    settings.light_theme = light_theme == "on"
+    settings.theme = theme
+    settings.light_theme = (theme == "light")  # keep legacy column in sync
     db.commit()
     return RedirectResponse(url="/admin/settings?msg=" + quote("Theme updated"), status_code=303)
 

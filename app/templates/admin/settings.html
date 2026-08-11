@@ -13,13 +13,31 @@
 
 <div class="panel">
     <h3 style="margin-bottom:14px;">Appearance</h3>
-    <form method="post" action="/admin/settings/theme">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-            <input type="checkbox" name="light_theme" {% if settings.light_theme %}checked{% endif %}
-                   style="width:auto;" onchange="this.form.submit()">
-            <span>Light theme</span>
-        </label>
-        <p style="color:var(--text-muted);font-size:12px;margin-top:6px;">Off is the default dark/gold theme. Applies across the whole site, including the TV/Spectator view.</p>
+    <form method="post" action="/admin/settings/theme" id="theme-form">
+        <input type="hidden" name="theme" id="theme-input" value="{{ theme_attr() }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
+            {% for t in [
+                ("dark", "Dark / Gold", "#050a1a", "#0d1730", "#f5b942"),
+                ("light", "Light", "#f7f4ec", "#ffffff", "#c98f1f"),
+                ("epl-night", "EPL Night", "#080A0E", "#11151C", "#F2B83F"),
+                ("graphite-gold", "Graphite Gold", "#0D0F12", "#15181D", "#E6A52E"),
+                ("warm-ivory", "Warm Ivory", "#F4F1EA", "#FFFFFF", "#C88A16"),
+                ("clean-broadcast", "Clean Broadcast", "#F7F8FA", "#FFFFFF", "#B7790B"),
+            ] %}
+            <div class="theme-card {% if theme_attr() == t[0] %}theme-card-active{% endif %}"
+                 data-theme-value="{{ t[0] }}"
+                 onclick="document.getElementById('theme-input').value='{{ t[0] }}'; document.getElementById('theme-form').submit();"
+                 style="cursor:pointer;border:1px solid {% if theme_attr() == t[0] %}var(--gold){% else %}var(--border){% endif %};border-radius:var(--radius-sm);padding:10px;background:{{ t[2] }};">
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                    <span style="width:18px;height:18px;border-radius:5px;background:{{ t[3] }};border:1px solid rgba(0,0,0,0.15);"></span>
+                    <span style="width:18px;height:18px;border-radius:5px;background:{{ t[4] }};border:1px solid rgba(0,0,0,0.15);"></span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:{% if t[0] in ['dark','epl-night','graphite-gold'] %}#f4f5f7{% else %}#16181d{% endif %};">{{ t[1] }}</div>
+                {% if theme_attr() == t[0] %}<div style="font-size:10px;color:{{ t[4] }};margin-top:2px;font-weight:700;">SELECTED</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Applies across the whole site, including the TV/Spectator view. Click a card to apply instantly.</p>
     </form>
 </div>
 

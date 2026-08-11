@@ -13,8 +13,11 @@ def static_version(rel_path: str) -> str:
         return "0"
 
 
+VALID_THEMES = {"dark", "light", "epl-night", "graphite-gold", "warm-ivory", "clean-broadcast"}
+
+
 def theme_attr() -> str:
-    """Reads the light/dark toggle straight from Settings, independent of
+    """Reads the active theme straight from Settings, independent of
     whatever context each route happens to pass in - every page needs this,
     including ones that never touch Settings otherwise."""
     from app.database import SessionLocal
@@ -22,7 +25,11 @@ def theme_attr() -> str:
     db = SessionLocal()
     try:
         s = db.query(Settings).first()
-        return "light" if (s and s.light_theme) else "dark"
+        if s and s.theme in VALID_THEMES:
+            return s.theme
+        if s and s.light_theme:  # fall back for rows saved before the theme column existed
+            return "light"
+        return "dark"
     finally:
         db.close()
 
