@@ -6,7 +6,7 @@
     <title>{% block title %}Auction{% endblock %} · EPL Season 3</title>
     <link rel="icon" href="/static/favicon.ico">
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v={{ static_version('css/style.css') }}">
 </head>
 <body>
 <div class="shell {{ '' if user else 'no-sidebar' }}">

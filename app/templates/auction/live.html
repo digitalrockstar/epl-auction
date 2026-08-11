@@ -6,8 +6,8 @@
     <title>Live Auction · EPL Season 3</title>
     <link rel="icon" href="/static/favicon.ico">
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/tv.css">
+    <link rel="stylesheet" href="/static/css/style.css?v={{ static_version('css/style.css') }}">
+    <link rel="stylesheet" href="/static/css/tv.css?v={{ static_version('css/tv.css') }}">
 </head>
 <body class="tv-body">
     <div id="tv-ticker-slot" hx-get="{{ ticker_fragment_url }}" hx-trigger="every 90s" hx-swap="innerHTML">

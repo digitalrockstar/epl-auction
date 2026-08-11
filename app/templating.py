@@ -1,5 +1,16 @@
 from fastapi.templating import Jinja2Templates
 from app.images import resolve_player_photo, resolve_team_logo
+import os
+
+
+def static_version(rel_path: str) -> str:
+    """Mtime of a static file, appended as a cache-busting query string so
+    browsers refetch CSS/JS after a deploy instead of serving a stale cache."""
+    full_path = os.path.join(os.path.dirname(__file__), "static", rel_path)
+    try:
+        return str(int(os.path.getmtime(full_path)))
+    except OSError:
+        return "0"
 
 
 def inr(value):
@@ -26,4 +37,5 @@ def inr(value):
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["player_photo"] = resolve_player_photo
 templates.env.globals["team_logo"] = resolve_team_logo
+templates.env.globals["static_version"] = static_version
 templates.env.filters["inr"] = inr
