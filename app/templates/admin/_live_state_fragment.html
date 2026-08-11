@@ -55,7 +55,7 @@
     {% endfor %}
 </div>
 
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;">
     {% if timeout_team or is_paused %}
     <form method="post" action="/admin/auction/{{ live.id }}/resume" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
@@ -69,11 +69,11 @@
     {% endif %}
     <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn-green">Mark SOLD</button>
+        <button type="submit" class="btn-green">SOLD</button>
     </form>
     <form method="post" action="/admin/auction/{{ live.id }}/unsold" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn-danger">Mark UNSOLD</button>
+        <button type="submit" class="btn-danger">UNSOLD</button>
     </form>
     {% if can_undo %}
     <form method="post" action="/admin/auction/{{ live.id }}/undo" style="margin-bottom:0;">
