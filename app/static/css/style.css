@@ -405,6 +405,13 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 .timeout-box .timeout-team { font-size: 12px; font-weight: 700; color: var(--blue); display: block; line-height: 1.2; }
 .timeout-box .timeout-secs { font-size: 20px; font-weight: 800; color: var(--text); display: block; }
 
+.tv-timer {
+    background: var(--surface); border: 2px solid var(--border); border-radius: 10px;
+    padding: 6px 16px; text-align: center; flex-shrink: 0;
+    font-size: 20px; font-weight: 800; color: var(--blue); min-width: 54px;
+}
+.tv-timer-low { color: var(--red); border-color: var(--red); animation: pulse 1s infinite; }
+
 /* ---- Activity feed ---- */
 .feed { display: flex; flex-direction: column; }
 .feed-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }

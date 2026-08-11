@@ -4,13 +4,9 @@
     <span class="timeout-team" style="color:{{ timeout_team.primary_color or '#5b9dff' }};">{{ timeout_team.name }} timeout</span>
     <span class="timeout-secs" id="timer">{{ timeout_seconds_left }}s</span>
 </div>
+{% elif is_paused %}
+<div class="tv-timer" id="timer">PAUSED</div>
 {% else %}
-<div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
-    {% if is_paused %}
-    <span id="timer" style="color:var(--text-muted);">PAUSED</span>
-    {% else %}
-    <span id="timer">{{ seconds_left }}s</span>
-    {% endif %}
-</div>
+<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}" id="timer">{{ seconds_left }}s</div>
 {% endif %}
 {% endif %}

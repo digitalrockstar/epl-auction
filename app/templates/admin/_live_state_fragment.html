@@ -63,12 +63,12 @@
     {% if timeout_team or is_paused %}
     <form method="post" action="/admin/auction/{{ live.id }}/resume" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn">▶ Resume</button>
+        <button type="submit" class="btn" style="min-width:110px;justify-content:center;">▶ Resume</button>
     </form>
     {% else %}
     <form method="post" action="/admin/auction/{{ live.id }}/pause" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn-outline">⏸ Pause</button>
+        <button type="submit" class="btn-outline" style="min-width:110px;justify-content:center;">⏸ Pause</button>
     </form>
     {% endif %}
     <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">

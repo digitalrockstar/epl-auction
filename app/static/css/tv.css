@@ -20,7 +20,7 @@ html, body { overflow-x: hidden; }
 .tv-topbar .tv-brand img { width: 28px; height: 28px; }
 .tv-topbar .tv-title { font-size: 22px; font-weight: 800; letter-spacing: 0.02em; }
 .tv-topbar .tv-title .accent { color: var(--gold); }
-.tv-topbar .tv-meta { display: flex; gap: 20px; font-size: 13px; color: var(--text-muted); }
+.tv-topbar .tv-meta { display: flex; align-items: center; gap: 20px; font-size: 13px; color: var(--text-muted); }
 .tv-topbar .tv-meta b { color: var(--text); }
 
 .tv-wrap-outer { display: flex; width: 100%; max-width: 1400px; margin: 100px auto 0; gap: 20px; padding: 20px; box-sizing: border-box; }
@@ -112,14 +112,9 @@ html, body { overflow-x: hidden; }
 /* Timer lives in the topbar (normal flow, full-width bar with room to
    spare) rather than a floating box, so it never overlaps the side
    panel's Team Purses/Activity content on desktop or mobile. Updated via
-   an htmx out-of-band swap each poll, independent of the card swap. */
-.tv-timer {
-    background: var(--surface); border: 2px solid var(--border); border-radius: 10px;
-    padding: 6px 16px; text-align: center; flex-shrink: 0;
-    font-size: 20px; font-weight: 800; color: var(--blue); min-width: 54px;
-}
-.tv-timer-low { color: var(--red); border-color: var(--red); animation: pulse 1s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+   an htmx out-of-band swap each poll, independent of the card swap.
+   Base .tv-timer/.tv-timer-low rules live in style.css so the admin
+   console (which doesn't load tv.css) can reuse the same look. */
 
 .tv-bid-amount { transition: all 0.2s ease; }
 
