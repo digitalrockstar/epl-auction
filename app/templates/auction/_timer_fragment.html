@@ -1,3 +1,13 @@
-{% if live %}<div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
+{% if live %}
+    {% if timeout_team %}
+    <div class="timeout-box" style="border-color:{{ timeout_team.primary_color or '#5b9dff' }};">
+        <span class="timeout-team" style="color:{{ timeout_team.primary_color or '#5b9dff' }};">{{ timeout_team.name }} timeout</span>
+        <span class="timeout-secs">{{ timeout_seconds_left }}s</span>
+    </div>
+    {% elif is_paused %}
+    <div class="tv-timer">PAUSED</div>
+    {% else %}
+    <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
+    {% endif %}
 {% elif pending %}<div class="tv-timer">Opens in {{ reveal_seconds_left }}s</div>
 {% endif %}

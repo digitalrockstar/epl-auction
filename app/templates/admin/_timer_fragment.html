@@ -1,11 +1,16 @@
 {% if live %}
+{% if timeout_team %}
+<div class="timeout-box" style="border-color:{{ timeout_team.primary_color or '#5b9dff' }};">
+    <span class="timeout-team" style="color:{{ timeout_team.primary_color or '#5b9dff' }};">{{ timeout_team.name }} timeout</span>
+    <span class="timeout-secs" id="timer">{{ timeout_seconds_left }}s</span>
+</div>
+{% else %}
 <div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
-    {% if timeout_team %}
-    <span id="timer" style="color:var(--blue);">{{ timeout_team.name }}<br>{{ timeout_seconds_left }}s</span>
-    {% elif is_paused %}
+    {% if is_paused %}
     <span id="timer" style="color:var(--text-muted);">PAUSED</span>
     {% else %}
     <span id="timer">{{ seconds_left }}s</span>
     {% endif %}
 </div>
+{% endif %}
 {% endif %}

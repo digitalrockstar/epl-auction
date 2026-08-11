@@ -398,6 +398,13 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 .timer-ring::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--surface); }
 .timer-ring span { position: relative; font-size: 22px; font-weight: 800; z-index: 1; }
 
+.timeout-box {
+    border-radius: 10px; border: 2px solid var(--blue); background: var(--surface);
+    padding: 6px 16px; text-align: center; min-width: 88px;
+}
+.timeout-box .timeout-team { font-size: 12px; font-weight: 700; color: var(--blue); display: block; line-height: 1.2; }
+.timeout-box .timeout-secs { font-size: 20px; font-weight: 800; color: var(--text); display: block; }
+
 /* ---- Activity feed ---- */
 .feed { display: flex; flex-direction: column; }
 .feed-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
