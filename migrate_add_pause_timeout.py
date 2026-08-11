@@ -1,13 +1,13 @@
 """
-One-off schema migration for: play/pause + team timeouts (item 2), and
-created_at tracking on matches/playing_xi needed for the reset-till-time
-feature (item 3). Run once against any database created before these
-columns existed:
+One-off schema migration for: play/pause + team timeouts, reset-till-time
+support (created_at on matches/playing_xi), and the light/dark theme
+toggle. Run once against any database created before these columns
+existed:
 
     python migrate_add_pause_timeout.py
 
-Safe to re-run - if a column's already there, it just says so and exits.
-Works against both SQLite and Postgres.
+Safe to re-run - if a column's already there, it just says so and moves
+on. Works against both SQLite and Postgres.
 """
 from sqlalchemy import text
 from app.database import engine
@@ -22,30 +22,28 @@ STATEMENTS = [
     ("settings", "light_theme", "ALTER TABLE settings ADD COLUMN light_theme BOOLEAN DEFAULT FALSE"),
     ("matches", "created_at", "ALTER TABLE matches ADD COLUMN created_at TIMESTAMP"),
     ("playing_xi", "created_at", "ALTER TABLE playing_xi ADD COLUMN created_at TIMESTAMP"),
-    ("settings", "light_theme", "ALTER TABLE settings ADD COLUMN light_theme BOOLEAN DEFAULT FALSE"),
 ]
 
 with engine.connect() as conn:
     for table, name, ddl in STATEMENTS:
         try:
             conn.execute(text(ddl))
-            conn.execute(text(f"UPDATE {table} SET {name} = 0 WHERE {name} IS NULL") if "INTEGER" in ddl and "DEFAULT 0" in ddl else text("SELECT 1"))
+            if "INTEGER" in ddl and "DEFAULT 0" in ddl:
+                conn.execute(text(f"UPDATE {table} SET {name} = 0 WHERE {name} IS NULL"))
             conn.commit()
             print(f"Added {name} column to {table}.")
         except Exception as e:
+            conn.rollback()  # Postgres aborts the whole transaction on error - must clear it before continuing
             msg = str(e).lower()
             if "duplicate column" in msg or "already exists" in msg:
                 print(f"{table}.{name} already exists, nothing to do.")
             else:
                 raise
 
-    # Backfill created_at for existing matches/playing_xi rows so old
-    # records aren't mistaken for "just created" by the reset-till-time
-    # feature - default them to a date far in the past.
     for table in ("matches", "playing_xi"):
         try:
             conn.execute(text(f"UPDATE {table} SET created_at = '2026-01-01 00:00:00' WHERE created_at IS NULL"))
             conn.commit()
         except Exception:
-            pass
+            conn.rollback()
     print("Backfilled created_at on existing matches/playing_xi rows.")
