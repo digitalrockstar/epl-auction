@@ -34,11 +34,11 @@
             <a href="/admin/players" class="{{ 'active' if '/admin/players' in request.url.path }}">Players</a>
             <div class="nav-group">Auction</div>
             <a href="/admin/auction" class="{{ 'active' if '/admin/auction' in request.url.path }}">Auction console</a>
+            <a href="/admin/matches" class="{{ 'active' if '/admin/matches' in request.url.path }}">Matches &amp; points</a>
+            <a href="/admin/audit" class="{{ 'active' if '/admin/audit' in request.url.path }}">Audit log</a>
             {% if user.role.value == "super_admin" %}
             <a href="/admin/settings" class="{{ 'active' if '/admin/settings' in request.url.path }}">Settings</a>
             {% endif %}
-            <a href="/admin/matches" class="{{ 'active' if '/admin/matches' in request.url.path }}">Matches &amp; points</a>
-            <a href="/admin/audit" class="{{ 'active' if '/admin/audit' in request.url.path }}">Audit log</a>
             {% endif %}
 
             {% if user.role.value in ("manager", "captain") %}

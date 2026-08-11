@@ -348,7 +348,8 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 .tabs a.active { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); }
 
 /* ---- Team cards (Teams & Managers) ---- */
-.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+.team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 640px) { .team-grid { grid-template-columns: 1fr; } }
 .team-card {
     background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--gold);
     border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px;
@@ -374,7 +375,8 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 .quick-bids { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 
 /* ---- Auction console: team bid columns ---- */
-.bid-col-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 18px; }
+.bid-col-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 18px; }
+@media (max-width: 640px) { .bid-col-grid { grid-template-columns: 1fr; } }
 .bid-col {
     background: var(--surface-2); border: 1px solid var(--border); border-top: 4px solid var(--gold);
     border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px;
