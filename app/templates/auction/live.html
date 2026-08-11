@@ -18,7 +18,9 @@
             <img src="/static/img/placeholder_epl_crest.svg" alt="EPL crest">
             EMMANUEL PREMIER LEAGUE
         </div>
-        {% if screen_state == "starting_now" %}
+        {% if live or pending %}
+        <div class="tv-title" id="tv-title">LIVE <span class="accent">AUCTION</span></div>
+        {% elif screen_state == "starting_now" %}
         <div class="tv-title" id="tv-title">AUCTION <span class="accent">STARTING</span></div>
         {% elif screen_state == "see_you_next_year" or screen_state == "countdown" %}
         <div class="tv-title" id="tv-title"><span class="accent">AUCTION</span></div>
@@ -30,12 +32,14 @@
             <div id="tv-timer-slot" hx-get="{{ timer_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">
                 {% include "auction/_timer_fragment.html" %}
             </div>
-            {% if screen_state == "starting_now" %}
+            {% if live or pending %}
+            <span class="badge badge-live blink" id="tv-status-badge">Live</span>
+            {% elif screen_state == "starting_now" %}
             <span class="badge badge-live" id="tv-status-badge">Starting</span>
             {% elif screen_state == "see_you_next_year" or screen_state == "countdown" %}
             <span class="badge badge-offline" id="tv-status-badge">Offline</span>
             {% else %}
-            <span class="badge badge-live" id="tv-status-badge">Live</span>
+            <span class="badge badge-live blink" id="tv-status-badge">Live</span>
             {% endif %}
         </div>
     </div>
@@ -148,6 +152,42 @@
             lastResolvedId = null;
         }
         lastBid = bid; lastTeam = team; lastStatus = status;
+        animatePurses();
+    });
+
+    // Jackpot-style count-down on each purse card when it drops after a SOLD.
+    const lastPurse = {};
+    function formatInr(n) {
+        n = Math.round(n);
+        const s = String(Math.abs(n));
+        const last3 = s.slice(-3), rest = s.slice(0, -3);
+        const grouped = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3;
+        return (n < 0 ? '-' : '') + grouped;
+    }
+    function animatePurses() {
+        document.querySelectorAll('.purse-amt[data-team-id]').forEach((elm) => {
+            const id = elm.dataset.teamId;
+            const target = parseInt(elm.dataset.raw, 10);
+            const prev = lastPurse[id];
+            lastPurse[id] = target;
+            if (prev === undefined || prev === target) return;
+            elm.classList.add('purse-drop');
+            setTimeout(() => elm.classList.remove('purse-drop'), 650);
+            const start = prev, duration = 600, startTime = performance.now();
+            function tick(now) {
+                const p = Math.min(1, (now - startTime) / duration);
+                const val = start + (target - start) * p;
+                elm.textContent = '₹' + formatInr(val);
+                if (p < 1) requestAnimationFrame(tick);
+                else elm.textContent = '₹' + formatInr(target);
+            }
+            requestAnimationFrame(tick);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.purse-amt[data-team-id]').forEach((elm) => {
+            lastPurse[elm.dataset.teamId] = parseInt(elm.dataset.raw, 10);
+        });
     });
     </script>
 </body>

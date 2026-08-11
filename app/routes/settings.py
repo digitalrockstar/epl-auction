@@ -8,7 +8,7 @@ from app.database import get_db
 from app.models import User, Role
 from app.auth import require_role
 from app.app_settings import get_settings, get_slabs, slabs_to_json
-from app.reset_logic import reset_auction_data
+from app.reset_logic import reset_auction_data, reset_since
 
 router = APIRouter(prefix="/admin/settings")
 from app.templating import templates
@@ -80,6 +80,20 @@ def update_auction_dates(
     return RedirectResponse(url="/admin/settings?msg=" + quote("Auction date saved (IST)"), status_code=303)
 
 
+@router.post("/timeout", response_class=HTMLResponse)
+def update_timeout(
+    timeout_seconds: int = Form(...),
+    max_timeouts_per_team: int = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    settings = get_settings(db)
+    settings.timeout_seconds = max(5, timeout_seconds)
+    settings.max_timeouts_per_team = max(0, max_timeouts_per_team)
+    db.commit()
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Timeout settings saved"), status_code=303)
+
+
 @router.post("/slabs", response_class=HTMLResponse)
 async def update_slabs(
     request: Request,
@@ -123,5 +137,31 @@ def reset_all(
         f"Reset done. {counts['bids']} bids, {counts['auctions']} auctions, {counts['matches']} matches "
         f"cleared. {counts['players_reset']} players and {counts['teams_reset']} teams reset to unsold. "
         f"Players, managers, teams, and admin logins were kept."
+    )
+    return RedirectResponse(url="/admin/settings?msg=" + quote(msg), status_code=303)
+
+
+@router.post("/reset-since", response_class=HTMLResponse)
+def reset_since_time(
+    cutoff: str = Form(...),
+    confirm: str = Form(None),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    if confirm != "RESET":
+        return RedirectResponse(
+            url="/admin/settings?msg=" + quote("Type RESET exactly to confirm, nothing was touched"),
+            status_code=303,
+        )
+    try:
+        cutoff_dt = datetime.strptime(cutoff, "%Y-%m-%dT%H:%M")
+    except ValueError:
+        return RedirectResponse(url="/admin/settings?msg=" + quote("Invalid date/time"), status_code=303)
+    counts = reset_since(db, cutoff_dt)
+    msg = (
+        f"Reset since {cutoff_dt.strftime('%d %b %Y, %I:%M %p')} IST done. {counts['auctions']} auctions and "
+        f"{counts['bids']} bids from after that time were undone (purses and team assignments reversed), "
+        f"{counts['matches']} matches and {counts['playing_xi']} XI entries from after that time were cleared. "
+        f"Everything on or before the cutoff was kept."
     )
     return RedirectResponse(url="/admin/settings?msg=" + quote(msg), status_code=303)

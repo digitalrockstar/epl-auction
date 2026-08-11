@@ -66,6 +66,35 @@
 </div>
 
 <div class="panel">
+    <h3 style="margin-bottom:14px;">Exports</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="/admin/export/rosters.pdf" target="_blank" class="btn-outline" style="width:auto;">All rosters (PDF)</a>
+        <a href="/admin/export/auction-summary.pdf" target="_blank" class="btn-outline" style="width:auto;">Auction summary (PDF)</a>
+        <a href="/admin/export/points-schedule.pdf" target="_blank" class="btn-outline" style="width:auto;">Points &amp; schedule (PDF)</a>
+    </div>
+</div>
+
+<div class="panel">
+    <h3 style="margin-bottom:14px;">Team timeouts</h3>
+    <form method="post" action="/admin/settings/timeout">
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+            <div>
+                <span class="field-label">Timeout duration (seconds)</span>
+                <input type="number" name="timeout_seconds" value="{{ settings.timeout_seconds }}" min="5" style="width:120px;">
+            </div>
+            <div>
+                <span class="field-label">Timeouts per team</span>
+                <input type="number" name="max_timeouts_per_team" value="{{ settings.max_timeouts_per_team }}" min="0" style="width:120px;">
+            </div>
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:8px;margin-bottom:14px;">
+            A timeout pauses the main bidding timer for the team's chosen huddle time. Set to 0 timeouts to disable the feature.
+        </p>
+        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
+    </form>
+</div>
+
+<div class="panel">
     <h3 style="margin-bottom:14px;">Bidding increment slabs</h3>
     <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">While the bid is below a ceiling, that row's increment applies. The last row has no ceiling, it's the increment for everything above.</p>
     <form method="post" action="/admin/settings/slabs">
@@ -85,6 +114,24 @@
             {% endfor %}
         </div>
         <button type="submit" class="btn-gold" style="width:auto;margin-top:16px;">Save slabs</button>
+    </form>
+</div>
+
+<div class="panel" style="border-color:var(--red);">
+    <h3 style="margin-bottom:6px;color:var(--red);">Reset data since a specific time</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">
+        Undoes only what happened after the time you pick below: auctions, bids, matches, and Playing XI entries
+        started after that point are removed and their effect on purses/team assignments reversed. Anything
+        on or before the cutoff - like an already-completed captain's auction - is left untouched. Useful for
+        testing the player's auction without disturbing a captain's auction you've already run for real.
+        This cannot be undone.
+    </p>
+    <form method="post" action="/admin/settings/reset-since" onsubmit="return confirm('This undoes everything after the chosen time. Are you sure?');">
+        <span class="field-label">Cutoff (IST)</span>
+        <input type="datetime-local" name="cutoff" value="2026-08-09T00:00" style="max-width:220px;" required>
+        <span class="field-label" style="margin-top:12px;">Type RESET to confirm</span>
+        <input type="text" name="confirm" placeholder="RESET" style="max-width:200px;" required>
+        <button type="submit" class="btn-danger" style="width:auto;margin-top:12px;">Reset data since cutoff</button>
     </form>
 </div>
 

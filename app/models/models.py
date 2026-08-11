@@ -57,6 +57,7 @@ class Team(Base):
     captain_id = Column(Integer, ForeignKey("players.id"), nullable=True)
     purse_total = Column(Integer, default=0)   # total budget for player auction
     purse_spent = Column(Integer, default=0)
+    timeouts_used = Column(Integer, default=0)
     logo_url = Column(String, nullable=True)
     primary_color = Column(String, nullable=True)
     secondary_color = Column(String, nullable=True)
@@ -155,6 +156,13 @@ class Auction(Base):
     started_at = Column(DateTime, nullable=True)
     last_action_at = Column(DateTime, nullable=True)
     closed_at = Column(DateTime, nullable=True)
+    # Play/pause: while set, this is the frozen seconds-left and the main
+    # timer does not count down or auto-expire.
+    paused_remaining_seconds = Column(Integer, nullable=True)
+    # Team timeout: an alternate countdown that also freezes the main timer
+    # for its duration, auto-resuming (or admin can end it early) once done.
+    timeout_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+    timeout_started_at = Column(DateTime, nullable=True)
 
     player = relationship("Player")
     current_team = relationship("Team", foreign_keys=[current_team_id])
@@ -188,6 +196,7 @@ class Match(Base):
     match_date = Column(DateTime, nullable=False)
     ground_fee = Column(Integer, default=8500)
     winner_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     team_a = relationship("Team", foreign_keys=[team_a_id])
     team_b = relationship("Team", foreign_keys=[team_b_id])
@@ -201,6 +210,7 @@ class PlayingXI(Base):
     id = Column(Integer, primary_key=True)
     match_id = Column(Integer, ForeignKey("matches.id"), nullable=False)
     player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     match = relationship("Match")
     player = relationship("Player")
@@ -217,5 +227,7 @@ class Settings(Base):
     ticker_speed_seconds = Column(Integer, default=36)
     ticker_window = Column(Integer, default=15)
     increment_slabs = Column(Text, nullable=True)  # JSON: [[ceiling_or_null, increment], ...]
+    timeout_seconds = Column(Integer, default=30)
+    max_timeouts_per_team = Column(Integer, default=1)
     captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
     player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))

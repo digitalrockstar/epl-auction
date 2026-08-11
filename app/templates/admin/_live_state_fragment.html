@@ -1,4 +1,14 @@
 {% if live %}
+{% if timeout_team %}
+<div class="panel" style="border-color:var(--blue);margin-top:14px;padding:10px 16px;">
+    <b style="color:var(--blue);">Timeout - {{ timeout_team.name }}</b>
+    <span style="color:var(--text-muted);"> · main timer is paused until this ends</span>
+</div>
+{% elif is_paused %}
+<div class="panel" style="border-color:var(--text-muted);margin-top:14px;padding:10px 16px;">
+    <b style="color:var(--text-muted);">Bidding paused</b>
+</div>
+{% endif %}
 <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
     <div>
         <span class="field-label" style="margin-bottom:2px;">Current Bid</span>
@@ -35,11 +45,32 @@
                 {% if squad_full %}Squad full{% elif captain_taken %}Has captain{% else %}Bid ₹{{ (min_next_bid|inr) }}{% endif %}
             </button>
         </form>
+        {% if max_timeouts and max_timeouts > 0 %}
+        <form method="post" action="/admin/auction/{{ live.id }}/timeout" style="margin-top:6px;margin-bottom:0;">
+            <input type="hidden" name="auction_type" value="{{ auction_type }}">
+            <input type="hidden" name="team_id" value="{{ t.id }}">
+            <button type="submit" class="btn-outline" style="width:100%;font-size:12px;padding:6px;"
+                {% if is_paused or is_timeout or (t.timeouts_used or 0) >= max_timeouts %}disabled{% endif %}>
+                Timeout ({{ max_timeouts - (t.timeouts_used or 0) }} left)
+            </button>
+        </form>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
 
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+    {% if timeout_team or is_paused %}
+    <form method="post" action="/admin/auction/{{ live.id }}/resume" style="margin-bottom:0;">
+        <input type="hidden" name="auction_type" value="{{ auction_type }}">
+        <button type="submit" class="btn-gold">▶ Resume</button>
+    </form>
+    {% else %}
+    <form method="post" action="/admin/auction/{{ live.id }}/pause" style="margin-bottom:0;">
+        <input type="hidden" name="auction_type" value="{{ auction_type }}">
+        <button type="submit" class="btn-outline">⏸ Pause</button>
+    </form>
+    {% endif %}
     <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
         <button type="submit" class="btn-green">Mark SOLD</button>

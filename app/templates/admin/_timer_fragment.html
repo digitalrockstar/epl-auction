@@ -1,5 +1,11 @@
 {% if live %}
 <div class="timer-ring" style="--pct: {{ ((seconds_left / timer_total * 100) if timer_total else 0)|round(0,'floor')|int }};">
+    {% if timeout_team %}
+    <span id="timer" style="color:var(--blue);">{{ timeout_team.name }}<br>{{ timeout_seconds_left }}s</span>
+    {% elif is_paused %}
+    <span id="timer" style="color:var(--text-muted);">PAUSED</span>
+    {% else %}
     <span id="timer">{{ seconds_left }}s</span>
+    {% endif %}
 </div>
 {% endif %}

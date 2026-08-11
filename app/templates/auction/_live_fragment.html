@@ -84,19 +84,16 @@
         <p style="font-size:12px;color:#5b5f6e;">No bids yet on this player.</p>
         {% endfor %}
     </div>
-    {% if teams %}
-    <div class="tv-side-panel">
-        <h4>Team Purses</h4>
-        <div class="purse-ticker" style="position:static;padding:0;background:none;border:none;flex-direction:column;gap:12px;">
-            {% for t in teams %}
-            <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
-                <span class="purse-team">{{ t.name }} · {{ t.players|length }}/12</span>
-                <span class="purse-amt">₹{{ (t.purse_remaining|inr) }}</span>
-                <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#e8ab2f' }}"></div></div>
-            </div>
-            {% endfor %}
-        </div>
+</div>
+</div>
+{% if teams %}
+<div class="purse-ticker">
+    {% for t in teams %}
+    <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
+        <span class="purse-team">{{ t.name }} · {{ t.players|length }}/12</span>
+        <span class="purse-amt" id="purse-amt-{{ t.id }}" data-team-id="{{ t.id }}" data-raw="{{ t.purse_remaining }}">₹{{ (t.purse_remaining|inr) }}</span>
+        <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#e8ab2f' }}"></div></div>
     </div>
-    {% endif %}
+    {% endfor %}
 </div>
-</div>
+{% endif %}

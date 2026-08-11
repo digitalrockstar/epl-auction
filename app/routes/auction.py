@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Player, Team, Auction, AuctionType, AuctionStatus, Bid, User, Role, PlayerTeamImage
-from app.auth import require_role, require_login
+from app.auth import require_role
 from app.config import REVEAL_SECONDS, RESULT_HOLD_SECONDS
 from app.bidding import next_bid_amount, purse_check, base_price_for
 from app.app_settings import get_settings, get_slabs
@@ -28,16 +28,34 @@ def _players_bought(db: Session, team_id: int) -> int:
     return db.query(Player).filter(Player.team_id == team_id).count()
 
 
-def _eligible_pool(db: Session, a_type: AuctionType, category: str = None):
+def _eligible_pool(db: Session, a_type: AuctionType, category: str = None, respect_round: bool = True):
     """Unsold players eligible for this auction type. Player auctions are
     scoped to a fixed skill category; captain auctions pull from every
-    captain nominee regardless of skill."""
+    captain nominee regardless of skill.
+
+    respect_round=True (the default, used by Roll) excludes players who've
+    already gone unsold in this pool/category, so the same player can't come
+    up twice in a row. Once every remaining player in the pool has gone
+    unsold, the exclusion lifts on its own (round 2) and they're fair game
+    again."""
     q = db.query(Player).join(Player.user).filter(Player.team_id.is_(None))
     if a_type == AuctionType.captain:
         q = q.filter(Player.wants_captaincy.is_(True))
     else:
         q = q.filter(Player.primary_skill == category)
-    return q.all()
+    all_pool = q.all()
+    if not respect_round or not all_pool:
+        return all_pool
+
+    pool_ids = [p.id for p in all_pool]
+    unsold_ids = {
+        row[0] for row in db.query(Auction.player_id).filter(
+            Auction.auction_type == a_type, Auction.status == AuctionStatus.unsold,
+            Auction.player_id.in_(pool_ids),
+        ).all()
+    }
+    fresh = [p for p in all_pool if p.id not in unsold_ids]
+    return fresh if fresh else all_pool  # round complete - everyone's fair game again
 
 
 def _padded_photos(db: Session, players, minimum: int = 6):
@@ -66,6 +84,8 @@ def _finalize_expired(db: Session, auction: Auction):
     the auction automatically: sold to the leader, or unsold if no bids."""
     if not auction or auction.status != AuctionStatus.live:
         return
+    if auction.paused_remaining_seconds is not None or auction.timeout_team_id:
+        return  # frozen - don't auto-expire while paused or a timeout is running
     deadline = (auction.last_action_at or auction.started_at) + timedelta(seconds=get_settings(db).timer_seconds)
     if datetime.utcnow() < deadline:
         return
@@ -94,6 +114,48 @@ def _finalize_expired(db: Session, auction: Auction):
             notify(f"UNSOLD: {auction.player.user.name} (timer expired, no bids)")
 
 
+def _resume_from_pause(db: Session, auction: Auction):
+    """Un-freezes the main timer, whether it was a manual pause or a team
+    timeout: restores last_action_at so the deadline reflects the seconds
+    that were left when it was frozen."""
+    if auction.paused_remaining_seconds is None:
+        return
+    timer_seconds = get_settings(db).timer_seconds
+    elapsed_to_restore = timer_seconds - auction.paused_remaining_seconds
+    auction.last_action_at = datetime.utcnow() - timedelta(seconds=elapsed_to_restore)
+    auction.paused_remaining_seconds = None
+
+
+def _finalize_timeout(db: Session, auction: Auction):
+    """Called opportunistically on every poll. If a team's timeout window has
+    run out, auto-resume the main timer from where it was frozen."""
+    if not auction or not auction.timeout_team_id or not auction.timeout_started_at:
+        return
+    deadline = auction.timeout_started_at + timedelta(seconds=get_settings(db).timeout_seconds)
+    if datetime.utcnow() < deadline:
+        return
+    auction.timeout_team_id = None
+    auction.timeout_started_at = None
+    _resume_from_pause(db, auction)
+    db.commit()
+
+
+def _seconds_left(db: Session, auction: Auction, timer_seconds: int) -> int:
+    """Seconds remaining on the main bidding timer, frozen at whatever it was
+    if the timer's paused or a team timeout is running."""
+    if auction.paused_remaining_seconds is not None:
+        return auction.paused_remaining_seconds
+    deadline = (auction.last_action_at or auction.started_at) + timedelta(seconds=timer_seconds)
+    return max(0, int((deadline - datetime.utcnow()).total_seconds()))
+
+
+def _timeout_seconds_left(db: Session, auction: Auction) -> int:
+    if not auction.timeout_team_id or not auction.timeout_started_at:
+        return 0
+    deadline = auction.timeout_started_at + timedelta(seconds=get_settings(db).timeout_seconds)
+    return max(0, int((deadline - datetime.utcnow()).total_seconds()))
+
+
 def _promote_pending(db: Session, auction: Auction):
     """A 'pending' auction is a Roll reveal in progress. Once the reveal
     countdown has elapsed, flip it to live and start the real bidding
@@ -114,6 +176,7 @@ def _current_auction(db: Session):
     """Resolves the single in-flight auction, if any: (live, pending).
     Only one of the two will ever be set at a time."""
     live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_timeout(db, live)
     _finalize_expired(db, live)
     if live and live.status != AuctionStatus.live:
         live = None
@@ -148,12 +211,14 @@ def auction_console(
     teams = db.query(Team).order_by(Team.id).all()
     live_photo = _player_photo(db, live.player, live.current_team_id) if live else None
     min_next_bid = next_bid_amount(live, get_slabs(db)) if live else None
-    timer_seconds = get_settings(db).timer_seconds
-    seconds_left = None
-    if live:
-        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=timer_seconds)
-        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
+    settings = get_settings(db)
+    timer_seconds = settings.timer_seconds
+    seconds_left = _seconds_left(db, live, timer_seconds) if live else None
     can_undo = bool(live and live.bids)
+    is_paused = bool(live and live.paused_remaining_seconds is not None and not live.timeout_team_id)
+    is_timeout = bool(live and live.timeout_team_id)
+    timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first() if is_timeout else None
+    timeout_seconds_left = _timeout_seconds_left(db, live) if is_timeout else None
 
     return templates.TemplateResponse(
         "admin/auction_console.html",
@@ -162,6 +227,8 @@ def auction_console(
             "pool": pool, "teams": teams, "auction_type": auction_type,
             "msg": msg, "min_next_bid": min_next_bid, "seconds_left": seconds_left,
             "timer_total": timer_seconds, "can_undo": can_undo, "pending": pending,
+            "is_paused": is_paused, "is_timeout": is_timeout, "timeout_team": timeout_team,
+            "timeout_seconds_left": timeout_seconds_left, "max_timeouts": settings.max_timeouts_per_team,
         },
     )
 
@@ -202,17 +269,24 @@ def admin_timer(
     user: User = Depends(staff_only),
 ):
     live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_timeout(db, live)
     _finalize_expired(db, live)
     if live and live.status != AuctionStatus.live:
         live = None
     timer_seconds = get_settings(db).timer_seconds
     seconds_left = None
+    timeout_seconds_left = None
+    timeout_team = None
     if live:
-        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=timer_seconds)
-        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
+        seconds_left = _seconds_left(db, live, timer_seconds)
+        if live.timeout_team_id:
+            timeout_seconds_left = _timeout_seconds_left(db, live)
+            timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first()
     return templates.TemplateResponse(
         "admin/_timer_fragment.html",
-        {"request": request, "live": live, "seconds_left": seconds_left, "timer_total": timer_seconds},
+        {"request": request, "live": live, "seconds_left": seconds_left, "timer_total": timer_seconds,
+         "is_paused": bool(live and live.paused_remaining_seconds is not None and not live.timeout_team_id),
+         "timeout_team": timeout_team, "timeout_seconds_left": timeout_seconds_left},
     )
 
 
@@ -224,16 +298,22 @@ def admin_state(
     user: User = Depends(staff_only),
 ):
     live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    _finalize_timeout(db, live)
     _finalize_expired(db, live)
     if live and live.status != AuctionStatus.live:
         live = None
     teams = db.query(Team).order_by(Team.id).all()
     min_next_bid = next_bid_amount(live, get_slabs(db)) if live else None
     can_undo = bool(live and live.bids)
+    settings = get_settings(db)
+    is_paused = bool(live and live.paused_remaining_seconds is not None and not live.timeout_team_id)
+    is_timeout = bool(live and live.timeout_team_id)
+    timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first() if is_timeout else None
     return templates.TemplateResponse(
         "admin/_live_state_fragment.html",
         {"request": request, "live": live, "teams": teams, "auction_type": auction_type,
-         "min_next_bid": min_next_bid, "can_undo": can_undo},
+         "min_next_bid": min_next_bid, "can_undo": can_undo, "is_paused": is_paused, "is_timeout": is_timeout,
+         "timeout_team": timeout_team, "max_timeouts": settings.max_timeouts_per_team},
     )
 
 
@@ -305,6 +385,68 @@ def undo_bid(
     return _redirect(auction_type)
 
 
+@router.post("/admin/auction/{auction_id}/pause", response_class=HTMLResponse)
+def pause_auction(
+    auction_id: int,
+    auction_type: str = Form("player"),
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    auction = db.query(Auction).filter(Auction.id == auction_id, Auction.status == AuctionStatus.live).first()
+    if not auction:
+        return _redirect(auction_type, "Auction already closed")
+    if auction.paused_remaining_seconds is None:
+        auction.paused_remaining_seconds = _seconds_left(db, auction, get_settings(db).timer_seconds)
+        db.commit()
+    return _redirect(auction_type)
+
+
+@router.post("/admin/auction/{auction_id}/resume", response_class=HTMLResponse)
+def resume_auction(
+    auction_id: int,
+    auction_type: str = Form("player"),
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    auction = db.query(Auction).filter(Auction.id == auction_id, Auction.status == AuctionStatus.live).first()
+    if not auction:
+        return _redirect(auction_type, "Auction already closed")
+    auction.timeout_team_id = None
+    auction.timeout_started_at = None
+    _resume_from_pause(db, auction)
+    db.commit()
+    return _redirect(auction_type)
+
+
+@router.post("/admin/auction/{auction_id}/timeout", response_class=HTMLResponse)
+def start_timeout(
+    auction_id: int,
+    team_id: int = Form(...),
+    auction_type: str = Form("player"),
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    auction = db.query(Auction).filter(Auction.id == auction_id, Auction.status == AuctionStatus.live).first()
+    if not auction:
+        return _redirect(auction_type, "Auction already closed")
+    if auction.paused_remaining_seconds is not None:
+        return _redirect(auction_type, "Timer is already paused")
+
+    team = db.query(Team).filter(Team.id == team_id).first()
+    if not team:
+        return _redirect(auction_type, "Team not found")
+    settings = get_settings(db)
+    if (team.timeouts_used or 0) >= (settings.max_timeouts_per_team or 0):
+        return _redirect(auction_type, f"{team.name} has no timeouts left")
+
+    auction.paused_remaining_seconds = _seconds_left(db, auction, settings.timer_seconds)
+    auction.timeout_team_id = team.id
+    auction.timeout_started_at = datetime.utcnow()
+    team.timeouts_used = (team.timeouts_used or 0) + 1
+    db.commit()
+    return _redirect(auction_type)
+
+
 @router.post("/admin/auction/{auction_id}/sold", response_class=HTMLResponse)
 def mark_sold(
     auction_id: int,
@@ -364,9 +506,15 @@ def _live_context(db: Session):
     photo = _player_photo(db, live.player, live.current_team_id) if live else None
     seconds_left = None
     recent_bids = []
+    is_paused = False
+    timeout_team = None
+    timeout_seconds_left = None
     if live:
-        deadline = (live.last_action_at or live.started_at) + timedelta(seconds=settings.timer_seconds)
-        seconds_left = max(0, int((deadline - datetime.utcnow()).total_seconds()))
+        seconds_left = _seconds_left(db, live, settings.timer_seconds)
+        is_paused = live.paused_remaining_seconds is not None and not live.timeout_team_id
+        if live.timeout_team_id:
+            timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first()
+            timeout_seconds_left = _timeout_seconds_left(db, live)
         recent_bids = (
             db.query(Bid).filter(Bid.auction_id == live.id).order_by(Bid.created_at.desc()).limit(6).all()
         )
@@ -399,8 +547,14 @@ def _live_context(db: Session):
             resolved = last_closed
             resolved_photo = _player_photo(db, resolved.player, resolved.current_team_id)
 
-    return (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-            reveal_category, settings.ticker_speed_seconds, settings.timer_seconds, resolved, resolved_photo)
+    return {
+        "live": live, "photo": photo, "seconds_left": seconds_left, "teams": teams,
+        "recent_bids": recent_bids, "sold_auctions": sold_auctions, "pending": pending,
+        "reveal_seconds_left": reveal_seconds_left, "reveal_category": reveal_category,
+        "ticker_speed": settings.ticker_speed_seconds, "timer_seconds": settings.timer_seconds,
+        "resolved": resolved, "resolved_photo": resolved_photo,
+        "is_paused": is_paused, "timeout_team": timeout_team, "timeout_seconds_left": timeout_seconds_left,
+    }
 
 
 def _next_auction_countdown(db: Session):
@@ -420,69 +574,9 @@ def _next_auction_countdown(db: Session):
 
 
 @router.get("/auction/live", response_class=HTMLResponse)
-def live_view(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
-    reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
-    screen_state, countdown_target = _next_auction_countdown(db)
-    show_countdown = screen_state is not None and not (live or pending)
-    return templates.TemplateResponse(
-        "auction/live.html",
-        {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
-         "sold_auctions": sold_auctions, "fragment_url": "/auction/live/fragment",
-         "timer_fragment_url": "/auction/live/timer", "ticker_fragment_url": "/auction/live/ticker",
-         "countdown_fragment_url": "/auction/live/countdown",
-         "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS,
-         "reveal_category": reveal_category, "reveal_photos": reveal_photos, "ticker_speed": ticker_speed,
-         "resolved": resolved, "resolved_photo": resolved_photo,
-         "screen_state": screen_state, "countdown_target": countdown_target, "show_countdown": show_countdown},
-    )
-
-
-@router.get("/auction/live/fragment", response_class=HTMLResponse)
-def live_fragment(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
-    reveal_photos = _padded_photos(db, _eligible_pool(db, pending.auction_type, reveal_category)) if pending else []
-    return templates.TemplateResponse(
-        "auction/_live_fragment.html",
-        {"request": request, "live": live, "photo": photo, "seconds_left": seconds_left,
-         "timer_total": timer_seconds, "teams": teams, "recent_bids": recent_bids,
-         "sold_auctions": sold_auctions, "pending": pending, "reveal_category": reveal_category,
-         "reveal_photos": reveal_photos, "resolved": resolved, "resolved_photo": resolved_photo},
-    )
-
-
-@router.get("/auction/live/timer", response_class=HTMLResponse)
-def live_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
-    return templates.TemplateResponse(
-        "auction/_timer_fragment.html",
-        {"request": request, "live": live, "seconds_left": seconds_left,
-         "pending": pending, "reveal_seconds_left": reveal_seconds_left, "reveal_total": REVEAL_SECONDS},
-    )
-
-
-@router.get("/auction/live/countdown", response_class=HTMLResponse)
-def live_countdown(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
-    pending = db.query(Auction).filter(Auction.status == AuctionStatus.pending).first()
-    screen_state, countdown_target = _next_auction_countdown(db)
-    if live or pending:
-        screen_state = "live"
-    return templates.TemplateResponse(
-        "auction/_countdown_fragment.html",
-        {"request": request, "screen_state": screen_state, "countdown_target": countdown_target},
-    )
-
-
-@router.get("/auction/live/ticker", response_class=HTMLResponse)
-def live_ticker(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
-    (live, photo, seconds_left, teams, recent_bids, sold_auctions, pending, reveal_seconds_left,
-     reveal_category, ticker_speed, timer_seconds, resolved, resolved_photo) = _live_context(db)
-    return templates.TemplateResponse(
-        "auction/_ticker_fragment.html",
-        {"request": request, "sold_auctions": sold_auctions, "ticker_speed": ticker_speed},
-    )
+def live_view_redirect():
+    """/auction/live and /spectator/live used to be two copies of the same
+    page (one login-gated, one public), kept in sync by hand on every
+    change. Spectator is the one that stays - it's public (no login
+    friction for the TV screen) and has no admin controls to protect."""
+    return RedirectResponse(url="/spectator/live", status_code=307)
