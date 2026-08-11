@@ -24,9 +24,6 @@
         </select>
     </div>
     {% endif %}
-    {% if user.role.value in ("super_admin", "admin") %}
-    <a href="/admin/export/roster/{{ team.id }}.pdf" target="_blank" class="btn-outline" style="width:auto;">Export PDF</a>
-    {% endif %}
 </div>
 
 <div class="hero-banner" style="border-top:4px solid {{ team.primary_color or '#e8ab2f' }};">
