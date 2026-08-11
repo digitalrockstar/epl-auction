@@ -59,21 +59,32 @@
 </div>
 {% else %}
 <div class="panel">
-    <h3 style="margin-bottom:10px;">Roll for next player</h3>
+    <h3 style="margin-bottom:14px;">Roll for next player</h3>
     {% if auction_type == "captain" %}
-    <form method="post" action="/admin/roll/spin" style="display:flex;gap:10px;align-items:center;margin-bottom:0;">
-        <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <span style="color:var(--text-muted);font-size:13px;">{{ roll_captain_count }} captain nominee(s) left</span>
-        <button type="submit" class="btn-gold" style="width:auto;" {% if not roll_captain_count %}disabled{% endif %}>Roll</button>
-    </form>
+    <div class="roll-grid">
+        <div class="roll-card {{ 'empty' if not roll_captain_count }}">
+            <span class="roll-count">{{ roll_captain_count }}</span>
+            <span class="roll-label">Captain Nominees</span>
+            <form method="post" action="/admin/roll/spin" style="margin-bottom:0;">
+                <input type="hidden" name="auction_type" value="{{ auction_type }}">
+                <button type="submit" class="btn-gold" style="margin-top:0;" {% if not roll_captain_count %}disabled{% endif %}>Roll</button>
+            </form>
+        </div>
+    </div>
     {% else %}
-    <form method="post" action="/admin/roll/spin" style="display:flex;gap:10px;align-items:center;margin-bottom:0;flex-wrap:wrap;">
-        <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <select name="category" required>
-            {% for c in categories %}<option value="{{ c }}">{{ c }} ({{ roll_counts[c] }} left)</option>{% endfor %}
-        </select>
-        <button type="submit" class="btn-gold" style="width:auto;">Roll</button>
-    </form>
+    <div class="roll-grid">
+        {% for c in categories %}
+        <div class="roll-card {{ 'empty' if not roll_counts[c] }}">
+            <span class="roll-count">{{ roll_counts[c] }}</span>
+            <span class="roll-label">{{ c }}</span>
+            <form method="post" action="/admin/roll/spin" style="margin-bottom:0;">
+                <input type="hidden" name="auction_type" value="{{ auction_type }}">
+                <input type="hidden" name="category" value="{{ c }}">
+                <button type="submit" class="btn-gold" style="margin-top:0;" {% if not roll_counts[c] %}disabled{% endif %}>Roll</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
     {% endif %}
 </div>
 

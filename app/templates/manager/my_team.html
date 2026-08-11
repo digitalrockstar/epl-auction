@@ -48,9 +48,9 @@
 
 <h3 style="margin-bottom:12px;">Skill composition</h3>
 <div class="stat-grid">
-    {% set skill_colors = {'Batsman': 'blue', 'Bowler': 'green', 'All-rounder': 'gold', 'Wicketkeeper': 'gold'} %}
+    {% set skill_colors = {'Batting': 'blue', 'Bowling': 'green', 'All-Rounder [Batting]': 'gold', 'All-Rounder [Bowling]': 'gold'} %}
     {% for skill, count in skill_counts.items() %}
-    <div class="stat-tile {{ skill_colors.get(skill, 'blue') }}"><span class="value">{{ count }}</span><span class="label">{{ skill }}</span></div>
+    <div class="stat-tile skill-tile {{ skill_colors.get(skill, 'blue') }}"><span class="value">{{ count }}</span><span class="label">{{ skill }}</span></div>
     {% else %}
     <p style="color:var(--text-muted);font-size:13px;">No players bought yet.</p>
     {% endfor %}
