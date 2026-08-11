@@ -4,10 +4,6 @@
     <b style="color:var(--blue);">Timeout - {{ timeout_team.name }}</b>
     <span style="color:var(--text-muted);"> · main timer is paused until this ends</span>
 </div>
-{% elif is_paused %}
-<div class="panel" style="border-color:var(--text-muted);margin-top:14px;padding:10px 16px;">
-    <b style="color:var(--text-muted);">Bidding paused</b>
-</div>
 {% endif %}
 <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
     <div>
@@ -63,12 +59,12 @@
     {% if timeout_team or is_paused %}
     <form method="post" action="/admin/auction/{{ live.id }}/resume" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn" style="min-width:110px;justify-content:center;">▶ Resume</button>
+        <button type="submit" class="btn-outline btn-timer-toggle">▶ Resume</button>
     </form>
     {% else %}
     <form method="post" action="/admin/auction/{{ live.id }}/pause" style="margin-bottom:0;">
         <input type="hidden" name="auction_type" value="{{ auction_type }}">
-        <button type="submit" class="btn-outline" style="min-width:110px;justify-content:center;">⏸ Pause</button>
+        <button type="submit" class="btn-outline btn-timer-toggle">⏸ Pause</button>
     </form>
     {% endif %}
     <form method="post" action="/admin/auction/{{ live.id }}/sold" style="margin-bottom:0;">
