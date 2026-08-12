@@ -13,6 +13,13 @@ slug, dropped into a fixed folder structure once.
 <team-slug> = team name, lowercased, spaces removed (e.g. "Spartans" -> "spartans").
 .png is checked first, .jpg / .jpeg as a fallback, so either works.
 
+Images must be committed and pushed to the GitHub repo (not just dropped on
+the server's disk) - once found locally, we serve them via jsDelivr's CDN
+(cdn.jsdelivr.net/gh/<repo>@main/...) instead of this server's own /static/
+route, so image bandwidth comes off the Mac Studio + Tailscale Funnel and is
+served from jsDelivr's edge instead. jsDelivr caches by tag/branch for up to
+~24h, so a photo swap on the same filename can take a while to show up.
+
 If nothing is found on disk, we fall back to the DB url field (if one was
 set another way) and finally to the built-in placeholder SVG - never a
 broken image.
@@ -28,6 +35,8 @@ PLACEHOLDER_TEAM = "/static/img/placeholder_team_logo.svg"
 
 EXTS = (".png", ".jpg", ".jpeg")
 
+JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/digitalrockstar/epl-auction@main/app/static"
+
 
 def slugify(name: str) -> str:
     if not name:
@@ -42,7 +51,7 @@ def _find(folder: Path, stem: str):
         candidate = folder / f"{stem}{ext}"
         if candidate.is_file():
             rel = candidate.relative_to(STATIC_DIR)
-            return f"/static/{rel.as_posix()}"
+            return f"{JSDELIVR_BASE}/{rel.as_posix()}"
     return None
 
 
