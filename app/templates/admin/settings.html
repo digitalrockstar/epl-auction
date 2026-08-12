@@ -19,8 +19,20 @@
             {% for t in [
                 ("dark", "Dark / Gold", "#050a1a", "#0d1730", "#f5b942"),
                 ("light", "Light", "#f7f4ec", "#ffffff", "#c98f1f"),
-                ("epl-night", "EPL Night", "#080A0E", "#11151C", "#F2B83F"),
+                ("epl-night", "Epl Night", "#080A0E", "#11151C", "#F2B83F"),
                 ("graphite-gold", "Graphite Gold", "#0D0F12", "#15181D", "#E6A52E"),
+                ("pinky-green", "Pinky Green", "#0b0b10", "#15151d", "#ff3cac"),
+                ("ember-teal", "Ember Teal", "#111416", "#1a2021", "#ff6b35"),
+                ("carbon-lime", "Carbon Lime", "#0a0f0d", "#111915", "#c7e83f"),
+                ("cobalt-flame", "Cobalt Flame", "#080d18", "#101827", "#ff7043"),
+                ("desert-electric", "Desert Electric", "#f2eadb", "#fffaf0", "#e25b27"),
+                ("midnight-coral", "Midnight Coral", "#101014", "#18181e", "#ff8066"),
+                ("arctic-mango", "Arctic Mango", "#eef5f5", "#ffffff", "#f29b24"),
+                ("plum-copper", "Plum Copper", "#120c12", "#1c131c", "#d98b55"),
+                ("mono-acid", "Mono Acid", "#111111", "#191919", "#d7f23b"),
+                ("tang-cobalt", "Tang Cobalt", "#f5f2ea", "#ffffff", "#f05a28"),
+                ("uv-mint", "Uv Mint", "#0d0b14", "#171420", "#8b5cf6"),
+                ("royal-circuit", "Royal Circuit", "#f1f5fa", "#ffffff", "#2457c5"),
                 ("warm-ivory", "Warm Ivory", "#F4F1EA", "#FFFFFF", "#C88A16"),
                 ("clean-broadcast", "Clean Broadcast", "#F7F8FA", "#FFFFFF", "#B7790B"),
             ] %}
@@ -32,7 +44,7 @@
                     <span style="width:18px;height:18px;border-radius:5px;background:{{ t[3] }};border:1px solid rgba(0,0,0,0.15);"></span>
                     <span style="width:18px;height:18px;border-radius:5px;background:{{ t[4] }};border:1px solid rgba(0,0,0,0.15);"></span>
                 </div>
-                <div style="font-size:12px;font-weight:700;color:{% if t[0] in ['dark','epl-night','graphite-gold'] %}#f4f5f7{% else %}#16181d{% endif %};">{{ t[1] }}</div>
+                <div style="font-size:12px;font-weight:700;color:{% if t[0] in ['dark','epl-night','graphite-gold','pinky-green','ember-teal','carbon-lime','cobalt-flame','midnight-coral','plum-copper','mono-acid','uv-mint'] %}#f4f5f7{% else %}#16181d{% endif %};">{{ t[1] }}</div>
                 {% if theme_attr() == t[0] %}<div style="font-size:10px;color:{{ t[4] }};margin-top:2px;font-weight:700;">SELECTED</div>{% endif %}
             </div>
             {% endfor %}

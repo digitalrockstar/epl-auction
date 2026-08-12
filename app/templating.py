@@ -13,7 +13,7 @@ def static_version(rel_path: str) -> str:
         return "0"
 
 
-VALID_THEMES = {"dark", "light", "epl-night", "graphite-gold", "warm-ivory", "clean-broadcast"}
+VALID_THEMES = {"dark", "light", "epl-night", "graphite-gold", "pinky-green", "ember-teal", "carbon-lime", "cobalt-flame", "desert-electric", "midnight-coral", "arctic-mango", "plum-copper", "mono-acid", "tang-cobalt", "uv-mint", "royal-circuit", "warm-ivory", "clean-broadcast"}
 
 
 def theme_attr() -> str:
