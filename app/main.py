@@ -94,7 +94,19 @@ def home(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+    spectator_url = None
+    try:
+        with engine.connect() as conn:
+            row = conn.execute(text(
+                "SELECT service_url FROM render_bandwidth ORDER BY usage_gb ASC LIMIT 1"
+            )).fetchone()
+        if row:
+            spectator_url = row[0]
+    except Exception:
+        pass
+    return templates.TemplateResponse(
+        "login.html", {"request": request, "error": None, "spectator_url": spectator_url}
+    )
 
 
 @app.post("/login")

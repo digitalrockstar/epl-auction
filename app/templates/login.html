@@ -26,7 +26,7 @@
                 <button type="submit" class="btn-gold">Login</button>
             </form>
             <div class="divider-or">OR</div>
-            <a href="/spectator/live" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;">Continue as Guest (Spectator)</a>
+            <a href="{{ spectator_url ~ '/spectator/live' if spectator_url else '/spectator/live' }}" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;">Continue as Guest (Spectator)</a>
             <div class="login-note">
                 <span>After 5 failed attempts, login will be locked for 5 minutes.</span>
             </div>
