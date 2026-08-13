@@ -153,27 +153,7 @@
         }
         lastBid = bid; lastTeam = team; lastStatus = status;
         animatePurses();
-        applyOpenRosters();
     });
-
-    // Roster toggle: click avatars or team name to expand/collapse. State
-    // tracked here (not in the DOM) since the whole fragment gets replaced
-    // on every 2s poll - hx-preserve isn't reliable enough for this.
-    const openRosters = new Set();
-    function applyOpenRosters() {
-        document.querySelectorAll('.purse-roster').forEach((el) => {
-            const id = el.id.replace('purse-roster-', '');
-            el.classList.toggle('open', openRosters.has(id));
-        });
-    }
-    document.body.addEventListener('click', (e) => {
-        const trigger = e.target.closest('[data-team-toggle]');
-        if (!trigger) return;
-        const id = trigger.dataset.teamToggle;
-        if (openRosters.has(id)) openRosters.delete(id); else openRosters.add(id);
-        applyOpenRosters();
-    });
-    applyOpenRosters();
 
     // Jackpot-style count-down on each purse card when it drops after a SOLD.
     const lastPurse = {};

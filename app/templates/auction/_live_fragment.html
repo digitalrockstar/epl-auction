@@ -90,29 +90,21 @@
 <div class="purse-ticker">
     {% for t in teams %}
     <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
-        <div class="purse-avatars" data-team-toggle="{{ t.id }}">
+        <div class="purse-avatars">
             {% for p in t.players %}
             <span class="purse-avatar-wrap" style="z-index:{{ 20 - loop.index0 }};">
                 <img class="purse-avatar" src="{{ player_photo(p) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'"
                      title="{{ p.user.name }}{% if p.primary_skill %} - {{ p.primary_skill }}{% endif %}">
-                {% if p.is_captain %}<span class="purse-avatar-c">C</span>{% endif %}
+                {% if p.is_captain %}
+                <svg class="purse-avatar-c" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="var(--gold)"/><text x="8" y="8.5" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" fill="#1a1a1a">C</text></svg>
+                {% endif %}
             </span>
             {% endfor %}
         </div>
-        <span class="purse-team" data-team-toggle="{{ t.id }}">{{ t.name }} · {{ t.players|length }}/12</span>
+        <span class="purse-team-name">{{ t.name }}</span>
+        <span class="purse-team-count">{{ t.players|length }}/12</span>
         <span class="purse-amt" id="purse-amt-{{ t.id }}" data-team-id="{{ t.id }}" data-raw="{{ t.purse_remaining }}">₹{{ (t.purse_remaining|inr) }}</span>
         <div class="purse-bar"><div class="purse-bar-fill" style="width:{{ (t.purse_remaining / t.purse_total * 100) if t.purse_total else 0 }}%; background:{{ t.primary_color or '#e8ab2f' }}"></div></div>
-        <div class="purse-roster" id="purse-roster-{{ t.id }}">
-            {% for p in t.players %}
-            <div class="purse-roster-item">
-                <img src="{{ player_photo(p) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
-                {% if p.is_captain %}<span class="purse-avatar-c">C</span>{% endif %}
-                <span class="purse-roster-tip">{{ p.user.name }}{% if p.primary_skill %} &middot; {{ p.primary_skill }}{% endif %}</span>
-            </div>
-            {% else %}
-            <p style="font-size:11px;color:var(--text-muted);margin:0;">No players yet.</p>
-            {% endfor %}
-        </div>
     </div>
     {% endfor %}
 </div>
