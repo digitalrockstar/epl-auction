@@ -156,6 +156,37 @@ html, body { overflow-x: hidden; }
 .purse-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
 .purse-bar-fill { height: 100%; transition: width 0.5s ease; }
 
+.purse-avatars { display: flex; justify-content: center; cursor: pointer; height: 30px; margin-bottom: 4px; }
+.purse-avatar {
+    width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg); margin-left: -10px;
+}
+.purse-avatar:first-child { margin-left: 0; }
+.purse-avatar-more {
+    width: 30px; height: 30px; border-radius: 50%; margin-left: -10px;
+    background: var(--surface); border: 2px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+}
+.purse-team { cursor: pointer; }
+
+.purse-roster {
+    display: none; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.purse-roster.open { display: flex; }
+.purse-roster-item { position: relative; }
+.purse-roster-item img {
+    width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);
+}
+.purse-roster-tip {
+    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-6px);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 3px 8px; font-size: 10px; white-space: nowrap; color: var(--text);
+    opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 10;
+}
+.purse-roster-item:hover .purse-roster-tip { opacity: 1; }
+
 /* Mid-size TV/browser windows: side panel was fighting the card for
    width and forcing text to compress while the photo stayed pinned to
    its clamp floor. Drop the side panel below the card here instead of
