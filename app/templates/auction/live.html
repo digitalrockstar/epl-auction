@@ -155,8 +155,12 @@
         animateAmounts();
     });
 
-    // Slot-machine style roll on any amount that changes: purse counts
-    // down as it's spent (on SOLD), bid amount counts up (on each new bid).
+    // Slot-machine style digit roll on any amount that changes: purse rolls
+    // down as it's spent (on SOLD), bid amount rolls up on each new bid.
+    // Rebuilt fresh every htmx swap since the whole fragment is replaced -
+    // so each render snaps reels to the last known value with no
+    // transition, then on the next frame animates to the new value; the
+    // browser tweens the transform itself, sweeping past digits in between.
     const lastAmounts = {};
     function formatInr(n) {
         n = Math.round(n);
@@ -165,36 +169,66 @@
         const grouped = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3;
         return (n < 0 ? '-' : '') + grouped;
     }
+    function digitsAndCommas(n) {
+        return formatInr(n).split('').map((ch) => ch === ',' ? { sep: true } : { sep: false, value: parseInt(ch, 10) });
+    }
+    function buildReel(elm, tokens) {
+        elm.innerHTML = '<span class="amt-rupee">\u20B9</span><span class="amt-reels"></span>';
+        const host = elm.querySelector('.amt-reels');
+        tokens.forEach((tok) => {
+            if (tok.sep) {
+                const s = document.createElement('span');
+                s.className = 'amt-comma';
+                s.textContent = ',';
+                host.appendChild(s);
+                return;
+            }
+            const reel = document.createElement('span');
+            reel.className = 'digit-reel';
+            const strip = document.createElement('span');
+            strip.className = 'digit-strip';
+            for (let d = 0; d <= 9; d++) {
+                const ds = document.createElement('span');
+                ds.textContent = String(d);
+                strip.appendChild(ds);
+            }
+            reel.appendChild(strip);
+            host.appendChild(reel);
+        });
+        return host;
+    }
     function animateAmount(elm) {
         if (!elm) return;
         const key = elm.id;
         const target = parseInt(elm.dataset.raw, 10);
         const prev = lastAmounts[key];
         lastAmounts[key] = target;
-        if (prev === undefined || prev === target) return;
-        elm.classList.add('amt-pulse');
-        setTimeout(() => elm.classList.remove('amt-pulse'), 650);
-        const start = prev, duration = 600, startTime = performance.now();
-        function tick(now) {
-            const p = Math.min(1, (now - startTime) / duration);
-            const val = start + (target - start) * p;
-            elm.textContent = '₹' + formatInr(val);
-            if (p < 1) requestAnimationFrame(tick);
-            else elm.textContent = '₹' + formatInr(target);
-        }
-        requestAnimationFrame(tick);
+
+        const toTokens = digitsAndCommas(target);
+        const toDigits = toTokens.filter((t) => !t.sep).map((t) => t.value);
+        const fromDigits = digitsAndCommas(prev === undefined ? target : prev).filter((t) => !t.sep).map((t) => t.value);
+        while (fromDigits.length < toDigits.length) fromDigits.unshift(0);
+        if (fromDigits.length > toDigits.length) fromDigits.splice(0, fromDigits.length - toDigits.length);
+
+        const host = buildReel(elm, toTokens);
+        const strips = host.querySelectorAll('.digit-strip');
+        strips.forEach((strip, i) => {
+            strip.style.transition = 'none';
+            strip.style.transform = `translateY(${-fromDigits[i]}em)`;
+        });
+        void host.offsetHeight; // force reflow so the 'from' position registers before animating
+        requestAnimationFrame(() => {
+            strips.forEach((strip, i) => {
+                strip.style.transition = '';
+                strip.style.transform = `translateY(${-toDigits[i]}em)`;
+            });
+        });
     }
     function animateAmounts() {
         document.querySelectorAll('.purse-amt[data-team-id]').forEach(animateAmount);
         animateAmount(document.getElementById('tv-bid-amount'));
     }
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.purse-amt[data-team-id]').forEach((elm) => {
-            lastAmounts[elm.id] = parseInt(elm.dataset.raw, 10);
-        });
-        const bidElm = document.getElementById('tv-bid-amount');
-        if (bidElm) lastAmounts[bidElm.id] = parseInt(bidElm.dataset.raw, 10);
-    });
+    document.addEventListener('DOMContentLoaded', animateAmounts);
     </script>
 </body>
 </html>

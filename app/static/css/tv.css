@@ -151,9 +151,13 @@ html, body { overflow-x: hidden; }
 }
 .purse-team { font-size: 12px; color: var(--text-muted); display: block; }
 .purse-amt { font-size: 22px; font-weight: 800; display: block; margin-top: 2px; font-variant-numeric: tabular-nums; }
-.purse-amt.amt-pulse { color: var(--red); animation: purse-jackpot 0.6s ease; }
-.tv-bid-amount.amt-pulse { animation: purse-jackpot 0.4s ease; }
-@keyframes purse-jackpot { 0% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+.amt-reels, .tv-bid-amount .amt-reels { display: inline-flex; align-items: baseline; }
+.amt-rupee { margin-right: 1px; }
+.amt-comma { margin: 0 1px; }
+.digit-reel { display: inline-block; height: 1em; line-height: 1em; overflow: hidden; vertical-align: baseline; }
+.digit-strip { display: flex; flex-direction: column; transition: transform 0.55s cubic-bezier(.25,.85,.35,1); }
+.digit-strip span { height: 1em; line-height: 1em; display: block; text-align: center; }
 .purse-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
 .purse-bar-fill { height: 100%; transition: width 0.5s ease; }
 
