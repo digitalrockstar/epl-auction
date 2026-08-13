@@ -30,6 +30,7 @@
         {% endif %}
         <div class="tv-meta">
             <span><b>{{ teams|length }}</b> Teams</span>
+            <span class="tv-viewers"><span id="tv-viewers-count" class="viewers-num">0</span> Watching</span>
             <div id="tv-timer-slot" hx-get="{{ timer_fragment_url }}" hx-trigger="every 1s" hx-swap="innerHTML">
                 {% include "auction/_timer_fragment.html" %}
             </div>
@@ -174,8 +175,9 @@
     function digitsAndCommas(n) {
         return formatInr(n).split('').map((ch) => ch === ',' ? { sep: true } : { sep: false, value: parseInt(ch, 10) });
     }
-    function buildReel(elm, tokens) {
-        elm.innerHTML = '<span class="amt-rupee">\u20B9</span><span class="amt-reels"></span>';
+    function buildReel(elm, tokens, prefix) {
+        prefix = prefix === undefined ? '\u20B9' : prefix;
+        elm.innerHTML = (prefix ? `<span class="amt-rupee">${prefix}</span>` : '') + '<span class="amt-reels"></span>';
         const host = elm.querySelector('.amt-reels');
         tokens.forEach((tok) => {
             if (tok.sep) {
@@ -199,10 +201,9 @@
         });
         return host;
     }
-    function animateAmount(elm) {
+    function animateReel(elm, target, prefix) {
         if (!elm) return;
         const key = elm.id;
-        const target = parseInt(elm.dataset.raw, 10);
         const prev = lastAmounts[key];
         lastAmounts[key] = target;
 
@@ -212,7 +213,7 @@
         while (fromDigits.length < toDigits.length) fromDigits.unshift(0);
         if (fromDigits.length > toDigits.length) fromDigits.splice(0, fromDigits.length - toDigits.length);
 
-        const host = buildReel(elm, toTokens);
+        const host = buildReel(elm, toTokens, prefix);
         const strips = host.querySelectorAll('.digit-strip');
         strips.forEach((strip, i) => {
             strip.style.transition = 'none';
@@ -226,10 +227,31 @@
             });
         });
     }
+    function animateAmount(elm) {
+        if (!elm) return;
+        animateReel(elm, parseInt(elm.dataset.raw, 10), '\u20B9');
+    }
     function animateAmounts() {
         document.querySelectorAll('.purse-amt[data-team-id]').forEach(animateAmount);
         animateAmount(document.getElementById('tv-bid-amount'));
     }
+
+    // Live viewer count - not a real tally, just a gentle random drift so
+    // the TV screen feels alive. Nudges +/-1 to 5 every 20-30s, same
+    // digit-roll as the money amounts, no rupee prefix.
+    (function () {
+        const elm = document.getElementById('tv-viewers-count');
+        if (!elm) return;
+        let count = 90 + Math.floor(Math.random() * 70);
+        animateReel(elm, count, '');
+        function tick() {
+            const delta = 1 + Math.floor(Math.random() * 5);
+            count = Math.max(8, count + (Math.random() < 0.5 ? -delta : delta));
+            animateReel(elm, count, '');
+            setTimeout(tick, (20 + Math.random() * 10) * 1000);
+        }
+        setTimeout(tick, (20 + Math.random() * 10) * 1000);
+    })();
     document.addEventListener('DOMContentLoaded', animateAmounts);
     </script>
 </body>
