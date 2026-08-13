@@ -1,5 +1,7 @@
+import os
 import time
 import requests
+from sqlalchemy import create_engine, text
 
 ACCOUNTS = ["subscription.ajp", "matao.goa", "beingujarati", "asquaredcorporation", "almycontacts",
             "6s.akshayp", "eplofficial2", "thestartupcom", "thetypewriterstales", "secajp04"]
@@ -22,6 +24,11 @@ THEMES = {
     "secajp04": "arctic-mango",
 }
 
+DATABASE_URL = os.environ["DATABASE_URL"]
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=280)
+
 for account, api_key in zip(ACCOUNTS, API_KEYS):
     theme = THEMES.get(account)
     if not theme:
@@ -41,6 +48,15 @@ for account, api_key in zip(ACCOUNTS, API_KEYS):
 
     url = f"https://api.render.com/v1/services/{service_id}/env-vars/THEME_OVERRIDE"
     resp = requests.put(url, json={"value": theme}, headers=headers)
-    status = "OK" if resp.status_code in (200, 201) else f"FAILED ({resp.status_code})"
+    ok = resp.status_code in (200, 201)
+    status = "OK" if ok else f"FAILED ({resp.status_code})"
     print(f"{account} [{service_id}] THEME_OVERRIDE={theme}: {status}")
+
+    if ok:
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE render_bandwidth SET theme = :t WHERE account = :a"),
+                {"t": theme, "a": account},
+            )
+
     time.sleep(1)
