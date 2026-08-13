@@ -187,6 +187,7 @@ html, body { overflow-x: hidden; }
 /* Spectator / mobile mode */
 @media (max-width: 900px) {
     .tv-wrap-outer { flex-direction: column; margin-top: 94px; padding: 12px; gap: 14px; }
+    body { padding-bottom: 20px; }
     .tv-side { width: 100%; flex-direction: column; }
     .tv-side-panel { width: 100%; box-sizing: border-box; }
     .tv-card { flex-direction: column; gap: 18px; padding: 18px; text-align: center; }
@@ -199,7 +200,10 @@ html, body { overflow-x: hidden; }
     .tv-topbar .tv-title { font-size: 16px; order: 3; width: 100%; text-align: center; }
     .tv-topbar .tv-meta { gap: 10px; font-size: 11px; }
     .tv-timer { font-size: 15px; padding: 4px 10px; min-width: 38px; }
-    .purse-ticker { flex-wrap: wrap; padding: 10px 14px; }
+    .purse-ticker {
+        position: static; flex-wrap: wrap; padding: 10px 14px;
+        border-top: none; margin-top: 6px;
+    }
     .purse-chip { flex: 1 1 45%; }
 }
 
