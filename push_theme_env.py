@@ -15,7 +15,7 @@ THEMES = {
     "subscription.ajp": "epl-night",
     "matao.goa": "graphite-gold",
     "beingujarati": "dark",
-    "asquaredcorporation": "light",
+    "asquaredcorporation": "desert-electric",
     "almycontacts": "warm-ivory",
     "6s.akshayp": "clean-broadcast",
     "eplofficial2": "cobalt-flame",
