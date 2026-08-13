@@ -152,11 +152,12 @@
             lastResolvedId = null;
         }
         lastBid = bid; lastTeam = team; lastStatus = status;
-        animatePurses();
+        animateAmounts();
     });
 
-    // Jackpot-style count-down on each purse card when it drops after a SOLD.
-    const lastPurse = {};
+    // Slot-machine style roll on any amount that changes: purse counts
+    // down as it's spent (on SOLD), bid amount counts up (on each new bid).
+    const lastAmounts = {};
     function formatInr(n) {
         n = Math.round(n);
         const s = String(Math.abs(n));
@@ -164,30 +165,35 @@
         const grouped = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3;
         return (n < 0 ? '-' : '') + grouped;
     }
-    function animatePurses() {
-        document.querySelectorAll('.purse-amt[data-team-id]').forEach((elm) => {
-            const id = elm.dataset.teamId;
-            const target = parseInt(elm.dataset.raw, 10);
-            const prev = lastPurse[id];
-            lastPurse[id] = target;
-            if (prev === undefined || prev === target) return;
-            elm.classList.add('purse-drop');
-            setTimeout(() => elm.classList.remove('purse-drop'), 650);
-            const start = prev, duration = 600, startTime = performance.now();
-            function tick(now) {
-                const p = Math.min(1, (now - startTime) / duration);
-                const val = start + (target - start) * p;
-                elm.textContent = '₹' + formatInr(val);
-                if (p < 1) requestAnimationFrame(tick);
-                else elm.textContent = '₹' + formatInr(target);
-            }
-            requestAnimationFrame(tick);
-        });
+    function animateAmount(elm) {
+        if (!elm) return;
+        const key = elm.id;
+        const target = parseInt(elm.dataset.raw, 10);
+        const prev = lastAmounts[key];
+        lastAmounts[key] = target;
+        if (prev === undefined || prev === target) return;
+        elm.classList.add('amt-pulse');
+        setTimeout(() => elm.classList.remove('amt-pulse'), 650);
+        const start = prev, duration = 600, startTime = performance.now();
+        function tick(now) {
+            const p = Math.min(1, (now - startTime) / duration);
+            const val = start + (target - start) * p;
+            elm.textContent = '₹' + formatInr(val);
+            if (p < 1) requestAnimationFrame(tick);
+            else elm.textContent = '₹' + formatInr(target);
+        }
+        requestAnimationFrame(tick);
+    }
+    function animateAmounts() {
+        document.querySelectorAll('.purse-amt[data-team-id]').forEach(animateAmount);
+        animateAmount(document.getElementById('tv-bid-amount'));
     }
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.purse-amt[data-team-id]').forEach((elm) => {
-            lastPurse[elm.dataset.teamId] = parseInt(elm.dataset.raw, 10);
+            lastAmounts[elm.id] = parseInt(elm.dataset.raw, 10);
         });
+        const bidElm = document.getElementById('tv-bid-amount');
+        if (bidElm) lastAmounts[bidElm.id] = parseInt(bidElm.dataset.raw, 10);
     });
     </script>
 </body>

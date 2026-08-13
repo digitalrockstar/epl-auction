@@ -14,7 +14,7 @@
            {% if live.player.is_wicketkeeper in ("Regular", "Occasional") %} | WK ({{ live.player.is_wicketkeeper }}){% endif %}</p>
 
         <div class="tv-bid">
-            <span class="tv-bid-amount">₹{{ (live.current_bid|inr) }}</span>
+            <span class="tv-bid-amount" id="tv-bid-amount" data-raw="{{ live.current_bid }}">₹{{ (live.current_bid|inr) }}</span>
             {% if live.current_team %}<span class="tv-bid-team">{{ live.current_team.name }}</span>{% endif %}
         </div>
 
