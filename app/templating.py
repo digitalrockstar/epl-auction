@@ -17,9 +17,13 @@ VALID_THEMES = {"dark", "light", "epl-night", "graphite-gold", "pinky-green", "e
 
 
 def theme_attr() -> str:
-    """Reads the active theme straight from Settings, independent of
-    whatever context each route happens to pass in - every page needs this,
-    including ones that never touch Settings otherwise."""
+    """Reads the active theme. THEME_OVERRIDE env var wins if set, so
+    individual Render deployments can each show a different theme to
+    spectators. Falls back to the shared Settings row otherwise."""
+    override = os.environ.get("THEME_OVERRIDE")
+    if override in VALID_THEMES:
+        return override
+
     from app.database import SessionLocal
     from app.models import Settings
     db = SessionLocal()
