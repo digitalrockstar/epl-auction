@@ -3,7 +3,8 @@ html, body { overflow-x: hidden; }
     min-height: 100vh; margin: 0; background: var(--bg); padding-bottom: 90px; box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text);
 }
-#tv-ticker-slot { position: fixed; top: 0; left: 0; right: 0; z-index: 7; }
+.tv-header-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 7; }
+#tv-ticker-slot { display: block; }
 .tv-ticker {
     width: 100%; overflow: hidden; background: var(--gold); border-bottom: 1px solid var(--bg);
 }
@@ -12,7 +13,6 @@ html, body { overflow-x: hidden; }
 @keyframes tv-ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .tv-topbar {
-    position: fixed; top: 30px; left: 0; right: 0; z-index: 6;
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 30px; background: rgba(10,11,15,0.9); border-bottom: 1px solid var(--border);
 }
