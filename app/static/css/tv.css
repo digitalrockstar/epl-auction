@@ -156,17 +156,18 @@ html, body { overflow-x: hidden; }
 .purse-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
 .purse-bar-fill { height: 100%; transition: width 0.5s ease; }
 
-.purse-avatars { display: flex; justify-content: center; cursor: pointer; height: 30px; margin-bottom: 4px; }
+.purse-avatars { display: flex; justify-content: center; cursor: pointer; height: 42px; margin-bottom: 4px; flex-wrap: wrap; }
+.purse-avatar-wrap { position: relative; margin-left: -14px; }
+.purse-avatar-wrap:first-child { margin-left: 0; }
 .purse-avatar {
-    width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--bg); margin-left: -10px;
+    width: 42px; height: 42px; border-radius: 10px; object-fit: cover;
+    border: 2px solid var(--bg); display: block;
 }
-.purse-avatar:first-child { margin-left: 0; }
-.purse-avatar-more {
-    width: 30px; height: 30px; border-radius: 50%; margin-left: -10px;
-    background: var(--surface); border: 2px solid var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: var(--text-muted);
+.purse-avatar-c {
+    position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--gold); color: #1a1a1a;
+    font-size: 10px; font-weight: 800; line-height: 16px; text-align: center;
+    border: 1px solid var(--bg);
 }
 .purse-team { cursor: pointer; }
 
@@ -175,9 +176,9 @@ html, body { overflow-x: hidden; }
     margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
 }
 .purse-roster.open { display: flex; }
-.purse-roster-item { position: relative; }
+.purse-roster-item { position: relative; display: inline-block; }
 .purse-roster-item img {
-    width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);
+    width: 42px; height: 42px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);
 }
 .purse-roster-tip {
     position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-6px);

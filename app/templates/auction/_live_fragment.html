@@ -91,11 +91,13 @@
     {% for t in teams %}
     <div class="purse-chip" style="border-color:{{ t.primary_color or '#e8ab2f' }};">
         <div class="purse-avatars" data-team-toggle="{{ t.id }}">
-            {% for p in t.players[:4] %}
-            <img class="purse-avatar" src="{{ player_photo(p) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'"
-                 title="{{ p.user.name }}{% if p.primary_skill %} - {{ p.primary_skill }}{% endif %}" style="z-index:{{ 4 - loop.index0 }};">
+            {% for p in t.players %}
+            <span class="purse-avatar-wrap" style="z-index:{{ 20 - loop.index0 }};">
+                <img class="purse-avatar" src="{{ player_photo(p) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'"
+                     title="{{ p.user.name }}{% if p.primary_skill %} - {{ p.primary_skill }}{% endif %}">
+                {% if p.is_captain %}<span class="purse-avatar-c">C</span>{% endif %}
+            </span>
             {% endfor %}
-            {% if t.players|length > 4 %}<span class="purse-avatar-more">+{{ t.players|length - 4 }}</span>{% endif %}
         </div>
         <span class="purse-team" data-team-toggle="{{ t.id }}">{{ t.name }} · {{ t.players|length }}/12</span>
         <span class="purse-amt" id="purse-amt-{{ t.id }}" data-team-id="{{ t.id }}" data-raw="{{ t.purse_remaining }}">₹{{ (t.purse_remaining|inr) }}</span>
@@ -104,6 +106,7 @@
             {% for p in t.players %}
             <div class="purse-roster-item">
                 <img src="{{ player_photo(p) }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
+                {% if p.is_captain %}<span class="purse-avatar-c">C</span>{% endif %}
                 <span class="purse-roster-tip">{{ p.user.name }}{% if p.primary_skill %} &middot; {{ p.primary_skill }}{% endif %}</span>
             </div>
             {% else %}
