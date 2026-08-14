@@ -11,7 +11,7 @@
     </div>
 </div>
 
-<div class="live-box{% if rating and rating.max_budget is not none and live.current_bid and live.current_bid > rating.max_budget %} budget-exceeded{% endif %}">
+<div class="live-box">
     <div class="player-photo-frame">
         <img id="bid-photo-{{ live.player_id }}-{{ live.current_team_id or 0 }}" hx-preserve="true"
              src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
