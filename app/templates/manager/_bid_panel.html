@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <form method="post" action="/bid-panel/bid" style="margin-top:20px;">
+        <form hx-post="/bid-panel/bid" hx-target="#panel-wrap" hx-swap="innerHTML" style="margin-top:20px;">
             <button type="submit" class="btn-gold" {% if disabled %}disabled{% endif %}>
                 {% if disabled %}{{ disabled_reason }}{% else %}BID ₹{{ (next_amount|inr) }}{% endif %}
             </button>

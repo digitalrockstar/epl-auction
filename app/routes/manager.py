@@ -116,7 +116,7 @@ def place_my_bid(request: Request, db: Session = Depends(get_db), user: User = D
             live.current_team_id = team.id
             live.last_action_at = datetime.utcnow()
             db.commit()
-    return RedirectResponse(url="/bid-panel", status_code=303)
+    return bid_panel(request, db, user)
 
 
 def _ratings_rows(db: Session, team_id: int):
