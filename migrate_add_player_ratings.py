@@ -21,7 +21,7 @@ with engine.connect() as conn:
             fielding INTEGER,
             overall INTEGER,
             pool_grade TEXT,
-            priority_level TEXT,
+            max_budget INTEGER,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (team_id, player_id)
         )
