@@ -242,15 +242,15 @@
     (function () {
         const elm = document.getElementById('tv-viewers-count');
         if (!elm) return;
-        let count = 40 + Math.floor(Math.random() * 50);
+        let count = 15 + Math.floor(Math.random() * 30);
         animateReel(elm, count, '');
         function tick() {
             const delta = 1 + Math.floor(Math.random() * 5);
             count = Math.max(8, count + (Math.random() < 0.5 ? -delta : delta));
             animateReel(elm, count, '');
-            setTimeout(tick, (20 + Math.random() * 10) * 1000);
+            setTimeout(tick, (30 + Math.random() * 10) * 1000);
         }
-        setTimeout(tick, (20 + Math.random() * 10) * 1000);
+        setTimeout(tick, (30 + Math.random() * 10) * 1000);
     })();
     document.addEventListener('DOMContentLoaded', animateAmounts);
     </script>
