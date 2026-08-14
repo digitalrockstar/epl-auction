@@ -129,6 +129,25 @@ class Player(Base):
     kit_images = relationship("PlayerTeamImage", back_populates="player")
 
 
+class PlayerRating(Base):
+    """Manager's private rating of a player - not tied to auction outcome."""
+    __tablename__ = "player_ratings"
+
+    id = Column(Integer, primary_key=True)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    batting = Column(Integer, nullable=True)
+    bowling = Column(Integer, nullable=True)
+    fielding = Column(Integer, nullable=True)
+    overall = Column(Integer, nullable=True)
+    pool_grade = Column(String, nullable=True)
+    priority_level = Column(String, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    team = relationship("Team")
+    player = relationship("Player")
+
+
 class PlayerTeamImage(Base):
     __tablename__ = "player_team_images"
     __table_args__ = (UniqueConstraint("player_id", "team_id", name="uq_player_team_image"),)

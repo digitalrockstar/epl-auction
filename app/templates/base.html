@@ -45,6 +45,7 @@
             <div class="nav-group">My team</div>
             <a href="/my-team" class="{{ 'active' if request.url.path == '/my-team' }}">Roster &amp; purse</a>
             <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">Live bid panel</a>
+            <a href="/player-ratings" class="{{ 'active' if '/player-ratings' in request.url.path }}">Player Ratings</a>
             <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
             {% endif %}
 
@@ -110,6 +111,10 @@
         <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6M6 20l8-8M2 22l4-4"/><path d="M9 7l4-4 4 4-4 4z"/></svg>
             Bid
+        </a>
+        <a href="/player-ratings" class="{{ 'active' if '/player-ratings' in request.url.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            Ratings
         </a>
         {% endif %}
         {% if user.role.value == "player" %}

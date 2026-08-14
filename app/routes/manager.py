@@ -1,11 +1,11 @@
 from datetime import datetime
 from collections import Counter
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Team, Auction, AuctionStatus, Bid, User, Role
+from app.models import Team, Auction, AuctionStatus, Bid, User, Role, Player, PlayerRating
 from app.auth import require_role, require_login
 from app.bidding import next_bid_amount, purse_check
 from app.app_settings import get_slabs
@@ -87,10 +87,17 @@ def bid_panel(request: Request, db: Session = Depends(get_db), user: User = Depe
     elif not team:
         disabled_reason = "No team assigned to your login yet"
 
+    rating = None
+    if live and team:
+        rating = db.query(PlayerRating).filter(
+            PlayerRating.team_id == team.id, PlayerRating.player_id == live.player_id
+        ).first()
+
     return templates.TemplateResponse(
         "manager/_bid_panel.html",
         {"request": request, "live": live, "photo": photo, "team": team,
-         "next_amount": next_amount, "disabled": disabled, "disabled_reason": disabled_reason},
+         "next_amount": next_amount, "disabled": disabled, "disabled_reason": disabled_reason,
+         "rating": rating},
     )
 
 
@@ -108,3 +115,96 @@ def place_my_bid(request: Request, db: Session = Depends(get_db), user: User = D
             live.last_action_at = datetime.utcnow()
             db.commit()
     return RedirectResponse(url="/bid-panel", status_code=303)
+
+
+def _ratings_rows(db: Session, team_id: int):
+    ratings_by_player = {
+        r.player_id: r for r in db.query(PlayerRating).filter(PlayerRating.team_id == team_id).all()
+    }
+    players = db.query(Player).order_by(Player.id).all()
+    rows = []
+    for p in players:
+        rows.append({"player": p, "rating": ratings_by_player.get(p.id)})
+    return rows
+
+
+@router.get("/player-ratings", response_class=HTMLResponse)
+def player_ratings_page(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
+    team = _my_team(db, user)
+    rows = _ratings_rows(db, team.id) if team else []
+    return templates.TemplateResponse(
+        "manager/player_ratings.html",
+        {"request": request, "rows": rows, "team": team},
+    )
+
+
+@router.get("/player-ratings/{player_id}/edit", response_class=HTMLResponse)
+def player_rating_edit_row(
+    player_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)
+):
+    team = _my_team(db, user)
+    player = db.query(Player).filter(Player.id == player_id).first()
+    rating = db.query(PlayerRating).filter(
+        PlayerRating.team_id == team.id, PlayerRating.player_id == player_id
+    ).first()
+    return templates.TemplateResponse(
+        "manager/_rating_row.html",
+        {"request": request, "player": player, "rating": rating, "editing": True},
+    )
+
+
+@router.get("/player-ratings/{player_id}/cancel", response_class=HTMLResponse)
+def player_rating_cancel_row(
+    player_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)
+):
+    team = _my_team(db, user)
+    player = db.query(Player).filter(Player.id == player_id).first()
+    rating = db.query(PlayerRating).filter(
+        PlayerRating.team_id == team.id, PlayerRating.player_id == player_id
+    ).first()
+    return templates.TemplateResponse(
+        "manager/_rating_row.html",
+        {"request": request, "player": player, "rating": rating, "editing": False},
+    )
+
+
+@router.post("/player-ratings/{player_id}", response_class=HTMLResponse)
+def player_rating_save(
+    player_id: int,
+    request: Request,
+    batting: str = Form(""),
+    bowling: str = Form(""),
+    fielding: str = Form(""),
+    overall: str = Form(""),
+    pool_grade: str = Form(""),
+    priority_level: str = Form(""),
+    db: Session = Depends(get_db),
+    user: User = Depends(manager_only),
+):
+    team = _my_team(db, user)
+    player = db.query(Player).filter(Player.id == player_id).first()
+
+    rating = db.query(PlayerRating).filter(
+        PlayerRating.team_id == team.id, PlayerRating.player_id == player_id
+    ).first()
+    if not rating:
+        rating = PlayerRating(team_id=team.id, player_id=player_id)
+        db.add(rating)
+
+    def _int_or_none(v):
+        v = (v or "").strip()
+        return int(v) if v.isdigit() else None
+
+    rating.batting = _int_or_none(batting)
+    rating.bowling = _int_or_none(bowling)
+    rating.fielding = _int_or_none(fielding)
+    rating.overall = _int_or_none(overall)
+    rating.pool_grade = (pool_grade or "").strip() or None
+    rating.priority_level = (priority_level or "").strip() or None
+    db.commit()
+    db.refresh(rating)
+
+    return templates.TemplateResponse(
+        "manager/_rating_row.html",
+        {"request": request, "player": player, "rating": rating, "editing": False},
+    )

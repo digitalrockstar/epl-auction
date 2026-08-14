@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Player Ratings{% endblock %}
+{% block content %}
+<div class="panel">
+    <h2>Player Ratings</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:-6px;">Your private ratings for every registered player. Only visible to you.</p>
+
+    <table class="ratings-table" id="ratings-table">
+        <thead>
+            <tr>
+                <th data-sort="name">Player</th>
+                <th data-sort="skill">Skill</th>
+                <th data-sort="batting">Batting</th>
+                <th data-sort="bowling">Bowling</th>
+                <th data-sort="fielding">Fielding</th>
+                <th data-sort="overall">Overall</th>
+                <th data-sort="pool_grade">Pool Grade</th>
+                <th data-sort="priority_level">Priority</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="ratings-tbody">
+            {% for row in rows %}
+            {% with player=row.player, rating=row.rating, editing=false %}
+            {% include "manager/_rating_row.html" %}
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.ratings-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+.ratings-table th, .ratings-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+.ratings-table th { cursor: pointer; user-select: none; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+.ratings-table th:hover { color: var(--text); }
+.ratings-table th.sorted-asc::after { content: " \25B2"; }
+.ratings-table th.sorted-desc::after { content: " \25BC"; }
+.rating-input { width: 52px; padding: 3px 5px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text); }
+.rating-input-text { width: 78px; }
+.btn-sm { font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+.btn-save { border-color: var(--gold); color: var(--gold); }
+</style>
+
+<script>
+(function () {
+    const tbody = document.getElementById('ratings-tbody');
+    const headers = document.querySelectorAll('#ratings-table th[data-sort]');
+    let currentSort = null, currentDir = 1;
+
+    headers.forEach((th) => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            currentDir = (currentSort === key) ? -currentDir : 1;
+            currentSort = key;
+            headers.forEach((h) => h.classList.remove('sorted-asc', 'sorted-desc'));
+            th.classList.add(currentDir === 1 ? 'sorted-asc' : 'sorted-desc');
+
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const numeric = ['batting', 'bowling', 'fielding', 'overall'].includes(key);
+            rows.sort((a, b) => {
+                let av = a.dataset[key] || '', bv = b.dataset[key] || '';
+                if (numeric) { av = parseFloat(av); bv = parseFloat(bv); return (av - bv) * currentDir; }
+                return av.localeCompare(bv) * currentDir;
+            });
+            rows.forEach((r) => tbody.appendChild(r));
+        });
+    });
+})();
+</script>
+{% endblock %}

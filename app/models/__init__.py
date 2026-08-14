@@ -1,9 +1,9 @@
 from app.models.models import (
     User, Role, Team, Player, Auction, AuctionType, AuctionStatus,
-    Bid, Match, PlayingXI, PaymentStatus, PlayerTeamImage, Settings,
+    Bid, Match, PlayingXI, PaymentStatus, PlayerTeamImage, Settings, PlayerRating,
 )
 
 __all__ = [
     "User", "Role", "Team", "Player", "Auction", "AuctionType",
-    "AuctionStatus", "Bid", "Match", "PlayingXI", "PaymentStatus", "PlayerTeamImage", "Settings",
+    "AuctionStatus", "Bid", "Match", "PlayingXI", "PaymentStatus", "PlayerTeamImage", "Settings", "PlayerRating",
 ]

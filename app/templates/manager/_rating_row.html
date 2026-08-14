@@ -1,0 +1,39 @@
+<tr id="rating-row-{{ player.id }}"
+    data-name="{{ player.user.name|lower }}" data-skill="{{ (player.primary_skill or '')|lower }}"
+    data-batting="{{ rating.batting if rating and rating.batting is not none else -1 }}"
+    data-bowling="{{ rating.bowling if rating and rating.bowling is not none else -1 }}"
+    data-fielding="{{ rating.fielding if rating and rating.fielding is not none else -1 }}"
+    data-overall="{{ rating.overall if rating and rating.overall is not none else -1 }}"
+    data-pool_grade="{{ (rating.pool_grade if rating else '') or '' }}"
+    data-priority_level="{{ (rating.priority_level if rating else '') or '' }}">
+    <td>{% if player.team_id %}<a href="/team/{{ player.team_id }}">{{ player.user.name }}</a>{% else %}{{ player.user.name }}{% endif %}</td>
+    <td>{{ player.primary_skill or '-' }}</td>
+    {% if editing %}
+    <td><input type="number" name="batting" min="0" max="10" value="{{ rating.batting if rating else '' }}" class="rating-input"></td>
+    <td><input type="number" name="bowling" min="0" max="10" value="{{ rating.bowling if rating else '' }}" class="rating-input"></td>
+    <td><input type="number" name="fielding" min="0" max="10" value="{{ rating.fielding if rating else '' }}" class="rating-input"></td>
+    <td><input type="number" name="overall" min="0" max="10" value="{{ rating.overall if rating else '' }}" class="rating-input"></td>
+    <td><input type="text" name="pool_grade" value="{{ rating.pool_grade if rating else '' }}" class="rating-input rating-input-text" placeholder="A / B / C"></td>
+    <td><input type="text" name="priority_level" value="{{ rating.priority_level if rating else '' }}" class="rating-input rating-input-text" placeholder="High / Med / Low"></td>
+    <td>
+        <button type="button" class="btn-sm btn-save"
+            hx-post="/player-ratings/{{ player.id }}" hx-include="closest tr"
+            hx-target="#rating-row-{{ player.id }}" hx-swap="outerHTML">Save</button>
+        <button type="button" class="btn-sm btn-cancel"
+            hx-get="/player-ratings/{{ player.id }}/cancel"
+            hx-target="#rating-row-{{ player.id }}" hx-swap="outerHTML">Cancel</button>
+    </td>
+    {% else %}
+    <td>{{ rating.batting if rating and rating.batting is not none else '-' }}</td>
+    <td>{{ rating.bowling if rating and rating.bowling is not none else '-' }}</td>
+    <td>{{ rating.fielding if rating and rating.fielding is not none else '-' }}</td>
+    <td>{{ rating.overall if rating and rating.overall is not none else '-' }}</td>
+    <td>{{ rating.pool_grade or '-' }}</td>
+    <td>{{ rating.priority_level or '-' }}</td>
+    <td>
+        <button type="button" class="btn-sm btn-edit"
+            hx-get="/player-ratings/{{ player.id }}/edit"
+            hx-target="#rating-row-{{ player.id }}" hx-swap="outerHTML">Edit</button>
+    </td>
+    {% endif %}
+</tr>
