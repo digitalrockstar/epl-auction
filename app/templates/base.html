@@ -74,7 +74,9 @@
     <div class="main">
         {% if user %}
         <header class="topbar">
+            {% if not (request.url.path == '/' and user.role.value in ('super_admin', 'admin')) %}
             <button class="back-btn" onclick="history.back()" aria-label="Go back">&larr; Back</button>
+            {% endif %}
             <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
         </header>
         {% endif %}
