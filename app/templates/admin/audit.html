@@ -10,7 +10,7 @@
 <div class="stat-grid">
     <div class="stat-tile gold"><span class="value">{{ bids|length }}</span><span class="label">Bids Shown</span></div>
     <div class="stat-tile green"><span class="value">{{ bids|map(attribute="auction_id")|unique|list|length }}</span><span class="label">Auctions Involved</span></div>
-    <div class="stat-tile blue"><span class="value">₹{{ (bids|sum(attribute="amount") if bids else 0)|inr }}</span><span class="label">Total Bid Value Shown</span></div>
+    <div class="stat-tile blue"><span class="value">₹{{ total_bid_value|inr }}</span><span class="label">Total Bid Value Shown</span></div>
 </div>
 
 <div class="table-wrap">

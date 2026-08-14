@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.database import get_db
-from app.models import Team, User, Role, Bid
+from app.models import Team, User, Role, Bid, Auction, AuctionStatus
 from app.auth import require_role, hash_password, normalize_phone
 from app.images import save_uploaded_image, slugify, IMAGES_DIR
 
@@ -144,4 +145,10 @@ def team_roster(
 @router.get("/audit", response_class=HTMLResponse)
 def audit_log(request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
     bids = db.query(Bid).order_by(Bid.created_at.desc()).limit(200).all()
-    return templates.TemplateResponse("admin/audit.html", {"request": request, "user": user, "bids": bids})
+    total_bid_value = db.query(func.coalesce(func.sum(Auction.current_bid), 0)).filter(
+        Auction.status == AuctionStatus.sold
+    ).scalar()
+    return templates.TemplateResponse(
+        "admin/audit.html",
+        {"request": request, "user": user, "bids": bids, "total_bid_value": total_bid_value},
+    )
