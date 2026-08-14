@@ -15,7 +15,7 @@
     </div>
 </div>
 <div class="panel">
-    <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Your private ratings for every registered player. Only visible to you. Batting/Bowling/Fielding/Overall are 0-10, Priority is 0-3, Pool Grade is A-D. Download the CSV, edit offline, re-upload to bulk update - matched by player_id, other columns are ignored on upload.</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Your private ratings for every registered player. Only visible to you. Batting/Bowling/Fielding/Overall are 0-10, Pool Grade is A-D, Max Budget is any amount. Download the CSV, edit offline, re-upload to bulk update - matched by player_id, other columns are ignored on upload.</p>
 
     <table class="ratings-table" id="ratings-table">
         <thead>
@@ -27,7 +27,7 @@
                 <th data-sort="fielding">Fielding</th>
                 <th data-sort="overall">Overall</th>
                 <th data-sort="pool_grade">Pool Grade</th>
-                <th data-sort="priority_level">Priority</th>
+                <th data-sort="max_budget">Max Budget</th>
                 <th></th>
             </tr>
         </thead>
@@ -69,7 +69,7 @@
             th.classList.add(currentDir === 1 ? 'sorted-asc' : 'sorted-desc');
 
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            const numeric = ['batting', 'bowling', 'fielding', 'overall'].includes(key);
+            const numeric = ['batting', 'bowling', 'fielding', 'overall', 'max_budget'].includes(key);
             rows.sort((a, b) => {
                 let av = a.dataset[key] || '', bv = b.dataset[key] || '';
                 if (numeric) { av = parseFloat(av); bv = parseFloat(bv); return (av - bv) * currentDir; }

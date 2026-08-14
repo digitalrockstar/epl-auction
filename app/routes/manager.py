@@ -147,7 +147,7 @@ def player_ratings_template_csv(db: Session = Depends(get_db), user: User = Depe
 
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(["player_id", "player_name", "skill", "batting", "bowling", "fielding", "overall", "pool_grade", "priority_level"])
+    writer.writerow(["player_id", "player_name", "skill", "batting", "bowling", "fielding", "overall", "pool_grade", "max_budget"])
     for row in rows:
         p, r = row["player"], row["rating"]
         writer.writerow([
@@ -157,7 +157,7 @@ def player_ratings_template_csv(db: Session = Depends(get_db), user: User = Depe
             r.fielding if r and r.fielding is not None else "",
             r.overall if r and r.overall is not None else "",
             r.pool_grade or "" if r else "",
-            r.priority_level if r and r.priority_level is not None else "",
+            r.max_budget if r and r.max_budget is not None else "",
         ])
     buf.seek(0)
     return StreamingResponse(
@@ -201,8 +201,8 @@ def player_ratings_upload(
         rating.overall = _int_or_none(line.get("overall"), 0, 10)
         grade = (line.get("pool_grade") or "").strip().upper()
         rating.pool_grade = grade if grade in ("A", "B", "C", "D") else None
-        pr = (line.get("priority_level") or "").strip()
-        rating.priority_level = pr if pr in ("0", "1", "2", "3") else None
+        mb = (line.get("max_budget") or "").strip()
+        rating.max_budget = int(mb) if mb.isdigit() else None
 
     db.commit()
     return RedirectResponse(url="/player-ratings", status_code=303)
@@ -247,7 +247,7 @@ def player_rating_save(
     fielding: str = Form(""),
     overall: str = Form(""),
     pool_grade: str = Form(""),
-    priority_level: str = Form(""),
+    max_budget: str = Form(""),
     db: Session = Depends(get_db),
     user: User = Depends(manager_only),
 ):
@@ -273,7 +273,8 @@ def player_rating_save(
     rating.fielding = _int_or_none(fielding, 0, 10)
     rating.overall = _int_or_none(overall, 0, 10)
     rating.pool_grade = pool_grade if pool_grade in ("A", "B", "C", "D") else None
-    rating.priority_level = priority_level if priority_level in ("0", "1", "2", "3") else None
+    mb = (max_budget or "").strip()
+    rating.max_budget = int(mb) if mb.isdigit() else None
     db.commit()
     db.refresh(rating)
 

@@ -141,7 +141,7 @@ class PlayerRating(Base):
     fielding = Column(Integer, nullable=True)
     overall = Column(Integer, nullable=True)
     pool_grade = Column(String, nullable=True)
-    priority_level = Column(String, nullable=True)
+    max_budget = Column(Integer, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     team = relationship("Team")
