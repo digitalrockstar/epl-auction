@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Player Ratings{% endblock %}
 {% block content %}
-<div class="page-head">
-    <div class="eyebrow">Manager Portal</div>
-    <h1>Player Ratings</h1>
+<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;">
+    <div>
+        <div class="eyebrow">Manager Portal</div>
+        <h1>Player Ratings</h1>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <a href="/player-ratings/template.csv" class="btn-sm" style="text-decoration:none;">Download CSV</a>
+        <form method="post" action="/player-ratings/upload" enctype="multipart/form-data" style="display:flex;gap:8px;align-items:center;">
+            <input type="file" name="file" accept=".csv" required style="font-size:12px;max-width:180px;">
+            <button type="submit" class="btn-sm btn-save">Upload</button>
+        </form>
+    </div>
 </div>
 <div class="panel">
-    <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Your private ratings for every registered player. Only visible to you. Batting/Bowling/Fielding/Overall are 0-10, Priority is 0-3, Pool Grade is A-D.</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Your private ratings for every registered player. Only visible to you. Batting/Bowling/Fielding/Overall are 0-10, Priority is 0-3, Pool Grade is A-D. Download the CSV, edit offline, re-upload to bulk update - matched by player_id, other columns are ignored on upload.</p>
 
     <table class="ratings-table" id="ratings-table">
         <thead>

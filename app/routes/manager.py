@@ -1,7 +1,9 @@
 from datetime import datetime
 from collections import Counter
-from fastapi import APIRouter, Request, Depends, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+import csv
+import io
+from fastapi import APIRouter, Request, Depends, Form, UploadFile, File
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -136,6 +138,74 @@ def player_ratings_page(request: Request, db: Session = Depends(get_db), user: U
         "manager/player_ratings.html",
         {"request": request, "rows": rows, "team": team, "user": user},
     )
+
+
+@router.get("/player-ratings/template.csv")
+def player_ratings_template_csv(db: Session = Depends(get_db), user: User = Depends(manager_only)):
+    team = _my_team(db, user)
+    rows = _ratings_rows(db, team.id) if team else []
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["player_id", "player_name", "skill", "batting", "bowling", "fielding", "overall", "pool_grade", "priority_level"])
+    for row in rows:
+        p, r = row["player"], row["rating"]
+        writer.writerow([
+            p.id, p.user.name, p.primary_skill or "",
+            r.batting if r and r.batting is not None else "",
+            r.bowling if r and r.bowling is not None else "",
+            r.fielding if r and r.fielding is not None else "",
+            r.overall if r and r.overall is not None else "",
+            r.pool_grade or "" if r else "",
+            r.priority_level if r and r.priority_level is not None else "",
+        ])
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]), media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=player_ratings_template.csv"},
+    )
+
+
+@router.post("/player-ratings/upload")
+def player_ratings_upload(
+    request: Request, file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(manager_only)
+):
+    team = _my_team(db, user)
+    if not team:
+        return RedirectResponse(url="/player-ratings", status_code=303)
+
+    def _int_or_none(v, lo, hi):
+        v = (v or "").strip()
+        if not v.isdigit():
+            return None
+        return max(lo, min(hi, int(v)))
+
+    content = file.file.read().decode("utf-8-sig")
+    reader = csv.DictReader(io.StringIO(content))
+    existing = {r.player_id: r for r in db.query(PlayerRating).filter(PlayerRating.team_id == team.id).all()}
+    valid_player_ids = {p.id for p in db.query(Player.id).all()}
+
+    for line in reader:
+        pid = (line.get("player_id") or "").strip()
+        if not pid.isdigit() or int(pid) not in valid_player_ids:
+            continue
+        pid = int(pid)
+        rating = existing.get(pid)
+        if not rating:
+            rating = PlayerRating(team_id=team.id, player_id=pid)
+            db.add(rating)
+            existing[pid] = rating
+        rating.batting = _int_or_none(line.get("batting"), 0, 10)
+        rating.bowling = _int_or_none(line.get("bowling"), 0, 10)
+        rating.fielding = _int_or_none(line.get("fielding"), 0, 10)
+        rating.overall = _int_or_none(line.get("overall"), 0, 10)
+        grade = (line.get("pool_grade") or "").strip().upper()
+        rating.pool_grade = grade if grade in ("A", "B", "C", "D") else None
+        pr = (line.get("priority_level") or "").strip()
+        rating.priority_level = pr if pr in ("0", "1", "2", "3") else None
+
+    db.commit()
+    return RedirectResponse(url="/player-ratings", status_code=303)
 
 
 @router.get("/player-ratings/{player_id}/edit", response_class=HTMLResponse)
