@@ -134,7 +134,7 @@ def player_ratings_page(request: Request, db: Session = Depends(get_db), user: U
     rows = _ratings_rows(db, team.id) if team else []
     return templates.TemplateResponse(
         "manager/player_ratings.html",
-        {"request": request, "rows": rows, "team": team},
+        {"request": request, "rows": rows, "team": team, "user": user},
     )
 
 

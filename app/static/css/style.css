@@ -666,6 +666,14 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 }
 .panel-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 
+.rating-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; }
+.rating-stat-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; text-align: center;
+}
+.rating-stat-value { font-size: 26px; font-weight: 800; color: var(--gold); margin-top: 4px; }
+.rating-stat-value small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
 .hero-banner {
     background:
         radial-gradient(circle at 85% 30%, rgba(232,171,47,0.16), transparent 55%),
