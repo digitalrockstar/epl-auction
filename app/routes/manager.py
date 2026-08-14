@@ -191,16 +191,19 @@ def player_rating_save(
         rating = PlayerRating(team_id=team.id, player_id=player_id)
         db.add(rating)
 
-    def _int_or_none(v):
+    def _int_or_none(v, lo, hi):
         v = (v or "").strip()
-        return int(v) if v.isdigit() else None
+        if not v.isdigit():
+            return None
+        n = int(v)
+        return max(lo, min(hi, n))
 
-    rating.batting = _int_or_none(batting)
-    rating.bowling = _int_or_none(bowling)
-    rating.fielding = _int_or_none(fielding)
-    rating.overall = _int_or_none(overall)
-    rating.pool_grade = (pool_grade or "").strip() or None
-    rating.priority_level = (priority_level or "").strip() or None
+    rating.batting = _int_or_none(batting, 0, 10)
+    rating.bowling = _int_or_none(bowling, 0, 10)
+    rating.fielding = _int_or_none(fielding, 0, 10)
+    rating.overall = _int_or_none(overall, 0, 10)
+    rating.pool_grade = pool_grade if pool_grade in ("A", "B", "C", "D") else None
+    rating.priority_level = priority_level if priority_level in ("0", "1", "2", "3") else None
     db.commit()
     db.refresh(rating)
 

@@ -9,12 +9,18 @@
     <td>{% if player.team_id %}<a href="/team/{{ player.team_id }}">{{ player.user.name }}</a>{% else %}{{ player.user.name }}{% endif %}</td>
     <td>{{ player.primary_skill or '-' }}</td>
     {% if editing %}
-    <td><input type="number" name="batting" min="0" max="10" value="{{ rating.batting if rating else '' }}" class="rating-input"></td>
-    <td><input type="number" name="bowling" min="0" max="10" value="{{ rating.bowling if rating else '' }}" class="rating-input"></td>
-    <td><input type="number" name="fielding" min="0" max="10" value="{{ rating.fielding if rating else '' }}" class="rating-input"></td>
-    <td><input type="number" name="overall" min="0" max="10" value="{{ rating.overall if rating else '' }}" class="rating-input"></td>
-    <td><input type="text" name="pool_grade" value="{{ rating.pool_grade if rating else '' }}" class="rating-input rating-input-text" placeholder="A / B / C"></td>
-    <td><input type="text" name="priority_level" value="{{ rating.priority_level if rating else '' }}" class="rating-input rating-input-text" placeholder="High / Med / Low"></td>
+    <td><input type="number" name="batting" min="0" max="10" value="{{ rating.batting if rating else '' }}" class="rating-input" title="0-10"></td>
+    <td><input type="number" name="bowling" min="0" max="10" value="{{ rating.bowling if rating else '' }}" class="rating-input" title="0-10"></td>
+    <td><input type="number" name="fielding" min="0" max="10" value="{{ rating.fielding if rating else '' }}" class="rating-input" title="0-10"></td>
+    <td><input type="number" name="overall" min="0" max="10" value="{{ rating.overall if rating else '' }}" class="rating-input" title="0-10"></td>
+    <td><select name="pool_grade" class="rating-input">
+        <option value="" {% if not rating or not rating.pool_grade %}selected{% endif %}>-</option>
+        {% for g in ["A","B","C","D"] %}<option value="{{ g }}" {% if rating and rating.pool_grade == g %}selected{% endif %}>{{ g }}</option>{% endfor %}
+    </select></td>
+    <td><select name="priority_level" class="rating-input">
+        <option value="" {% if not rating or rating.priority_level is none %}selected{% endif %}>-</option>
+        {% for pr in ["0","1","2","3"] %}<option value="{{ pr }}" {% if rating and rating.priority_level == pr %}selected{% endif %}>{{ pr }}</option>{% endfor %}
+    </select></td>
     <td>
         <button type="button" class="btn-sm btn-save"
             hx-post="/player-ratings/{{ player.id }}" hx-include="closest tr"
