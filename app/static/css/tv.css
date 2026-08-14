@@ -18,12 +18,12 @@ html, body { overflow-x: hidden; }
 }
 .tv-topbar .tv-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--gold); font-size: 15px; }
 .tv-topbar .tv-brand img { width: 28px; height: 28px; }
-.tv-topbar .tv-title { font-size: 22px; font-weight: 800; letter-spacing: 0.02em; }
+.tv-topbar .tv-title { font-size: 22px; font-weight: 800; letter-spacing: 0.02em; color: #c3cadb; }
 .tv-topbar .tv-title .accent { color: var(--gold); }
-.tv-topbar .tv-meta { display: flex; align-items: center; gap: 20px; font-size: 13px; color: var(--text-muted); }
-.tv-topbar .tv-meta b { color: var(--text); }
+.tv-topbar .tv-meta { display: flex; align-items: center; gap: 20px; font-size: 13px; color: #c3cadb; }
+.tv-topbar .tv-meta b { color: #eef1f8; }
 .tv-viewers { display: inline-flex; align-items: baseline; gap: 4px; }
-.viewers-num { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.viewers-num { font-weight: 700; color: #eef1f8; font-variant-numeric: tabular-nums; }
 
 .tv-wrap-outer { display: flex; width: 100%; max-width: 1400px; margin: 100px auto 0; gap: 20px; padding: 20px; box-sizing: border-box; }
 .tv-main { flex: 1; min-width: 0; }
