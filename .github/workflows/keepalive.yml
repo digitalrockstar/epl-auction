@@ -19,18 +19,18 @@ jobs:
       - name: Ping Render
         run: |
           group_a=(
-            "https://epl-auction-29e8.onrender.com/spectator/live"
-            "https://epl-auction-icw4.onrender.com/spectator/live"
+            "https://epl-auction-29e8.onrender.com/healthz"
+            "https://epl-auction-icw4.onrender.com/healthz"
           )
           group_b=(
-            "https://epl-auction-fwin.onrender.com/spectator/live"
-            "https://epl-auction-6267.onrender.com/spectator/live"
-            "https://epl-auction-auu4.onrender.com/spectator/live"
-            "https://epl-auction-0stn.onrender.com/spectator/live"
-            "https://epl-auction-vtks.onrender.com/spectator/live"
-            "https://epl-auction-bx2x.onrender.com/spectator/live"
-            "https://epl-auction-z6z4.onrender.com/spectator/live"
-            "https://epl-auction-8agx.onrender.com/spectator/live"
+            "https://epl-auction-fwin.onrender.com/healthz"
+            "https://epl-auction-6267.onrender.com/healthz"
+            "https://epl-auction-auu4.onrender.com/healthz"
+            "https://epl-auction-0stn.onrender.com/healthz"
+            "https://epl-auction-vtks.onrender.com/healthz"
+            "https://epl-auction-bx2x.onrender.com/healthz"
+            "https://epl-auction-z6z4.onrender.com/healthz"
+            "https://epl-auction-8agx.onrender.com/healthz"
           )
 
           urls=("${group_b[@]}")
