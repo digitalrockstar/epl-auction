@@ -717,6 +717,7 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
 
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+@media (min-width: 900px) { .card-grid { grid-template-columns: repeat(3, 1fr); } }
 .player-pick-card {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px;
     background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
