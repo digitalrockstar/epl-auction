@@ -12,13 +12,21 @@
 </div>
 
 <div class="live-box">
-    <div class="player-photo-frame">
+    <div class="player-photo-frame bid-photo-timer-wrap">
         <img id="bid-photo-{{ live.player_id }}-{{ live.current_team_id or 0 }}" hx-preserve="true"
              src="{{ photo or '/static/img/placeholder_player_photo.svg' }}" onerror="this.src='/static/img/placeholder_player_photo.svg'">
         <span class="jersey-tag">#{{ live.player.id }}</span>
+        <div id="bp-timer-slot-portrait" class="bp-timer-portrait" hx-get="/bid-panel/timer" hx-trigger="every 1s" hx-swap="innerHTML">
+            {% include "admin/_timer_fragment.html" %}
+        </div>
     </div>
     <div style="flex:1;">
-        <h2>{{ live.player.user.name }}</h2>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <h2>{{ live.player.user.name }}</h2>
+            <div id="bp-timer-slot-landscape" class="bp-timer-landscape" hx-get="/bid-panel/timer" hx-trigger="every 1s" hx-swap="innerHTML">
+                {% include "admin/_timer_fragment.html" %}
+            </div>
+        </div>
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">{{ live.player.primary_skill or "-" }}{% if live.player.is_wicketkeeper in ("Regular", "Occasional") %} · WK ({{ live.player.is_wicketkeeper }}){% endif %} · Base ₹{{ (live.base_price|inr) }}</p>
 
         <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">

@@ -11,8 +11,8 @@ from app.models import Team, Auction, AuctionStatus, Bid, User, Role, Player, Pl
 from app.auth import require_role, require_login
 from app.bidding import next_bid_amount, purse_check
 from app.config import MIN_SQUAD_SIZE, PLAYER_BASE_PRICE
-from app.app_settings import get_slabs
-from app.routes.auction import _player_photo, _players_bought
+from app.app_settings import get_slabs, get_settings
+from app.routes.auction import _player_photo, _players_bought, _seconds_left, _timeout_seconds_left
 
 router = APIRouter()
 from app.templating import templates
@@ -70,6 +70,26 @@ def view_team_roster(
 @router.get("/bid-panel", response_class=HTMLResponse)
 def bid_panel_page(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
     return templates.TemplateResponse("manager/bid_panel_page.html", {"request": request, "user": user})
+
+
+@router.get("/bid-panel/timer", response_class=HTMLResponse)
+def bid_panel_timer(request: Request, db: Session = Depends(get_db), user: User = Depends(manager_only)):
+    live = db.query(Auction).filter(Auction.status == AuctionStatus.live).first()
+    timer_seconds = get_settings(db).timer_seconds
+    seconds_left = None
+    timeout_seconds_left = None
+    timeout_team = None
+    if live:
+        seconds_left = _seconds_left(db, live, timer_seconds)
+        if live.timeout_team_id:
+            timeout_seconds_left = _timeout_seconds_left(db, live)
+            timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first()
+    return templates.TemplateResponse(
+        "admin/_timer_fragment.html",
+        {"request": request, "live": live, "seconds_left": seconds_left, "timer_total": timer_seconds,
+         "is_paused": bool(live and live.paused_remaining_seconds is not None and not live.timeout_team_id),
+         "timeout_team": timeout_team, "timeout_seconds_left": timeout_seconds_left},
+    )
 
 
 @router.get("/bid-panel/fragment", response_class=HTMLResponse)
