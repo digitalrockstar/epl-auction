@@ -18,19 +18,56 @@
             <h2>Welcome back!</h2>
             <p class="hint">Sign in to continue</p>
             {% if error %}<span class="error">{{ error }}</span>{% endif %}
-            <form method="post" action="/login">
+
+            <div id="role-picker" class="role-picker">
+                <button type="button" class="btn-ghost" onclick="showForm('admin')">Admin</button>
+                <button type="button" class="btn-ghost" onclick="showForm('manager')">Manager</button>
+                <button type="button" class="btn-ghost" onclick="showForm('player')">Player</button>
+                <a href="{{ spectator_url ~ '/spectator/live' if spectator_url else '/spectator/live' }}" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;">Watch Live Auction</a>
+            </div>
+
+            <form method="post" action="/login" id="admin-form" class="role-form" style="display:none;">
+                <input type="hidden" name="phone" value="9191919191">
+                <label>Password</label>
+                <input type="password" name="password" required autofocus>
+                <button type="submit" class="btn-gold">Login</button>
+                <a href="#" onclick="showPicker();return false;" class="back-link">Back</a>
+            </form>
+
+            <form method="post" action="/login" id="manager-form" class="role-form" style="display:none;">
                 <label>Phone number</label>
-                <input type="text" name="phone" placeholder="1234567890" required autofocus>
+                <input type="text" name="phone" placeholder="1234567890" required>
                 <label>Password</label>
                 <input type="password" name="password" required>
                 <button type="submit" class="btn-gold">Login</button>
+                <a href="#" onclick="showPicker();return false;" class="back-link">Back</a>
             </form>
-            <div class="divider-or">OR</div>
-            <a href="{{ spectator_url ~ '/spectator/live' if spectator_url else '/spectator/live' }}" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;">Continue as Guest (Spectator)</a>
+
+            <form method="post" action="/login" id="player-form" class="role-form" style="display:none;">
+                <label>Phone number</label>
+                <input type="text" name="phone" placeholder="1234567890" required>
+                <label>Password</label>
+                <input type="password" name="password" required>
+                <button type="submit" class="btn-gold">Login</button>
+                <a href="#" onclick="showPicker();return false;" class="back-link">Back</a>
+            </form>
+
             <div class="login-note">
                 <span>After 5 failed attempts, login will be locked for 5 minutes.</span>
             </div>
         </div>
     </div>
 </div>
+<script>
+function showForm(role) {
+    document.getElementById('role-picker').style.display = 'none';
+    document.querySelectorAll('.role-form').forEach(f => f.style.display = 'none');
+    document.getElementById(role + '-form').style.display = 'flex';
+}
+function showPicker() {
+    document.querySelectorAll('.role-form').forEach(f => f.style.display = 'none');
+    document.getElementById('role-picker').style.display = 'flex';
+}
+{% if error %}showForm('manager');{% endif %}
+</script>
 {% endblock %}
