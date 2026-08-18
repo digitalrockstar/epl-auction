@@ -63,6 +63,19 @@ def _points_table(db: Session):
     return sorted(rows, key=lambda r: (-r["points"], -r["nrr"], r["team"].name))
 
 
+def _match_squad_context(db: Session, matches):
+    """For each match: rosters of both teams + which player_ids are currently sitting out."""
+    ctx = {}
+    for m in matches:
+        squad_a = db.query(Player).filter(Player.team_id == m.team_a_id).all()
+        squad_b = db.query(Player).filter(Player.team_id == m.team_b_id).all()
+        played_ids = {r[0] for r in db.query(PlayingXI.player_id).filter(PlayingXI.match_id == m.id).all()}
+        all_ids = {p.id for p in squad_a + squad_b}
+        sitting_out = (all_ids - played_ids) if played_ids else set()
+        ctx[m.id] = {"squad_a": squad_a, "squad_b": squad_b, "sitting_out": sitting_out}
+    return ctx
+
+
 @router.get("", response_class=HTMLResponse)
 def matches_page(request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
     teams = db.query(Team).order_by(Team.id).all()
@@ -79,7 +92,7 @@ def matches_page(request: Request, db: Session = Depends(get_db), user: User = D
         {
             "request": request, "user": user, "teams": teams, "matches": matches,
             "points_table": _points_table(db), "under_min": under_min, "xi_counts": xi_counts,
-            "grounds": GROUNDS, "view_only": False,
+            "grounds": GROUNDS, "view_only": False, "match_squads": _match_squad_context(db, matches),
         },
     )
 
@@ -157,10 +170,17 @@ def record_result(match_id: int, winner_team_id: int = Form(...), db: Session = 
 
 
 @router.post("/{match_id}/xi", response_class=HTMLResponse)
-def record_xi(match_id: int, player_ids: str = Form(...), db: Session = Depends(get_db), user: User = Depends(staff_only)):
-    ids = [int(x) for x in player_ids.split(",") if x.strip().isdigit()]
+async def record_xi(match_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(staff_only)):
+    form = await request.form()
+    sit_out = {int(v) for v in form.getlist("not_playing_ids") if str(v).isdigit()}
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        return RedirectResponse(url="/admin/matches", status_code=303)
+    squad = db.query(Player).filter(Player.team_id.in_([match.team_a_id, match.team_b_id])).all()
+    playing_ids = [p.id for p in squad if p.id not in sit_out]
+
     db.query(PlayingXI).filter(PlayingXI.match_id == match_id).delete()
-    for pid in ids:
+    for pid in playing_ids:
         db.add(PlayingXI(match_id=match_id, player_id=pid))
     db.commit()
     return RedirectResponse(url="/admin/matches", status_code=303)

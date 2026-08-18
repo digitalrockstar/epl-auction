@@ -83,8 +83,22 @@
                     </div>
                     <button type="submit" class="btn-sm btn-outline">Save scorecard</button>
                 </form>
-                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="inline-form" style="margin-top:8px;margin-bottom:0;">
-                    <input type="text" name="player_ids" placeholder="Player IDs, comma separated (Playing XI)">
+                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="xi-form">
+                    <div class="xi-hint">Tick up to 2 players <b>not playing</b> per team — everyone else counts as Playing XI.</div>
+                    <div class="xi-team-cols">
+                        <div class="xi-team-col">
+                            <div class="xi-team-name">{{ m.team_a.name }}</div>
+                            {% for p in match_squads[m.id].squad_a %}
+                            <label class="xi-check"><input type="checkbox" class="xi-cb" data-team="a-{{ m.id }}" name="not_playing_ids" value="{{ p.id }}" {% if p.id in match_squads[m.id].sitting_out %}checked{% endif %}> {{ p.user.name }}</label>
+                            {% endfor %}
+                        </div>
+                        <div class="xi-team-col">
+                            <div class="xi-team-name">{{ m.team_b.name }}</div>
+                            {% for p in match_squads[m.id].squad_b %}
+                            <label class="xi-check"><input type="checkbox" class="xi-cb" data-team="b-{{ m.id }}" name="not_playing_ids" value="{{ p.id }}" {% if p.id in match_squads[m.id].sitting_out %}checked{% endif %}> {{ p.user.name }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <button type="submit" class="btn-sm btn-outline">Save XI</button>
                 </form>
                 {% endif %}
@@ -150,10 +164,26 @@
 .scorecard-row { display: flex; align-items: center; gap: 6px; }
 .scorecard-team { width: 90px; font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
 .scorecard-view { font-size: 13px; margin-bottom: 6px; line-height: 1.6; }
+.xi-form { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.xi-hint { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+.xi-team-cols { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+.xi-team-col { min-width: 140px; }
+.xi-team-name { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+.xi-check { display: block; font-size: 13px; margin-bottom: 4px; cursor: pointer; }
+.xi-check input { margin-right: 6px; }
 .points-table-landscape { display: none; }
 @media (min-width: 860px) and (orientation: landscape) {
     .points-table-portrait { display: none; }
     .points-table-landscape { display: block; }
 }
 </style>
+<script>
+document.querySelectorAll('.xi-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+        const team = cb.dataset.team;
+        const group = document.querySelectorAll('.xi-cb[data-team="' + team + '"]:checked');
+        if (group.length > 2) cb.checked = false;
+    });
+});
+</script>
 {% endblock %}
