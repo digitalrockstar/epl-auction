@@ -916,8 +916,12 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
     .live-box { flex-direction: column; }
     .grid-2 { grid-template-columns: 1fr; }
     .grid-3 { grid-template-columns: 1fr 1fr; }
-    .login-hero { display: none; }
-    .login-panel { padding: 26px 18px; }
+    .login-hero { padding: 24px 20px 8px; text-align: center; }
+    .login-hero .crest { width: 56px; height: 56px; }
+    .login-hero h1 { font-size: 22px; }
+    .login-hero p.tag { font-size: 13px; max-width: none; margin: 0 auto; }
+    .login-stats { justify-content: center; gap: 18px; }
+    .login-panel { padding: 12px 18px 26px; }
 
     .mobile-tabbar {
         display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 25;
