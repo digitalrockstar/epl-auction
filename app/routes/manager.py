@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models import Team, Auction, AuctionStatus, Bid, User, Role, Player, PlayerRating
 from app.auth import require_role, require_login
 from app.bidding import next_bid_amount, purse_check
-from app.config import MIN_SQUAD_SIZE, PLAYER_BASE_PRICE
+from app.config import MIN_SQUAD_SIZE, PLAYER_BASE_PRICE, SKILL_CATEGORIES
 from app.app_settings import get_slabs, get_settings
 from app.routes.auction import _player_photo, _players_bought, _seconds_left, _timeout_seconds_left
 
@@ -24,14 +24,18 @@ def _my_team(db: Session, user: User):
 
 
 def roster_context(team: Team):
-    skill_counts = Counter()
+    skill_counts = {c: 0 for c in SKILL_CATEGORIES}
+    wk_count = 0
     avg_price = 0
     if team:
         for p in team.players:
-            skill_counts[p.primary_skill or "Unspecified"] += 1
+            skill = p.primary_skill or "Unspecified"
+            skill_counts[skill] = skill_counts.get(skill, 0) + 1
+            if p.is_wicketkeeper in ("Regular", "Occasional"):
+                wk_count += 1
         priced = [p.sold_price for p in team.players if p.sold_price]
         avg_price = round(sum(priced) / len(priced)) if priced else 0
-    return {"skill_counts": dict(skill_counts), "avg_price": avg_price}
+    return {"skill_counts": skill_counts, "wk_count": wk_count, "avg_price": avg_price}
 
 
 @router.get("/my-team", response_class=HTMLResponse)
