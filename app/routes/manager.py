@@ -123,11 +123,24 @@ def bid_panel(request: Request, db: Session = Depends(get_db), user: User = Depe
         reserve = max(remaining_needed, 0) * PLAYER_BASE_PRICE
         max_bid_allowed = max(team.purse_remaining - reserve, 0)
 
+    timer_seconds = get_settings(db).timer_seconds
+    seconds_left = None
+    timeout_seconds_left = None
+    timeout_team = None
+    if live:
+        seconds_left = _seconds_left(db, live, timer_seconds)
+        if live.timeout_team_id:
+            timeout_seconds_left = _timeout_seconds_left(db, live)
+            timeout_team = db.query(Team).filter(Team.id == live.timeout_team_id).first()
+    is_paused = bool(live and live.paused_remaining_seconds is not None and not live.timeout_team_id)
+
     return templates.TemplateResponse(
         "manager/_bid_panel.html",
         {"request": request, "live": live, "photo": photo, "team": team,
          "next_amount": next_amount, "disabled": disabled, "disabled_reason": disabled_reason,
-         "rating": rating, "max_bid_allowed": max_bid_allowed},
+         "rating": rating, "max_bid_allowed": max_bid_allowed,
+         "seconds_left": seconds_left, "timer_total": timer_seconds, "is_paused": is_paused,
+         "timeout_team": timeout_team, "timeout_seconds_left": timeout_seconds_left},
     )
 
 
