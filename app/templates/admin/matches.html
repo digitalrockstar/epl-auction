@@ -20,7 +20,10 @@
         <span style="color:var(--text-muted);">vs</span>
         <select name="team_b_id" required>{% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
         <input type="datetime-local" name="match_date" required>
-        <input type="number" name="ground_fee" value="8500" style="width:110px">
+        <select name="ground" required>
+            <option value="" disabled selected>Ground</option>
+            {% for g in grounds %}<option value="{{ g }}">{{ g }}</option>{% endfor %}
+        </select>
         <button type="submit">Schedule</button>
     </form>
 </div>
@@ -28,7 +31,7 @@
 <div class="panel-title-row"><h3>Matches</h3></div>
 <div class="table-wrap" style="margin-bottom:22px;">
 <table class="data-table">
-    <thead><tr><th>#</th><th>Type</th><th>Teams</th><th>Date</th><th>Result</th></tr></thead>
+    <thead><tr><th>#</th><th>Type</th><th>Teams</th><th>Date</th><th>Ground</th><th>Result</th></tr></thead>
     <tbody>
         {% for m in matches %}
         <tr>
@@ -36,37 +39,77 @@
             <td><span class="badge badge-gold">{{ m.match_type }}</span></td>
             <td>{{ m.team_a.name }} vs {{ m.team_b.name }}</td>
             <td style="color:var(--text-muted);">{{ m.match_date.strftime("%d %b, %H:%M") }}</td>
+            <td style="color:var(--text-muted);">{{ m.ground or "-" }}</td>
             <td>
-                {% if m.winner %}<span class="badge badge-sold">{{ m.winner.name }} won</span>
-                {% else %}
-                <form method="post" action="/admin/matches/{{ m.id }}/result" class="inline-form" style="margin-bottom:6px;">
-                    <select name="winner_team_id">
-                        <option value="{{ m.team_a_id }}">{{ m.team_a.name }}</option>
-                        <option value="{{ m.team_b_id }}">{{ m.team_b.name }}</option>
-                    </select>
-                    <button type="submit" class="btn-sm">Record</button>
-                </form>
+                {% if m.winner %}
+                <div style="margin-bottom:6px;"><span class="badge badge-sold">{{ m.winner.name }} won</span></div>
+                {% elif m.team_a_runs is not none %}
+                <div style="margin-bottom:6px;">
+                    <span class="badge">Tied — pick winner (super over)</span>
+                    <form method="post" action="/admin/matches/{{ m.id }}/result" class="inline-form" style="margin-top:4px;">
+                        <select name="winner_team_id">
+                            <option value="{{ m.team_a_id }}">{{ m.team_a.name }}</option>
+                            <option value="{{ m.team_b_id }}">{{ m.team_b.name }}</option>
+                        </select>
+                        <button type="submit" class="btn-sm">Record</button>
+                    </form>
+                </div>
                 {% endif %}
-                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="inline-form" style="margin-bottom:0;">
+                <form method="post" action="/admin/matches/{{ m.id }}/scorecard" class="scorecard-form">
+                    <div class="scorecard-row">
+                        <span class="scorecard-team">{{ m.team_a.name }}</span>
+                        <input type="number" name="team_a_runs" placeholder="Runs" value="{{ m.team_a_runs if m.team_a_runs is not none else '' }}" required style="width:70px">
+                        <input type="number" step="0.1" name="team_a_overs" placeholder="Overs" value="{{ m.team_a_overs if m.team_a_overs is not none else '' }}" required style="width:70px">
+                        <input type="number" name="team_a_wickets" placeholder="Wkts" min="0" max="10" value="{{ m.team_a_wickets if m.team_a_wickets is not none else '' }}" required style="width:60px">
+                    </div>
+                    <div class="scorecard-row">
+                        <span class="scorecard-team">{{ m.team_b.name }}</span>
+                        <input type="number" name="team_b_runs" placeholder="Runs" value="{{ m.team_b_runs if m.team_b_runs is not none else '' }}" required style="width:70px">
+                        <input type="number" step="0.1" name="team_b_overs" placeholder="Overs" value="{{ m.team_b_overs if m.team_b_overs is not none else '' }}" required style="width:70px">
+                        <input type="number" name="team_b_wickets" placeholder="Wkts" min="0" max="10" value="{{ m.team_b_wickets if m.team_b_wickets is not none else '' }}" required style="width:60px">
+                    </div>
+                    <button type="submit" class="btn-sm btn-outline">Save scorecard</button>
+                </form>
+                <form method="post" action="/admin/matches/{{ m.id }}/xi" class="inline-form" style="margin-top:8px;margin-bottom:0;">
                     <input type="text" name="player_ids" placeholder="Player IDs, comma separated (Playing XI)">
                     <button type="submit" class="btn-sm btn-outline">Save XI</button>
                 </form>
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No matches scheduled yet.</td></tr>
+        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No matches scheduled yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
 
 <div class="panel-title-row"><h3>Points Table</h3></div>
-<div class="table-wrap" style="margin-bottom:22px;">
+<div class="table-wrap points-table-portrait" style="margin-bottom:22px;">
 <table class="data-table">
-    <thead><tr><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Points</th></tr></thead>
+    <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Points</th><th>NRR</th></tr></thead>
     <tbody>
         {% for row in points_table %}
-        <tr><td>{{ row.team.name }}</td><td>{{ row.played }}</td><td>{{ row.won }}</td><td>{{ row.lost }}</td><td style="font-weight:700;color:var(--gold);">{{ row.points }}</td></tr>
+        <tr>
+            <td>{{ row.team.name }}</td><td>{{ row.played }}</td><td>{{ row.won }}</td><td>{{ row.lost }}</td>
+            <td style="font-weight:700;color:var(--gold);">{{ row.points }}</td>
+            <td>{{ "%+.3f"|format(row.nrr) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="table-wrap points-table-landscape" style="margin-bottom:22px;">
+<table class="data-table">
+    <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Points</th><th>Runs For</th><th>Overs For</th><th>Runs Against</th><th>Overs Against</th><th>NRR</th></tr></thead>
+    <tbody>
+        {% for row in points_table %}
+        <tr>
+            <td>{{ row.team.name }}</td><td>{{ row.played }}</td><td>{{ row.won }}</td><td>{{ row.lost }}</td>
+            <td style="font-weight:700;color:var(--gold);">{{ row.points }}</td>
+            <td>{{ row.runs_for }}</td><td>{{ "%.1f"|format(row.balls_for / 6) }}</td>
+            <td>{{ row.runs_against }}</td><td>{{ "%.1f"|format(row.balls_against / 6) }}</td>
+            <td>{{ "%+.3f"|format(row.nrr) }}</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
@@ -85,4 +128,15 @@
     </tbody>
 </table>
 </div>
+
+<style>
+.scorecard-form { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.scorecard-row { display: flex; align-items: center; gap: 6px; }
+.scorecard-team { width: 90px; font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+.points-table-landscape { display: none; }
+@media (min-width: 860px) and (orientation: landscape) {
+    .points-table-portrait { display: none; }
+    .points-table-landscape { display: block; }
+}
+</style>
 {% endblock %}

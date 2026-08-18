@@ -23,3 +23,6 @@ INCREMENT_SLABS = [
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
+MATCH_OVERS = 20
+GROUNDS = ["Legends Ground B", "Legends Ground C", "AXI Cricket Ground"]
