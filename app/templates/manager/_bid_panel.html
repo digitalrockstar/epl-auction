@@ -24,11 +24,15 @@
         <div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;">
             <div>
                 <span class="field-label">Current Bid</span>
-                <div style="font-size:22px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--gold);">₹{{ (live.current_bid|inr) }}</div>
             </div>
             <div>
                 <span class="field-label">Highest Bidder</span>
-                <div style="font-size:15px;font-weight:700;">{{ live.current_team.name if live.current_team else "No bids yet" }}</div>
+                <div style="font-size:24px;font-weight:800;">{{ live.current_team.name if live.current_team else "No bids yet" }}</div>
+            </div>
+            <div>
+                <span class="field-label">Max Bid Allowed</span>
+                <div style="font-size:24px;font-weight:800;">₹{{ (max_bid_allowed|inr) if max_bid_allowed is not none else "-" }}</div>
             </div>
         </div>
 

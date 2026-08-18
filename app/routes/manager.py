@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models import Team, Auction, AuctionStatus, Bid, User, Role, Player, PlayerRating
 from app.auth import require_role, require_login
 from app.bidding import next_bid_amount, purse_check
+from app.config import MIN_SQUAD_SIZE, PLAYER_BASE_PRICE
 from app.app_settings import get_slabs
 from app.routes.auction import _player_photo, _players_bought
 
@@ -95,11 +96,18 @@ def bid_panel(request: Request, db: Session = Depends(get_db), user: User = Depe
             PlayerRating.team_id == team.id, PlayerRating.player_id == live.player_id
         ).first()
 
+    max_bid_allowed = None
+    if team:
+        bought_for_max = _players_bought(db, team.id)
+        remaining_needed = MIN_SQUAD_SIZE - (bought_for_max + 1)
+        reserve = max(remaining_needed, 0) * PLAYER_BASE_PRICE
+        max_bid_allowed = max(team.purse_remaining - reserve, 0)
+
     return templates.TemplateResponse(
         "manager/_bid_panel.html",
         {"request": request, "live": live, "photo": photo, "team": team,
          "next_amount": next_amount, "disabled": disabled, "disabled_reason": disabled_reason,
-         "rating": rating},
+         "rating": rating, "max_bid_allowed": max_bid_allowed},
     )
 
 
