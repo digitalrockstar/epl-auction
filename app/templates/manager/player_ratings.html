@@ -17,6 +17,7 @@
 <div class="panel">
     <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Your private ratings for every registered player. Only visible to you. Batting/Bowling/Fielding/Overall are 0-10, Pool Grade is A-D, Max Budget is any amount. Download the CSV, edit offline, re-upload to bulk update - matched by player_id, other columns are ignored on upload.</p>
 
+    <div class="ratings-table-scroll">
     <table class="ratings-table" id="ratings-table">
         <thead>
             <tr>
@@ -39,10 +40,12 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 
 <style>
-.ratings-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+.ratings-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); }
+.ratings-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; min-width: 640px; }
 .ratings-table th, .ratings-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; }
 .ratings-table th { cursor: pointer; user-select: none; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
 .ratings-table th:hover { color: var(--text); }
