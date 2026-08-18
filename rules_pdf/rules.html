@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    color: #1a1a2e;
+  }
+
+  /* ---------- COVER PAGE ---------- */
+  .cover {
+    height: 297mm;
+    width: 100%;
+    background: linear-gradient(160deg, #0b1e3d 0%, #142a52 45%, #1c3a6e 100%);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,193,7,0.35) 0%, rgba(255,193,7,0) 70%);
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    bottom: -150px; left: -150px;
+    width: 460px; height: 460px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,87,34,0.25) 0%, rgba(255,87,34,0) 70%);
+  }
+  .cover-content {
+    position: relative;
+    z-index: 2;
+    padding: 70px 60px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .cover-eyebrow {
+    display: inline-block;
+    background: #ffc107;
+    color: #14213d;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 30px;
+    margin-bottom: 26px;
+    width: fit-content;
+  }
+  .cover h1 {
+    font-size: 44px;
+    line-height: 1.1;
+    margin: 0 0 6px 0;
+    font-weight: 800;
+  }
+  .cover h2 {
+    font-size: 30px;
+    color: #ffc107;
+    margin: 0 0 20px 0;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .cover-dates {
+    font-size: 18px;
+    font-weight: 600;
+    color: #cfd8e8;
+    letter-spacing: 3px;
+    margin-bottom: 40px;
+  }
+  .cover-divider {
+    width: 90px;
+    height: 5px;
+    background: linear-gradient(90deg, #ffc107, #ff5722);
+    border-radius: 3px;
+    margin-bottom: 40px;
+  }
+  .cover-sub {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+  .cover-sub-tag {
+    font-size: 14px;
+    color: #a9b6cf;
+    font-weight: 400;
+  }
+  .cover-footer {
+    position: absolute;
+    bottom: 50px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #8ea0c4;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 18px;
+  }
+  .cricket-icons {
+    position: absolute;
+    bottom: 130px;
+    right: 60px;
+    font-size: 60px;
+    opacity: 0.18;
+  }
+
+  /* ---------- CONTENT PAGES ---------- */
+  .page {
+    width: 100%;
+    min-height: 297mm;
+    padding: 44px 52px 60px 52px;
+    page-break-after: always;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #14213d;
+    font-weight: 800;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-right: 12px;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #14213d;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #e8ecf3;
+  }
+  .section-title.blue { border-bottom-color: #2b5cad; }
+  .section-title.green { border-bottom-color: #2e9e5b; }
+  .section-title.orange { border-bottom-color: #ff7a1a; }
+  .section-title.purple { border-bottom-color: #7c4dff; }
+  .section-title.red { border-bottom-color: #e64848; }
+
+  .card {
+    background: #f7f9fc;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    border-left: 5px solid #2b5cad;
+  }
+  .card.gold { border-left-color: #ffc107; background: #fffaf0; }
+  .card.green { border-left-color: #2e9e5b; background: #f2fbf6; }
+  .card.orange { border-left-color: #ff7a1a; background: #fff6ef; }
+  .card.purple { border-left-color: #7c4dff; background: #f7f4ff; }
+  .card.red { border-left-color: #e64848; background: #fdf3f3; }
+
+  .card b { color: #14213d; }
+  .card p { margin: 4px 0 0 0; font-size: 14px; line-height: 1.55; color: #333; }
+
+  .stat-row { display: flex; gap: 14px; margin-bottom: 16px; }
+  .stat-box {
+    flex: 1;
+    background: linear-gradient(135deg, #14213d, #1c3a6e);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .stat-box .num { font-size: 26px; font-weight: 800; color: #ffc107; }
+  .stat-box .lbl { font-size: 11px; letter-spacing: 0.5px; color: #cfd8e8; margin-top: 2px; text-transform: uppercase; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: #fff;
+    border: 2px solid #2b5cad;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #14213d;
+    text-align: center;
+  }
+  .flow-step.gold { border-color: #ffc107; background: #fffaf0; }
+  .flow-arrow { font-size: 18px; color: #ff7a1a; font-weight: 800; }
+
+  table.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  table.rules-table th {
+    background: #14213d;
+    color: #ffc107;
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 700;
+  }
+  table.rules-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e8ecf3;
+  }
+  table.rules-table tr:nth-child(even) td { background: #f7f9fc; }
+
+  ul.bullet-list { margin: 8px 0; padding-left: 0; list-style: none; }
+  ul.bullet-list li {
+    padding-left: 24px;
+    position: relative;
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2a2a3a;
+  }
+  ul.bullet-list li::before {
+    content: "\25CF";
+    position: absolute;
+    left: 0;
+    color: #ff7a1a;
+    font-size: 10px;
+    top: 5px;
+  }
+
+  .highlight-banner {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #14213d;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  .footer-tag {
+    position: absolute;
+    bottom: 24px;
+    left: 52px;
+    right: 52px;
+    font-size: 10px;
+    color: #9aa5b8;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #e8ecf3;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cricket-icons">🏏 🏆</div>
+  <div class="cover-content">
+    <div class="cover-eyebrow">EMMANUEL HEIGHTS CRICKET COMMITTEE</div>
+    <h1>Emmanuel Premier League</h1>
+    <h2>EPL SEASON 3</h2>
+    <div class="cover-dates">SEPT 19 &nbsp;—&nbsp; OCT 2</div>
+    <div class="cover-divider"></div>
+    <div class="cover-sub">Auction & Matchday Rules</div>
+    <div class="cover-sub-tag">Official rules document for Managers &amp; Captains</div>
+  </div>
+  <div class="cover-footer">
+    <span>Emmanuel Premier League — Season 3</span>
+    <span>Aug 22, 2026</span>
+  </div>
+</div>
+
+<!-- PAGE 1: FORMAT + PLAYOFFS + POINTS -->
+<div class="page">
+  <div class="section-title blue"><span class="section-num">1</span>Tournament Format</div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">4</div><div class="lbl">Teams</div></div>
+    <div class="stat-box"><div class="num">6</div><div class="lbl">League Matches</div></div>
+    <div class="stat-box"><div class="num">20</div><div class="lbl">Overs / Innings</div></div>
+    <div class="stat-box"><div class="num">T20</div><div class="lbl">Format</div></div>
+  </div>
+  <div class="card">
+    <p>Single round-robin league — every team plays every other team once. League play runs <b>Sept 19</b> through the playoffs, with the <b>Final on Oct 2</b>.</p>
+  </div>
+
+  <div class="section-title orange" style="margin-top:26px;"><span class="section-num">2</span>Playoff Structure</div>
+  <div class="flow">
+    <div class="flow-step gold">Rank 1</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Direct to Final</div>
+  </div>
+  <div class="flow">
+    <div class="flow-step">Rank 2</div>
+    <span style="font-weight:700;color:#ff7a1a;">vs</span>
+    <div class="flow-step">Rank 3</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step gold">Qualifier</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Winner joins Final</div>
+  </div>
+  <div class="card orange">
+    <p>The team finishing <b>1st</b> after the league stage goes straight to the Final. Teams ranked <b>2nd and 3rd</b> face off in the Qualifier — the winner plays the 1st-ranked team in the Final.</p>
+  </div>
+
+  <div class="section-title green" style="margin-top:26px;"><span class="section-num">3</span>Points Table</div>
+  <table class="rules-table">
+    <tr><th>Result</th><th>Points</th></tr>
+    <tr><td>Win</td><td><b>2 points</b></td></tr>
+    <tr><td>Loss</td><td>0 points</td></tr>
+    <tr><td>Tie (Super Over decides the winner)</td><td>Winner gets the match win for points</td></tr>
+  </table>
+  <div class="highlight-banner">Ranking order: Points → Net Run Rate (NRR) → Head-to-Head</div>
+
+  <div class="card green">
+    <b>Net Run Rate (NRR)</b>
+    <p>NRR = (Runs scored ÷ Overs faced) − (Runs conceded ÷ Overs bowled), totalled across all matches played — not calculated per match.</p>
+  </div>
+  <ul class="bullet-list">
+    <li>If a team is bowled out (all 10 wickets down) before facing its full 20 overs, the <b>full 20 overs</b> are still used in the calculation.</li>
+    <li>Overs are counted in real balls — e.g. 19.3 overs means 19 overs and 3 balls, not a plain decimal.</li>
+    <li>Abandoned or no-result matches are excluded from NRR entirely.</li>
+  </ul>
+
+  <div class="footer-tag"><span>EPL Season 3 — Auction & Matchday Rules</span><span>Page 1</span></div>
+</div>
+
+<!-- PAGE 2: SQUAD + AUCTION -->
+<div class="page">
+  <div class="section-title purple"><span class="section-num">4</span>Squad Composition</div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">13</div><div class="lbl">Squad Size</div></div>
+    <div class="stat-box"><div class="num">11</div><div class="lbl">Bought via Players' Auction</div></div>
+    <div class="stat-box"><div class="num">1</div><div class="lbl">Captain</div></div>
+    <div class="stat-box"><div class="num">1</div><div class="lbl">Manager</div></div>
+  </div>
+  <div class="card purple">
+    <p>The squad is <b>13 players</b> — <b>11 bought through the Players' Auction</b>, plus the <b>Captain</b> (already assigned via the Captain's Auction) and the <b>Manager</b> (already assigned), both full playing members of the squad.</p>
+  </div>
+  <div class="highlight-banner">Every one of the 13 squad members — including the Manager and Captain — must feature in the Playing XI for a minimum of 2 matches across the season. The Manager and Captain are jointly responsible for making this happen through squad rotation.</div>
+
+  <div class="section-title blue" style="margin-top:26px;"><span class="section-num">5</span>Auction Rules</div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">₹25L</div><div class="lbl">Purse per Team</div></div>
+    <div class="stat-box"><div class="num">₹50K</div><div class="lbl">Player Base Price</div></div>
+    <div class="stat-box"><div class="num">3</div><div class="lbl">Timeouts / Team</div></div>
+    <div class="stat-box"><div class="num">90s</div><div class="lbl">Per Timeout</div></div>
+  </div>
+
+  <div class="card">
+    <b>Bid Increments (Slab-Based)</b>
+  </div>
+  <table class="rules-table">
+    <tr><th>Current Bid Range</th><th>Increment</th></tr>
+    <tr><td>Up to ₹1,00,000</td><td>₹5,000</td></tr>
+    <tr><td>₹1,00,000 – ₹2,00,000</td><td>₹10,000</td></tr>
+    <tr><td>₹2,00,000 – ₹3,00,000</td><td>₹20,000</td></tr>
+    <tr><td>₹3,00,000 – ₹4,00,000</td><td>₹25,000</td></tr>
+    <tr><td>Above ₹4,00,000</td><td>₹50,000</td></tr>
+  </table>
+
+  <div class="card orange">
+    <b>Purse Reserve Rule</b>
+    <p>A team can't place a bid that would leave it unable to afford the minimum remaining squad (12 players) at base price. Once a bid would push the team below (players still needed × ₹50,000) in reserve, that bid is blocked automatically.</p>
+  </div>
+
+  <div class="card gold">
+    <b>Timeouts</b>
+    <p>Each team gets <b>3 strategic timeouts of 90 seconds each</b> during the auction, to be used at the manager's discretion during a live bid.</p>
+  </div>
+
+  <div class="card green">
+    <b>Roll &amp; Unsold Rules</b>
+    <p>Players are rolled at random within their skill category (Batting / Bowling / All-Rounder [Batting] / All-Rounder [Bowling]). A player who goes unsold isn't re-offered within the same round, but becomes eligible again once that round completes.</p>
+  </div>
+
+  <div class="footer-tag"><span>EPL Season 3 — Auction & Matchday Rules</span><span>Page 2</span></div>
+</div>
+
+<!-- PAGE 3: SCHEDULE -->
+<div class="page">
+  <div class="section-title orange"><span class="section-num">6</span>League Schedule &amp; Team Allocation</div>
+  <div class="highlight-banner">Team slots (A / B / C / D) will be assigned to actual teams via random draw — chits picked, or a digital random pick — on Players' Auction day.</div>
+
+  <div class="card gold">
+    <b>19 Sept — Matchday 1</b>
+    <p>Team A vs Team B &nbsp;·&nbsp; Legends Ground B<br>Team C vs Team D &nbsp;·&nbsp; Legends Ground C</p>
+  </div>
+  <div class="card gold">
+    <b>20 Sept — Matchday 2</b>
+    <p>Team A vs Team D &nbsp;·&nbsp; Legends Ground C<br>Team B vs Team C &nbsp;·&nbsp; Legends Ground B</p>
+  </div>
+  <div class="card gold">
+    <b>26 Sept — Matchday 3</b>
+    <p>Team A vs Team C &nbsp;·&nbsp; Legends Ground B<br>Team B vs Team D &nbsp;·&nbsp; Legends Ground C</p>
+  </div>
+  <div class="card orange">
+    <b>27 Sept — Qualifier</b>
+    <p>Rank 2 vs Rank 3 from the league table (ground to be confirmed).</p>
+  </div>
+
+  <table class="rules-table">
+    <tr><th>Matchday</th><th>Fixture</th><th>Ground</th></tr>
+    <tr><td>19 Sept</td><td>Team A vs Team B</td><td>Legends Ground B</td></tr>
+    <tr><td>19 Sept</td><td>Team C vs Team D</td><td>Legends Ground C</td></tr>
+    <tr><td>20 Sept</td><td>Team A vs Team D</td><td>Legends Ground C</td></tr>
+    <tr><td>20 Sept</td><td>Team B vs Team C</td><td>Legends Ground B</td></tr>
+    <tr><td>26 Sept</td><td>Team A vs Team C</td><td>Legends Ground B</td></tr>
+    <tr><td>26 Sept</td><td>Team B vs Team D</td><td>Legends Ground C</td></tr>
+    <tr><td>27 Sept</td><td>Qualifier</td><td>TBC</td></tr>
+  </table>
+
+  <div class="footer-tag"><span>EPL Season 3 — Auction & Matchday Rules</span><span>Page 3</span></div>
+</div>
+
+<!-- PAGE 4: MATCH DAY -->
+<div class="page">
+  <div class="section-title red"><span class="section-num">7</span>Match Day Rules</div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">6:15</div><div class="lbl">Reporting Time</div></div>
+    <div class="stat-box"><div class="num">6:20</div><div class="lbl">Toss Time</div></div>
+    <div class="stat-box"><div class="num">6:30</div><div class="lbl">Match Start</div></div>
+    <div class="stat-box"><div class="num">6</div><div class="lbl">Powerplay Overs</div></div>
+  </div>
+
+  <div class="card red">
+    <b>Timing</b>
+    <p>Reporting at <b>6:15 AM</b>, toss at <b>6:20 AM</b>, match starts <b>6:30 AM</b>. Playing XI must be submitted <b>15 minutes before the toss</b>.</p>
+  </div>
+
+  <div class="card">
+    <b>Grounds</b>
+    <p>League and Qualifier matches at <b>Legends Ground B</b> / <b>Legends Ground C</b>. The <b>Final</b> is played at <b>AXI Cricket Ground</b>.</p>
+  </div>
+
+  <div class="card purple">
+    <b>Playing Conditions</b>
+    <p>Standard T20 rules apply — wides and no-balls as per standard; <b>byes included, leg byes excluded</b>; <b>6-over powerplay</b>.</p>
+  </div>
+
+  <div class="card green">
+    <b>Weather / Rain</b>
+    <p>Results affected by weather are determined via <b>DLS (Duckworth-Lewis-Stern)</b>, as computed through CricHeroes.</p>
+  </div>
+
+  <div class="card orange">
+    <b>Player Replacement</b>
+    <p>Mid-tournament player replacements are handled at the <b>committee's discretion</b>.</p>
+  </div>
+
+  <div class="footer-tag"><span>EPL Season 3 — Auction & Matchday Rules</span><span>Page 4</span></div>
+</div>
+
+</body>
+</html>

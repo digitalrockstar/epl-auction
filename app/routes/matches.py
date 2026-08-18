@@ -7,7 +7,7 @@ from typing import Optional
 
 from app.database import get_db
 from app.models import Match, PlayingXI, Team, Player, User, Role
-from app.auth import require_role
+from app.auth import require_role, require_login
 from app.config import GROUNDS
 from app.match_stats import determine_winner, has_result, effective_balls, balls_to_decimal_overs
 
@@ -79,7 +79,23 @@ def matches_page(request: Request, db: Session = Depends(get_db), user: User = D
         {
             "request": request, "user": user, "teams": teams, "matches": matches,
             "points_table": _points_table(db), "under_min": under_min, "xi_counts": xi_counts,
-            "grounds": GROUNDS,
+            "grounds": GROUNDS, "view_only": False,
+        },
+    )
+
+
+public_router = APIRouter()
+
+
+@public_router.get("/matches", response_class=HTMLResponse)
+def matches_view_only(request: Request, db: Session = Depends(get_db), user: User = Depends(require_login)):
+    teams = db.query(Team).order_by(Team.id).all()
+    matches = db.query(Match).order_by(Match.match_number).all()
+    return templates.TemplateResponse(
+        "admin/matches.html",
+        {
+            "request": request, "user": user, "teams": teams, "matches": matches,
+            "points_table": _points_table(db), "view_only": True,
         },
     )
 

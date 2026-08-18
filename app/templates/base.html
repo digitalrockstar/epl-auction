@@ -47,12 +47,14 @@
             <a href="/bid-panel" class="{{ 'active' if '/bid-panel' in request.url.path }}">Live bid panel</a>
             <a href="/player-ratings" class="{{ 'active' if '/player-ratings' in request.url.path }}">Player Ratings</a>
             <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
+            <a href="/matches" class="{{ 'active' if request.url.path == '/matches' }}">Matches &amp; points</a>
             {% endif %}
 
             {% if user.role.value == "player" %}
             <div class="nav-group">Browse</div>
             <a href="/teams" class="{{ 'active' if request.url.path == '/teams' or request.url.path.startswith('/team/') }}">Roster</a>
             <a href="/players" class="{{ 'active' if request.url.path == '/players' }}">Players</a>
+            <a href="/matches" class="{{ 'active' if request.url.path == '/matches' }}">Matches &amp; points</a>
             {% endif %}
 
             <div class="nav-group">Watch</div>

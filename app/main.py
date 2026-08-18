@@ -15,7 +15,7 @@ from app.routes.admin import router as admin_router
 from app.routes.players import router as players_router, profile_router as players_profile_router
 from app.routes.auction import router as auction_router
 from app.routes.manager import router as manager_router
-from app.routes.matches import router as matches_router
+from app.routes.matches import router as matches_router, public_router as matches_public_router
 from app.routes.spectator import router as spectator_router
 from app.routes.roll import router as roll_router
 from app.routes.settings import router as settings_router
@@ -46,6 +46,7 @@ app.include_router(players_profile_router)
 app.include_router(auction_router)
 app.include_router(manager_router)
 app.include_router(matches_router)
+app.include_router(matches_public_router)
 app.include_router(spectator_router)
 app.include_router(roll_router)
 app.include_router(settings_router)
