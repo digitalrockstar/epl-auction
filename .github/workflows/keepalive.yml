@@ -1,15 +1,8 @@
 name: Keep Render Awake
 
-# All cron times below are UTC. IST = UTC+5:30.
-# Aug 15 9PM-11PM IST  -> Aug 15 15:30-17:30 UTC
-# Aug 22 4PM-10PM IST  -> Aug 22 10:30-16:30 UTC
-# 9AM-12AM IST daily   -> 03:30-18:30 UTC
-
 on:
   schedule:
-    - cron: "*/14 15-17 15 8 *"   # Aug 15 window: every 14 min
-    - cron: "*/14 10-16 22 8 *"   # Aug 22 window: every 14 min
-    - cron: "54 3-18 * * *"       # every 24th min (9AM-12AM IST), daily, all URLs
+    - cron: "24 * * * *"   # every hour, 24th minute, all URLs
   workflow_dispatch:
 
 jobs:
@@ -18,11 +11,9 @@ jobs:
     steps:
       - name: Ping Render
         run: |
-          group_a=(
+          urls=(
             "https://epl-auction-29e8.onrender.com/healthz"
             "https://epl-auction-icw4.onrender.com/healthz"
-          )
-          group_b=(
             "https://epl-auction-fwin.onrender.com/healthz"
             "https://epl-auction-6267.onrender.com/healthz"
             "https://epl-auction-auu4.onrender.com/healthz"
@@ -32,11 +23,6 @@ jobs:
             "https://epl-auction-z6z4.onrender.com/healthz"
             "https://epl-auction-8agx.onrender.com/healthz"
           )
-
-          urls=("${group_b[@]}")
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event.schedule }}" != "54 3-18 * * *" ]; then
-            urls+=("${group_a[@]}")
-          fi
 
           for url in "${urls[@]}"; do
             curl -L --fail "$url" || echo "failed: $url"

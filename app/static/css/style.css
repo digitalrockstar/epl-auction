@@ -4,7 +4,7 @@
    =========================================================== */
 
 :root {
-    --font-header: Impact, "Arial Narrow Bold", sans-serif;
+    --font-header: "Barlow Condensed", "Arial Narrow", sans-serif;
     --font-body: Cambria, Georgia, serif;
     --bg: #050a1a;
     --surface: #0d1730;
