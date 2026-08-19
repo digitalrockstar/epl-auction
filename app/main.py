@@ -18,6 +18,7 @@ from app.routes.manager import router as manager_router
 from app.routes.matches import router as matches_router, public_router as matches_public_router
 from app.routes.spectator import router as spectator_router
 from app.routes.roll import router as roll_router
+from app.routes.team_reveal import router as team_reveal_router
 from app.routes.settings import router as settings_router
 
 logger = logging.getLogger("uvicorn.error")
@@ -49,6 +50,7 @@ app.include_router(matches_router)
 app.include_router(matches_public_router)
 app.include_router(spectator_router)
 app.include_router(roll_router)
+app.include_router(team_reveal_router)
 app.include_router(settings_router)
 
 

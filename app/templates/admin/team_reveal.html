@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Team Reveal{% endblock %}
+{% block content %}
+<div class="page-head-row">
+    <div class="page-head">
+        <div class="eyebrow">Super Admin</div>
+        <h1>Team Reveal</h1>
+        <p class="sub">Randomly assign each schedule slot to a team brand. {{ rolls_done }}/{{ rolls_total }} slots locked.</p>
+    </div>
+</div>
+
+<div class="panel" style="text-align:center;">
+    <button id="reveal-roll-btn" class="btn btn-gold" style="font-size:16px;padding:12px 28px;" {% if not remaining_slots %}disabled{% endif %}>
+        {% if remaining_slots %}Roll{% else %}All slots locked{% endif %}
+    </button>
+</div>
+
+<div class="panel" style="margin-top:16px;">
+    <div class="reveal-reels">
+        <div class="reveal-reel-col">
+            <div class="reveal-reel-label">Slot</div>
+            <div class="reveal-reel" id="slot-reel"><div class="reveal-reel-strip" id="slot-strip"></div></div>
+        </div>
+        <div class="reveal-connector">&#10231;</div>
+        <div class="reveal-reel-col">
+            <div class="reveal-reel-label">Team</div>
+            <div class="reveal-reel" id="team-reel"><div class="reveal-reel-strip" id="team-strip"></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px;">
+    <h3 style="margin-bottom:14px;">Locked pairings</h3>
+    <table class="table" id="assignments-table">
+        <thead><tr><th>Slot</th><th>Team</th></tr></thead>
+        <tbody>
+            {% for a in assignments %}
+            <tr>
+                <td>{{ a.slot_label }}</td>
+                <td>
+                    {% if a.team %}
+                        {% if a.team.logo_url %}<img src="{{ a.team.logo_url }}" alt="" style="height:22px;vertical-align:middle;margin-right:6px;border-radius:4px;">{% endif %}
+                        {{ a.team.name }}
+                    {% else %}
+                        <span style="color:var(--text-faint);">Not rolled yet</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.reveal-reels { display:flex; align-items:center; justify-content:center; gap:24px; }
+.reveal-reel-col { text-align:center; }
+.reveal-reel-label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+.reveal-reel {
+    width:220px; height:64px; overflow:hidden; border-radius:var(--radius);
+    background:var(--surface-2); border:2px solid var(--gold);
+}
+.reveal-reel-strip { display:flex; flex-direction:column; }
+.reveal-reel-strip .reel-item {
+    height:64px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-header); font-size:20px; font-weight:700; color:var(--text);
+    text-transform:uppercase; letter-spacing:0.02em; gap:8px;
+}
+.reveal-reel-strip .reel-item img { height:34px; border-radius:4px; }
+.reveal-connector { font-size:28px; color:var(--gold); }
+#reveal-roll-btn:disabled { opacity:0.5; cursor:not-allowed; }
+</style>
+
+<script>
+(function () {
+    const remainingSlots = {{ remaining_slots | tojson }};
+    const remainingTeams = {{ remaining_teams | map(attribute='name') | list | tojson }};
+    const btn = document.getElementById('reveal-roll-btn');
+    const slotStrip = document.getElementById('slot-strip');
+    const teamStrip = document.getElementById('team-strip');
+    const REEL_ITEM_H = 64;
+    const SPIN_MS = 12000;
+
+    function buildStrip(strip, items, finalText, finalImg) {
+        strip.innerHTML = '';
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0)';
+        const cycles = 18;
+        const pool = [];
+        for (let i = 0; i < cycles; i++) {
+            items.forEach((it) => pool.push(it));
+        }
+        pool.push({ text: finalText, img: finalImg });
+        pool.forEach((it) => {
+            const el = document.createElement('div');
+            el.className = 'reel-item';
+            if (it.img) {
+                const img = document.createElement('img');
+                img.src = it.img;
+                el.appendChild(img);
+            }
+            const span = document.createElement('span');
+            span.textContent = it.text;
+            el.appendChild(span);
+            strip.appendChild(el);
+        });
+        return pool.length;
+    }
+
+    function spin(strip, items, finalText, finalImg) {
+        const total = buildStrip(strip, items, finalText, finalImg);
+        void strip.offsetHeight;
+        strip.style.transition = `transform ${SPIN_MS}ms cubic-bezier(.15,.75,.15,1)`;
+        strip.style.transform = `translateY(${-(total - 1) * REEL_ITEM_H}px)`;
+    }
+
+    // Idle preview: show remaining items sitting still before a roll.
+    function idlePreview() {
+        const slotItems = remainingSlots.map((s) => ({ text: s }));
+        const teamItems = remainingTeams.map((t) => ({ text: t }));
+        if (slotItems.length) { slotStrip.innerHTML = ''; buildStripStill(slotStrip, slotItems[0]); }
+        if (teamItems.length) { teamStrip.innerHTML = ''; buildStripStill(teamStrip, teamItems[0]); }
+    }
+    function buildStripStill(strip, item) {
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0)';
+        const el = document.createElement('div');
+        el.className = 'reel-item';
+        const span = document.createElement('span');
+        span.textContent = item.text;
+        el.appendChild(span);
+        strip.appendChild(el);
+    }
+    idlePreview();
+
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = 'Rolling...';
+
+        const res = await fetch('/admin/team-reveal/roll', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.done || !data.pairs || !data.pairs.length) {
+            window.location.reload();
+            return;
+        }
+
+        const first = data.pairs[0];
+        const slotItems = remainingSlots.length ? remainingSlots.map((s) => ({ text: s })) : [{ text: first.slot }];
+        const teamItems = remainingTeams.length ? remainingTeams.map((t) => ({ text: t })) : [{ text: first.team_name }];
+
+        spin(slotStrip, slotItems, first.slot, null);
+        spin(teamStrip, teamItems, first.team_name, first.logo_url);
+
+        setTimeout(() => {
+            window.location.reload();
+        }, SPIN_MS + 400);
+    });
+})();
+</script>
+{% endblock %}

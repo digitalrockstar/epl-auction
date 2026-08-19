@@ -258,3 +258,20 @@ class Settings(Base):
     theme = Column(String, default="dark")  # dark, light, epl-night, graphite-gold, warm-ivory, clean-broadcast
     captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
     player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))
+
+
+class TeamAssignment(Base):
+    """Result of the slot-machine team-brand reveal: binds each schedule
+    placeholder (Team A/B/C/D) to a real team once rolled. Standalone from
+    auction data - only reads Team.name/logo_url, doesn't write anything
+    back to the teams table."""
+    __tablename__ = "team_assignments"
+
+    id = Column(Integer, primary_key=True)
+    slot_label = Column(String, nullable=False, unique=True)  # "Team A".."Team D"
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+    rolled_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    team = relationship("Team")
+

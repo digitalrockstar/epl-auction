@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from app.models import Player, Team, PlayerTeamImage, Auction, AuctionType, AuctionStatus, Bid, Match, PlayingXI
+from app.models import Player, Team, PlayerTeamImage, Auction, AuctionType, AuctionStatus, Bid, Match, PlayingXI, TeamAssignment
 
 
 def reset_auction_data(db: Session) -> dict:
@@ -16,6 +16,11 @@ def reset_auction_data(db: Session) -> dict:
         "kit_images": db.query(PlayerTeamImage).delete(synchronize_session=False),
         "matches": db.query(Match).delete(synchronize_session=False),
     }
+
+    for a in db.query(TeamAssignment).all():
+        a.team_id = None
+        a.rolled_at = None
+    counts["team_assignments_reset"] = db.query(TeamAssignment).count()
 
     teams = db.query(Team).all()
     for t in teams:
@@ -93,6 +98,12 @@ def reset_since(db: Session, cutoff_ist: datetime) -> dict:
 
     counts["playing_xi"] = db.query(PlayingXI).filter(PlayingXI.created_at > cutoff_utc).delete(synchronize_session=False)
     counts["matches"] = db.query(Match).filter(Match.created_at > cutoff_utc).delete(synchronize_session=False)
+
+    stale_assignments = db.query(TeamAssignment).filter(TeamAssignment.rolled_at > cutoff_utc).all()
+    for a in stale_assignments:
+        a.team_id = None
+        a.rolled_at = None
+    counts["team_assignments"] = len(stale_assignments)
 
     db.commit()
     return counts
