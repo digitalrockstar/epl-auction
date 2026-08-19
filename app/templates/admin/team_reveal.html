@@ -31,42 +31,65 @@
 
 <div class="panel" style="margin-top:16px;">
     <h3 style="margin-bottom:14px;">Locked pairings</h3>
-    <table class="table" id="assignments-table">
-        <thead><tr><th>Slot</th><th>Team</th></tr></thead>
-        <tbody>
-            {% for a in assignments %}
-            <tr>
-                <td>{{ a.slot_label }}</td>
-                <td>
-                    {% if a.team %}
-                        {% if a.team.logo_url %}<img src="{{ a.team.logo_url }}" alt="" style="height:22px;vertical-align:middle;margin-right:6px;border-radius:4px;">{% endif %}
-                        {{ a.team.name }}
+    <div class="reveal-cards" id="assignments-cards">
+        {% for a in assignments %}
+        <div class="reveal-card{{ ' filled' if a.team else '' }}">
+            <div class="reveal-card-slot">{{ a.slot_label }}</div>
+            <div class="reveal-card-team">
+                {% if a.team %}
+                    {% if a.team.logo_url %}
+                        <img src="{{ a.team.logo_url }}" alt="">
                     {% else %}
-                        <span style="color:var(--text-faint);">Not rolled yet</span>
+                        <span class="reveal-card-logo-placeholder">&#128737;</span>
                     {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <span>{{ a.team.name }}</span>
+                {% else %}
+                    <span class="reveal-card-empty">Not rolled yet</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <style>
-.reveal-reels { display:flex; align-items:center; justify-content:center; gap:24px; }
+.reveal-reels { display:flex; align-items:center; justify-content:center; gap:20px; padding:20px; border-radius:16px;
+    background:linear-gradient(160deg,#3a4048,#1a1d22); border:1px solid #555b63; }
 .reveal-reel-col { text-align:center; }
-.reveal-reel-label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; }
+.reveal-reel-label { font-size:11px; color:#9aa3ad; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
 .reveal-reel {
-    width:220px; height:64px; overflow:hidden; border-radius:var(--radius);
-    background:var(--surface-2); border:2px solid var(--gold);
+    width:240px; height:80px; overflow:hidden; border-radius:10px;
+    background:radial-gradient(circle at 50% 0%, #10151c, #05070a);
+    border:2px solid #6b727b; box-shadow:inset 0 0 18px rgba(0,0,0,0.7), 0 0 0 4px rgba(0,0,0,0.3);
+    position:relative;
 }
+.reveal-reel::before, .reveal-reel::after {
+    content:''; position:absolute; left:0; right:0; height:20px; z-index:2; pointer-events:none;
+}
+.reveal-reel::before { top:0; background:linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
+.reveal-reel::after { bottom:0; background:linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
 .reveal-reel-strip { display:flex; flex-direction:column; }
 .reveal-reel-strip .reel-item {
-    height:64px; display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-header); font-size:20px; font-weight:700; color:var(--text);
-    text-transform:uppercase; letter-spacing:0.02em; gap:8px;
+    height:80px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-header); font-size:24px; font-weight:700; color:var(--gold);
+    text-shadow:0 0 12px rgba(245,185,66,0.5);
+    text-transform:uppercase; letter-spacing:0.03em; gap:8px;
 }
-.reveal-reel-strip .reel-item img { height:34px; border-radius:4px; }
-.reveal-connector { font-size:28px; color:var(--gold); }
+.reveal-reel-strip .reel-item img { height:38px; border-radius:4px; }
+.reveal-connector { font-size:26px; color:#8b9099; }
+
+.reveal-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.reveal-card {
+    border-radius:var(--radius); border:1px solid var(--border); background:var(--surface-2);
+    padding:14px 16px; text-align:center;
+}
+.reveal-card.filled { border-color:var(--gold); background:var(--gold-soft); }
+.reveal-card-slot { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
+.reveal-card-team { display:flex; align-items:center; justify-content:center; gap:8px; font-family:var(--font-header); font-size:18px; font-weight:700; color:var(--text); }
+.reveal-card-team img { height:26px; border-radius:4px; }
+.reveal-card-logo-placeholder { font-size:18px; opacity:0.6; }
+.reveal-card-empty { color:var(--text-faint); font-family:var(--font-body); font-weight:400; font-size:14px; }
+
 #reveal-roll-btn:disabled { opacity:0.5; cursor:not-allowed; }
 </style>
 
@@ -77,7 +100,7 @@
     const btn = document.getElementById('reveal-roll-btn');
     const slotStrip = document.getElementById('slot-strip');
     const teamStrip = document.getElementById('team-strip');
-    const REEL_ITEM_H = 64;
+    const REEL_ITEM_H = 80;
     const SPIN_MS = 12000;
 
     function buildStrip(strip, items, finalText, finalImg) {
