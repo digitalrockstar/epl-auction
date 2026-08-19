@@ -37,11 +37,6 @@
             <div class="reveal-card-slot">{{ a.slot_label }}</div>
             <div class="reveal-card-team">
                 {% if a.team %}
-                    {% if a.team.logo_url %}
-                        <img src="{{ a.team.logo_url }}" alt="">
-                    {% else %}
-                        <span class="reveal-card-logo-placeholder">&#128737;</span>
-                    {% endif %}
                     <span>{{ a.team.name }}</span>
                 {% else %}
                     <span class="reveal-card-empty">Not rolled yet</span>
@@ -81,7 +76,6 @@
     font-family:var(--font-header); font-size:24px; font-weight:700; color:var(--gold);
     text-transform:uppercase; letter-spacing:0.03em; gap:8px;
 }
-.reveal-reel-strip .reel-item img { height:36px; border-radius:4px; }
 
 .reveal-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
 .reveal-card {
@@ -91,8 +85,6 @@
 .reveal-card.filled { border-color:var(--gold); background:var(--gold-soft); }
 .reveal-card-slot { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
 .reveal-card-team { display:flex; align-items:center; justify-content:center; gap:8px; font-family:var(--font-header); font-size:18px; font-weight:700; color:var(--text); }
-.reveal-card-team img { height:26px; border-radius:4px; }
-.reveal-card-logo-placeholder { font-size:18px; opacity:0.6; }
 .reveal-card-empty { color:var(--text-faint); font-family:var(--font-body); font-weight:400; font-size:14px; }
 
 #reveal-roll-btn:disabled { opacity:0.5; cursor:not-allowed; }
@@ -109,7 +101,7 @@
     const SLOT_SPIN_MS = 9000;
     const TEAM_SPIN_MS = 12500;
 
-    function buildStrip(strip, items, finalText, finalImg) {
+    function buildStrip(strip, items, finalText) {
         strip.innerHTML = '';
         strip.style.transition = 'none';
         strip.style.transform = 'translateY(0)';
@@ -118,15 +110,10 @@
         for (let i = 0; i < cycles; i++) {
             items.forEach((it) => pool.push(it));
         }
-        pool.push({ text: finalText, img: finalImg });
+        pool.push({ text: finalText });
         pool.forEach((it) => {
             const el = document.createElement('div');
             el.className = 'reel-item';
-            if (it.img) {
-                const img = document.createElement('img');
-                img.src = it.img;
-                el.appendChild(img);
-            }
             const span = document.createElement('span');
             span.textContent = it.text;
             el.appendChild(span);
@@ -135,8 +122,8 @@
         return pool.length;
     }
 
-    function spin(strip, items, finalText, finalImg, durationMs) {
-        const total = buildStrip(strip, items, finalText, finalImg);
+    function spin(strip, items, finalText, durationMs) {
+        const total = buildStrip(strip, items, finalText);
         void strip.offsetHeight;
         strip.style.transition = `transform ${durationMs}ms cubic-bezier(.15,.75,.15,1)`;
         strip.style.transform = `translateY(${-(total - 1) * REEL_ITEM_H}px)`;
@@ -177,8 +164,8 @@
         const slotItems = remainingSlots.length ? remainingSlots.map((s) => ({ text: s })) : [{ text: first.slot }];
         const teamItems = remainingTeams.length ? remainingTeams.map((t) => ({ text: t })) : [{ text: first.team_name }];
 
-        spin(slotStrip, slotItems, first.slot, null, SLOT_SPIN_MS);
-        spin(teamStrip, teamItems, first.team_name, first.logo_url, TEAM_SPIN_MS);
+        spin(slotStrip, slotItems, first.slot, SLOT_SPIN_MS);
+        spin(teamStrip, teamItems, first.team_name, TEAM_SPIN_MS);
 
         setTimeout(() => {
             window.location.reload();
