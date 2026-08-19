@@ -587,7 +587,7 @@ img { max-width: 100%; display: block; }
     border-right: 1px solid var(--border);
 }
 .login-hero .crest { width: 84px; height: 84px; }
-.login-hero h1 { font-size: 34px; line-height: 1.25; }
+.login-hero h1 { font-size: 34px; line-height: 1.25; color: #f4f6fb; }
 .login-hero h1 .accent { color: var(--gold); display: block; }
 .login-hero p.tag { color: var(--text-muted); font-size: 15px; max-width: 420px; }
 .login-stats { display: flex; gap: 30px; margin-top: 10px; flex-wrap: wrap; }
