@@ -583,16 +583,16 @@ img { max-width: 100%; display: block; }
     flex: 1.2; display: flex; flex-direction: column; justify-content: center; gap: 22px;
     padding: 60px; background:
         radial-gradient(circle at 20% 20%, rgba(232,171,47,0.10), transparent 45%),
-        linear-gradient(160deg, var(--surface) 0%, var(--bg) 100%);
+        linear-gradient(160deg, #14213f 0%, #050a1a 100%);
     border-right: 1px solid var(--border);
 }
 .login-hero .crest { width: 84px; height: 84px; }
 .login-hero h1 { font-size: 34px; line-height: 1.25; color: #f4f6fb; }
 .login-hero h1 .accent { color: var(--gold); display: block; }
-.login-hero p.tag { color: var(--text-muted); font-size: 15px; max-width: 420px; }
+.login-hero p.tag { color: #93a0c2; font-size: 15px; max-width: 420px; }
 .login-stats { display: flex; gap: 30px; margin-top: 10px; flex-wrap: wrap; }
 .login-stats div { font-size: 26px; font-weight: 800; color: var(--gold); }
-.login-stats span { display: block; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 2px; }
+.login-stats span { display: block; font-size: 12px; color: #93a0c2; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 2px; }
 .login-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
 .login-box { max-width: 380px; width: 100%; }
 .login-box h2 { font-size: 24px; margin-bottom: 4px; }
