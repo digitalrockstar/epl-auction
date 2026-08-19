@@ -1,7 +1,13 @@
 html, body { overflow-x: hidden; }
 .tv-body {
     min-height: 100vh; margin: 0; background: var(--bg); padding-bottom: 90px; box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text);
+    font-family: var(--font-body); color: var(--text);
+}
+
+h1, h2, h3, h4, h5, h6,
+.header, [class*="header"],
+.value, [class*="highlight"], [class*="-value"] {
+    font-family: var(--font-header);
 }
 .tv-header-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 7; }
 #tv-ticker-slot { display: block; }

@@ -4,6 +4,8 @@
    =========================================================== */
 
 :root {
+    --font-header: Impact, "Arial Narrow Bold", sans-serif;
+    --font-body: Cambria, Georgia, serif;
     --bg: #050a1a;
     --surface: #0d1730;
     --surface-2: #14213f;
@@ -478,7 +480,13 @@ html[data-theme="clean-broadcast"] {
 html, body { height: 100%; }
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.header, [class*="header"],
+.stat-tile .value, .value, [class*="highlight"], [class*="-value"] {
+    font-family: var(--font-header);
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
