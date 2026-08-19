@@ -487,8 +487,6 @@ h1, h2, h3, h4, h5, h6,
 .header, [class*="header"],
 .stat-tile .value, .value, [class*="highlight"], [class*="-value"] {
     font-family: var(--font-header);
-    background: var(--bg);
-    color: var(--text);
     -webkit-font-smoothing: antialiased;
 }
 a { color: var(--gold); text-decoration: none; }
