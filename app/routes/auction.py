@@ -72,10 +72,12 @@ def _padded_photos(db: Session, players, minimum: int = 6):
     return out
 
 
-def _redirect(auction_type: str, msg: str = None):
+def _redirect(auction_type: str, msg: str = None, snd: str = None):
     url = f"/admin/auction?auction_type={auction_type}"
     if msg:
         url += f"&msg={msg}"
+    if snd:
+        url += f"&snd={snd}"
     return RedirectResponse(url=url, status_code=303)
 
 
@@ -488,7 +490,7 @@ def mark_sold(
     db.commit()
     if get_settings(db).telegram_enabled:
         notify_sold(player.user.name, team.name, auction.current_bid)
-    return _redirect(auction_type)
+    return _redirect(auction_type, snd="sold")
 
 
 @router.post("/admin/auction/{auction_id}/unsold", response_class=HTMLResponse)
@@ -506,7 +508,7 @@ def mark_unsold(
     db.commit()
     if get_settings(db).telegram_enabled:
         notify(f"UNSOLD: {auction.player.user.name}")
-    return _redirect(auction_type)
+    return _redirect(auction_type, snd="unsold")
 
 
 def _live_context(db: Session):

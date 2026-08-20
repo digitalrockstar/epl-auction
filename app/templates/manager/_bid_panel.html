@@ -1,6 +1,7 @@
 {% if not live %}
 <div class="empty-state panel"><p>No auction is live right now. Check back once bidding starts.</p></div>
 {% else %}
+<span id="mgr-bid-marker" data-bid="{{ live.current_bid }}" style="display:none;"></span>
 <div class="hero-banner" style="border-top:4px solid {{ team.primary_color if team else '#e8ab2f' }};">
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;">
         <div><h2>{{ team.name if team else "Spectator" }}</h2><p>{{ "You are bidding" if team else "" }}</p></div>

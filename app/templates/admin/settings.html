@@ -65,6 +65,48 @@
 </div>
 
 <div class="panel">
+    <h3 style="margin-bottom:14px;">Sounds</h3>
+    <form method="post" action="/admin/settings/sounds">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:14px;">
+            <div>
+                <span class="field-label">Bid</span>
+                <select name="sound_bid">
+                    <option value="classic" {% if settings.sound_bid == 'classic' %}selected{% endif %}>Classic</option>
+                    <option value="synth" {% if settings.sound_bid == 'synth' %}selected{% endif %}>Digital beep</option>
+                    <option value="off" {% if settings.sound_bid == 'off' %}selected{% endif %}>Off</option>
+                </select>
+            </div>
+            <div>
+                <span class="field-label">Sold / Unsold</span>
+                <select name="sound_result">
+                    <option value="classic" {% if settings.sound_result == 'classic' %}selected{% endif %}>Classic</option>
+                    <option value="synth" {% if settings.sound_result == 'synth' %}selected{% endif %}>Digital tone</option>
+                    <option value="off" {% if settings.sound_result == 'off' %}selected{% endif %}>Off</option>
+                </select>
+            </div>
+            <div>
+                <span class="field-label">Timer</span>
+                <select name="sound_timer">
+                    <option value="tick" {% if settings.sound_timer == 'tick' %}selected{% endif %}>Soft tick</option>
+                    <option value="beep" {% if settings.sound_timer == 'beep' %}selected{% endif %}>Digital beep</option>
+                    <option value="off" {% if settings.sound_timer == 'off' %}selected{% endif %}>Off</option>
+                </select>
+            </div>
+            <div>
+                <span class="field-label">Team reveal roll</span>
+                <select name="sound_roll">
+                    <option value="whoosh" {% if settings.sound_roll == 'whoosh' %}selected{% endif %}>Whoosh</option>
+                    <option value="chime" {% if settings.sound_roll == 'chime' %}selected{% endif %}>Chime</option>
+                    <option value="off" {% if settings.sound_roll == 'off' %}selected{% endif %}>Off</option>
+                </select>
+            </div>
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px;">Applies everywhere: auction console, live TV view, manager bid panel, team reveal. Anyone can still mute from the speaker icon on any page.</p>
+        <button type="submit" class="btn-gold" style="width:auto;">Save</button>
+    </form>
+</div>
+
+<div class="panel">
     <h3 style="margin-bottom:14px;">Bidding timer</h3>
     <form method="post" action="/admin/settings/timer">
         <span class="field-label">Timer duration (seconds)</span>

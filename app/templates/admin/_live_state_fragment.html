@@ -1,4 +1,5 @@
 {% if live %}
+<span id="admin-bid-marker" data-bid="{{ live.current_bid }}" style="display:none;"></span>
 {% if timeout_team %}
 <div class="panel" style="border-color:var(--blue);margin-top:14px;padding:10px 16px;">
     <b style="color:var(--blue);">Timeout - {{ timeout_team.name }}</b>

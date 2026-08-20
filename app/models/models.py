@@ -258,6 +258,10 @@ class Settings(Base):
     theme = Column(String, default="dark")  # dark, light, epl-night, graphite-gold, warm-ivory, clean-broadcast
     captain_auction_at = Column(DateTime, default=datetime(2026, 8, 7, 21, 0))  # IST wall-clock, no tz stored
     player_auction_at = Column(DateTime, default=datetime(2026, 8, 22, 17, 0))
+    sound_bid = Column(String, default="classic")      # classic, synth, off
+    sound_result = Column(String, default="classic")   # classic, synth, off (sold + unsold)
+    sound_timer = Column(String, default="tick")        # tick, beep, off
+    sound_roll = Column(String, default="whoosh")       # whoosh, chime, off
 
 
 class TeamAssignment(Base):

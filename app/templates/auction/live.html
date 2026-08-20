@@ -11,8 +11,11 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <link rel="stylesheet" href="/static/css/style.css?v={{ static_version('css/style.css') }}">
     <link rel="stylesheet" href="/static/css/tv.css?v={{ static_version('css/tv.css') }}">
+    <script>window.EPL_SOUND_PREFS = {{ sound_prefs() | tojson }};</script>
+    <script src="/static/js/sound.js?v={{ static_version('js/sound.js') }}"></script>
 </head>
 <body class="tv-body">
+<button class="snd-mute-btn" title="Toggle sound">&#128266;</button>
     <div class="tv-header-fixed">
         <div id="tv-ticker-slot" hx-get="{{ ticker_fragment_url }}" hx-trigger="every 90s" hx-swap="innerHTML">
             {% include "auction/_ticker_fragment.html" %}
@@ -58,9 +61,7 @@
     <div id="tv-wrap" hx-get="{{ fragment_url }}" hx-trigger="every 2s" hx-swap="innerHTML">{% include "auction/_live_fragment.html" %}</div>
     {% endif %}
 
-    <audio id="snd-bid" src="/static/sfx/bid.mp3" preload="auto"></audio>
-    <audio id="snd-sold" src="/static/sfx/sold.mp3" preload="auto"></audio>
-    <audio id="snd-unsold" src="/static/sfx/unsold.mp3" preload="auto"></audio>
+    <!-- sound handled by /static/js/sound.js, driven by Settings > Sounds -->
 
     <script>
     let flipInterval = null;
@@ -134,13 +135,13 @@
         if (!el) return;
         const bid = el.dataset.bid, team = el.dataset.team, status = el.dataset.status;
         if (bid !== undefined && lastBid !== null && (bid !== lastBid || team !== lastTeam)) {
-            document.getElementById('snd-bid').play().catch(()=>{});
+            EPLSound.playBid();
         }
         if (status === 'sold' && lastStatus !== 'sold') {
-            document.getElementById('snd-sold').play().catch(()=>{});
+            EPLSound.playSold();
         }
         if (status === 'unsold' && lastStatus !== 'unsold') {
-            document.getElementById('snd-unsold').play().catch(()=>{});
+            EPLSound.playUnsold();
         }
 
         // SOLD / WILL BE BACK stamp should bounce in once, then hold still,

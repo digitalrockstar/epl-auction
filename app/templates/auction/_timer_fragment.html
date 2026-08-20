@@ -7,7 +7,7 @@
     {% elif is_paused %}
     <div class="tv-timer">PAUSED</div>
     {% else %}
-    <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}">{{ seconds_left }}s</div>
+    <div class="tv-timer {{ 'tv-timer-low' if seconds_left is not none and seconds_left <= 30 }}" data-seconds="{{ seconds_left }}">{{ seconds_left }}s</div>
     {% endif %}
 {% elif pending %}<div class="tv-timer">Opens in {{ reveal_seconds_left }}s</div>
 {% endif %}
