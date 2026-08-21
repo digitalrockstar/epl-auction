@@ -84,10 +84,29 @@ def inr(value):
     return sign + ",".join(parts) + "," + last3
 
 
+def least_bandwidth_spectator_url() -> str:
+    """Picks the least-used Render URL for spectator traffic, same logic as
+    the login page's 'Watch Live Auction' link. Falls back to relative
+    /spectator/live if bandwidth tracking is unavailable."""
+    from sqlalchemy import text
+    from app.database import engine
+    try:
+        with engine.connect() as conn:
+            row = conn.execute(text(
+                "SELECT service_url FROM render_bandwidth ORDER BY usage_gb ASC LIMIT 1"
+            )).fetchone()
+        if row:
+            return row[0] + "/spectator/live"
+    except Exception:
+        pass
+    return "/spectator/live"
+
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["player_photo"] = resolve_player_photo
 templates.env.globals["team_logo"] = resolve_team_logo
 templates.env.globals["static_version"] = static_version
+templates.env.globals["least_bandwidth_spectator_url"] = least_bandwidth_spectator_url
 templates.env.globals["theme_attr"] = theme_attr
 templates.env.globals["sound_prefs"] = sound_prefs
 templates.env.filters["inr"] = inr

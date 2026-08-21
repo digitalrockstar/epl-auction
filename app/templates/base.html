@@ -65,7 +65,7 @@
             {% endif %}
 
             <div class="nav-group">Watch</div>
-            <a href="/spectator/live" target="_blank">Live Auction View ↗</a>
+            <a href="{{ least_bandwidth_spectator_url() if user.role.value == 'player' else '/spectator/live' }}" target="_blank">Live Auction View ↗</a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-chip">
