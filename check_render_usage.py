@@ -4,9 +4,7 @@ import requests
 from datetime import datetime as dt
 from sqlalchemy import create_engine, text
 
-ACCOUNTS = ["subscription.ajp", "matao.goa", "beingujarati", "asquaredcorporation", "almycontacts",
-            "6s.akshayp", "eplofficial2", "thestartupcom", "thetypewriterstales", "secajp04"]
-API_KEYS = os.environ.get("RENDER_API_KEYS", "").split(",")
+from render_accounts import load_accounts
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 if DATABASE_URL.startswith("postgres://"):
@@ -14,7 +12,8 @@ if DATABASE_URL.startswith("postgres://"):
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=280)
 
-for account, api_key in zip(ACCOUNTS, API_KEYS):
+for row in load_accounts():
+    account, api_key = row["account"], row["api_key"]
     headers = {"accept": "application/json", "authorization": "Bearer " + api_key}
 
     r = requests.get(
