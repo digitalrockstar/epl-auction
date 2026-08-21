@@ -979,6 +979,9 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
     background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
     font-size: 17px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
     box-shadow: var(--shadow);
+    /* Keeps it glued in place during momentum scroll on mobile Safari/Chrome,
+       which otherwise can let fixed elements lag or duck behind content. */
+    transform: translateZ(0); -webkit-transform: translateZ(0); will-change: transform;
 }
 @media (max-width: 860px) {
     /* Bottom tabbar owns the bottom edge on mobile (incl. "More"); keep the
@@ -987,4 +990,10 @@ input[type="color"] { border: 1px solid var(--border); border-radius: 8px; heigh
         top: auto; bottom: calc(70px + env(safe-area-inset-bottom));
         right: 14px; width: 34px; height: 34px; font-size: 15px;
     }
+}
+/* Live TV / spectator screen: top-right is owned by the LIVE/OFFLINE badge,
+   tightest in landscape mobile. No bottom tabbar on this screen, so anchor
+   the mute button to the bottom-right there instead, at every width. */
+.tv-body .snd-mute-btn {
+    top: auto; bottom: 14px; right: 14px;
 }

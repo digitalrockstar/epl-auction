@@ -1,9 +1,7 @@
 {% if live %}
-0s
-<script>window.location.href = "/admin/auction?auction_type={{ auction_type }}";</script>
+<span data-redirect="/admin/auction?auction_type={{ auction_type }}">0s</span>
 {% elif pending %}
 {{ reveal_seconds_left }}s
 {% else %}
-0s
-<script>window.location.href = "/admin/roll?auction_type={{ auction_type }}";</script>
+<span data-redirect="/admin/auction?auction_type={{ auction_type }}">0s</span>
 {% endif %}

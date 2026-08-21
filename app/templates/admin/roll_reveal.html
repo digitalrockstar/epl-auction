@@ -26,4 +26,12 @@
         {{ reveal_seconds_left }}s
     </div>
 </div>
+<script>
+document.body.addEventListener('htmx:afterSwap', function (e) {
+    var el = e.detail && e.detail.target;
+    if (!el || el.id !== 'roll-countdown') return;
+    var flag = el.querySelector('[data-redirect]');
+    if (flag) window.location.href = flag.dataset.redirect;
+});
+</script>
 {% endblock %}
