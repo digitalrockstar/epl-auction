@@ -181,3 +181,21 @@ def reset_since_time(
         f"Everything on or before the cutoff was kept."
     )
     return RedirectResponse(url="/admin/settings?msg=" + quote(msg), status_code=303)
+
+
+@router.post("/sounds", response_class=HTMLResponse)
+def update_sounds(
+    sound_bid: str = Form("classic"),
+    sound_result: str = Form("classic"),
+    sound_timer: str = Form("tick"),
+    sound_roll: str = Form("whoosh"),
+    db: Session = Depends(get_db),
+    user: User = Depends(super_admin_only),
+):
+    settings = get_settings(db)
+    settings.sound_bid = sound_bid if sound_bid in ("classic", "synth", "off") else "classic"
+    settings.sound_result = sound_result if sound_result in ("classic", "synth", "off") else "classic"
+    settings.sound_timer = sound_timer if sound_timer in ("tick", "beep", "off") else "tick"
+    settings.sound_roll = sound_roll if sound_roll in ("whoosh", "chime", "off") else "whoosh"
+    db.commit()
+    return RedirectResponse(url="/admin/settings?msg=" + quote("Sound settings saved"), status_code=303)

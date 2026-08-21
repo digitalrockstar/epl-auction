@@ -164,10 +164,12 @@
         const slotItems = remainingSlots.length ? remainingSlots.map((s) => ({ text: s })) : [{ text: first.slot }];
         const teamItems = remainingTeams.length ? remainingTeams.map((t) => ({ text: t })) : [{ text: first.team_name }];
 
+        if (window.EPLSound) EPLSound.playRollSpin();
         spin(slotStrip, slotItems, first.slot, SLOT_SPIN_MS);
         spin(teamStrip, teamItems, first.team_name, TEAM_SPIN_MS);
 
         setTimeout(() => {
+            if (window.EPLSound) EPLSound.playRollStop();
             window.location.reload();
         }, Math.max(SLOT_SPIN_MS, TEAM_SPIN_MS) + 400);
     });

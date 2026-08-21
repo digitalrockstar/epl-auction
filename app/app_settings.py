@@ -13,6 +13,7 @@ def get_settings(db: Session) -> Settings:
             id=1, telegram_enabled=True, timer_seconds=TIMER_SECONDS,
             ticker_speed_seconds=TICKER_SPEED_SECONDS, ticker_window=TICKER_WINDOW,
             captain_auction_at=datetime(2026, 8, 7, 21, 0), player_auction_at=datetime(2026, 8, 22, 17, 0),
+            sound_bid="classic", sound_result="classic", sound_timer="tick", sound_roll="whoosh",
         )
         db.add(s)
         db.commit()
