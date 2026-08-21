@@ -33,17 +33,18 @@ for row in load_accounts():
     total_value = sum(entry["value"] for item in r.json() for entry in item.get("values", []))
     usage_gb = total_value / 1024
 
-    with engine.begin() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO render_bandwidth (account, service_url, usage_gb, updated_at)
-                VALUES (:a, :u, :g, now())
-                ON CONFLICT (account) DO UPDATE
-                SET service_url = :u, usage_gb = :g, updated_at = now()
-                """
-            ),
-            {"a": account, "u": service_url, "g": usage_gb},
-        )
+    if account != "asquaredcorporation" and account != "beingujarati":
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO render_bandwidth (account, service_url, usage_gb, updated_at)
+                    VALUES (:a, :u, :g, now())
+                    ON CONFLICT (account) DO UPDATE
+                    SET service_url = :u, usage_gb = :g, updated_at = now()
+                    """
+                ),
+                {"a": account, "u": service_url, "g": usage_gb},
+            )
 
-    print(f"{account}: {usage_gb:.2f} gb -> {service_url}")
+    print(f"{dt.now().isoformat().split('.')[0]} // {account:<20}: {service_url} : {usage_gb*1024:.0f} mb.") #->
