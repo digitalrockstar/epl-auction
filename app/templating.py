@@ -38,25 +38,6 @@ def theme_attr() -> str:
         db.close()
 
 
-def sound_prefs() -> dict:
-    """Reads sound preference settings for inline injection into pages."""
-    from app.database import SessionLocal
-    from app.models import Settings
-    db = SessionLocal()
-    try:
-        s = db.query(Settings).first()
-        if not s:
-            return {"bid": "classic", "result": "classic", "timer": "tick", "roll": "whoosh"}
-        return {
-            "bid": s.sound_bid or "classic",
-            "result": s.sound_result or "classic",
-            "timer": s.sound_timer or "tick",
-            "roll": s.sound_roll or "whoosh",
-        }
-    finally:
-        db.close()
-
-
 def inr(value):
     """Format a number in Indian digit grouping: ##,##,###."""
     if value is None:
@@ -83,5 +64,4 @@ templates.env.globals["player_photo"] = resolve_player_photo
 templates.env.globals["team_logo"] = resolve_team_logo
 templates.env.globals["static_version"] = static_version
 templates.env.globals["theme_attr"] = theme_attr
-templates.env.globals["sound_prefs"] = sound_prefs
 templates.env.filters["inr"] = inr
