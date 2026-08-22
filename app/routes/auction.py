@@ -59,17 +59,9 @@ def _eligible_pool(db: Session, a_type: AuctionType, category: str = None, respe
 
 
 def _padded_photos(db: Session, players, minimum: int = 6):
-    """Pads a short candidate list by repeating it, so the reveal shuffle
-    always has enough frames to look like a proper spin."""
-    photos = [_player_photo(db, p, None) for p in players]
-    if not photos:
-        return []
-    out = list(photos)
-    i = 0
-    while len(out) < minimum:
-        out.append(photos[i % len(photos)])
-        i += 1
-    return out
+    """Returns one photo per remaining player, no repeats even if fewer
+    than `minimum` players are left."""
+    return [_player_photo(db, p, None) for p in players]
 
 
 def _redirect(auction_type: str, msg: str = None, snd: str = None):
